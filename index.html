@@ -282,6 +282,102 @@
     }
     .gift-card.animating { animation: pop 0.3s ease; }
 
+    /* Reservation modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+      text-align: center;
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal h3 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 18px;
+      color: #e91e8a;
+      margin-bottom: 6px;
+    }
+    .modal .modal-gift-name {
+      font-size: 14px;
+      color: #4a2040;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .modal label {
+      display: block;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .modal input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #fce4ec;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: #4a2040;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 14px;
+    }
+    .modal input[type="text"]:focus {
+      border-color: #f48fb1;
+    }
+    .modal input[type="text"]::placeholder {
+      color: #ccc;
+    }
+    .modal .modal-hint {
+      font-size: 12px;
+      color: #bbb;
+      margin-bottom: 18px;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .modal-buttons .btn {
+      flex: 1;
+      padding: 12px 10px;
+      font-size: 14px;
+    }
+    .btn-confirm {
+      background: linear-gradient(135deg, #f48fb1, #ec407a);
+      color: white;
+    }
+    .btn-confirm:hover { background: linear-gradient(135deg, #ec407a, #d81b60); }
+    .btn-cancel {
+      background: #f5f5f5;
+      color: #999;
+    }
+    .btn-cancel:hover { background: #eee; color: #777; }
+
+    .reserved-by {
+      font-size: 10px;
+      color: white;
+      opacity: 0.9;
+    }
+
     /* Invitation section */
     .invitation {
       position: relative;
@@ -430,6 +526,21 @@
 
   <!-- Gifts -->
   <div class="gifts-grid" id="gifts-grid"></div>
+
+  <!-- Reservation modal -->
+  <div class="modal-overlay" id="reserveModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3>🎁 Бронирование подарка</h3>
+      <div class="modal-gift-name" id="modalGiftName"></div>
+      <label for="reserveName">Ваше имя (необязательно)</label>
+      <input type="text" id="reserveName" placeholder="Введите имя или оставьте пустым" maxlength="30" />
+      <div class="modal-hint">Оставьте поле пустым, чтобы забронировать анонимно</div>
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" onclick="closeModal()">Отмена</button>
+        <button class="btn btn-confirm" onclick="confirmReserve()">Подтвердить</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -614,7 +725,7 @@
     }
 
     function updateCounter() {
-      const count = Object.values(reserved).filter(Boolean).length;
+      const count = Object.keys(reserved).length;
       const el = document.getElementById("counter");
       const num = document.getElementById("counter-num");
       const total = document.getElementById("counter-total");
@@ -623,12 +734,43 @@
       el.style.display = count > 0 ? "inline-flex" : "none";
     }
 
-    function toggleReserve(id) {
-      reserved[id] = !reserved[id];
+    let pendingReserveId = null;
+
+    function openReserveModal(id) {
+      const gift = gifts.find(g => g.id === id);
+      if (!gift) return;
+      pendingReserveId = id;
+      document.getElementById('modalGiftName').textContent = gift.name;
+      document.getElementById('reserveName').value = '';
+      document.getElementById('reserveModal').classList.add('active');
+      setTimeout(() => document.getElementById('reserveName').focus(), 100);
+    }
+
+    function closeModal() {
+      document.getElementById('reserveModal').classList.remove('active');
+      pendingReserveId = null;
+    }
+
+    function confirmReserve() {
+      if (pendingReserveId === null) return;
+      const name = document.getElementById('reserveName').value.trim();
+      reserved[pendingReserveId] = { name: name || 'Аноним' };
+      saveReserved();
+      closeModal();
+      renderGifts();
+      updateCounter();
+      animateCard(pendingReserveId);
+    }
+
+    function unreserve(id) {
+      delete reserved[id];
       saveReserved();
       renderGifts();
       updateCounter();
+      animateCard(id);
+    }
 
+    function animateCard(id) {
       const card = document.querySelector(`[data-id="${id}"]`);
       if (card) {
         card.classList.add("animating");
@@ -639,10 +781,12 @@
     function renderGifts() {
       const grid = document.getElementById("gifts-grid");
       grid.innerHTML = gifts.map(gift => {
-        const isReserved = reserved[gift.id];
+        const info = reserved[gift.id];
+        const isReserved = !!info;
+        const reservedName = info ? (typeof info === 'object' ? info.name : 'Аноним') : '';
         return `
           <div class="gift-card ${isReserved ? 'reserved' : ''}" data-id="${gift.id}">
-            <div class="badge">❤ Забронировано</div>
+            <div class="badge">❤ Забронировано${reservedName ? `<span class="reserved-by"> (${reservedName})</span>` : ''}</div>
             <div class="gift-image-wrap">
               <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy"
                 onerror="handleImgError(this, '${gift.orderUrl}')" />
@@ -656,7 +800,7 @@
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   Где купить
                 </a>
-                <button class="btn ${isReserved ? 'btn-unreserve' : 'btn-reserve'}" onclick="toggleReserve(${gift.id})">
+                <button class="btn ${isReserved ? 'btn-unreserve' : 'btn-reserve'}" onclick="${isReserved ? `unreserve(${gift.id})` : `openReserveModal(${gift.id})`}">
                   <svg class="icon" viewBox="0 0 24 24" fill="${isReserved ? 'none' : 'currentColor'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   ${isReserved ? 'Отменить' : 'Забронировать'}
                 </button>
@@ -666,6 +810,13 @@
         `;
       }).join('');
     }
+
+    // Keyboard support for modal
+    document.addEventListener('keydown', function(e) {
+      if (!document.getElementById('reserveModal').classList.contains('active')) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Enter') confirmReserve();
+    });
 
     renderGifts();
     updateCounter();
