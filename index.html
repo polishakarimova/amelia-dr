@@ -172,17 +172,14 @@
       position: relative;
       background: #fce4ec;
     }
-    .kitty-tag {
-      position: absolute;
-      bottom: 8px;
-      left: 8px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(4px);
-      padding: 4px 10px;
-      border-radius: 50px;
-      font-size: 11px;
-      color: #ec407a;
-      font-weight: 500;
+    .gift-image-placeholder {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #fce4ec, #fff0f3);
+      font-size: 48px;
     }
 
     .gift-body { padding: 16px; }
@@ -284,6 +281,196 @@
       100% { transform: scale(1); }
     }
     .gift-card.animating { animation: pop 0.3s ease; }
+
+    /* Reservation modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      max-width: 380px;
+      width: 100%;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+      text-align: center;
+      animation: modalIn 0.25s ease;
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.9) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal h3 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 18px;
+      color: #e91e8a;
+      margin-bottom: 6px;
+    }
+    .modal .modal-gift-name {
+      font-size: 14px;
+      color: #4a2040;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .modal label {
+      display: block;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+    .modal input[type="text"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #fce4ec;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: #4a2040;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 14px;
+    }
+    .modal input[type="text"]:focus {
+      border-color: #f48fb1;
+    }
+    .modal input[type="text"]::placeholder {
+      color: #ccc;
+    }
+    .modal .modal-hint {
+      font-size: 12px;
+      color: #bbb;
+      margin-bottom: 18px;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .modal-buttons .btn {
+      flex: 1;
+      padding: 12px 10px;
+      font-size: 14px;
+    }
+    .btn-confirm {
+      background: linear-gradient(135deg, #f48fb1, #ec407a);
+      color: white;
+    }
+    .btn-confirm:hover { background: linear-gradient(135deg, #ec407a, #d81b60); }
+    .btn-cancel {
+      background: #f5f5f5;
+      color: #999;
+    }
+    .btn-cancel:hover { background: #eee; color: #777; }
+
+    .reserved-by {
+      font-size: 10px;
+      color: white;
+      opacity: 0.9;
+    }
+
+    /* Invitation section */
+    .invitation {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 10px;
+      padding: 28px 24px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 2px solid #fce4ec;
+      text-align: center;
+    }
+    .invitation h2 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 22px;
+      color: #e91e8a;
+      margin-bottom: 16px;
+    }
+    .invitation p {
+      font-size: 14px;
+      color: #4a2040;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .invitation .date-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+      color: #c2185b;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 8px 20px;
+      border-radius: 50px;
+      margin-bottom: 16px;
+    }
+
+    /* Address section */
+    .address-block {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 20px;
+      padding: 22px 24px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 2px solid #fce4ec;
+      text-align: center;
+    }
+    .address-block .address-title {
+      font-family: 'Comfortaa', cursive;
+      font-size: 17px;
+      font-weight: 700;
+      color: #e91e8a;
+      margin-bottom: 8px;
+    }
+    .address-block .address-text {
+      font-size: 14px;
+      color: #4a2040;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .btn-map {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #ec407a, #e91e8a);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.3);
+    }
+    .btn-map:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 64, 122, 0.4);
+    }
+
+    /* Wishlist hint */
+    .wishlist-hint {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 6px;
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #e48aaf;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -300,17 +487,60 @@
   <header class="header">
     <div class="kitty-avatar">🎀</div>
     <h1>С Днём Рождения, Амелия!</h1>
-    <div class="subtitle">🎉 Виш-лист подарков 🎂</div>
-    <p class="description">
-      Выберите подарок для нашей маленькой принцессы! Нажмите «Забронировать», чтобы другие гости знали, что этот подарок уже выбран 💖
-    </p>
+    <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
     <div class="counter" id="counter" style="display:none">
       🎁 Забронировано: <span id="counter-num">0</span> из <span id="counter-total">0</span>
     </div>
   </header>
 
+  <!-- Invitation -->
+  <section class="invitation">
+    <h2>🎈 Приглашение на День Рождения Амелии!</h2>
+    <div class="date-badge">📅 25 апреля 2026</div>
+    <p>
+      Приглашаем вас на День Рождения Амелии, которое состоится <strong>25 апреля 2026</strong> года!
+    </p>
+    <p>
+      Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉
+    </p>
+  </section>
+
+  <!-- Address -->
+  <section class="address-block">
+    <div class="address-title">📍 Место проведения</div>
+    <div class="address-text">
+      Васильковая улица, 4<br>
+      посёлок Прибрежное, Гурьевский муниципальный округ,<br>
+      Калининградская область
+    </div>
+    <a class="btn-map" href="https://yandex.ru/maps?ol=geo&text=%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D1%8C%D0%BA%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0,%204&sll=20.636647,54.701829&sspn=0.004755,0.008211&si=z14zggj6zn7tdujk8tf49yzpu8" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Открыть в Яндекс Картах
+    </a>
+  </section>
+
+  <!-- Wishlist hint -->
+  <div class="wishlist-hint">
+    Для удобства мы создали виш-лист с подарками для Амелии. Просто нажмите на приглянувшийся подарок «Забронировать», чтобы другие гости видели, что подарок уже выбран 💖
+  </div>
+
   <!-- Gifts -->
   <div class="gifts-grid" id="gifts-grid"></div>
+
+  <!-- Reservation modal -->
+  <div class="modal-overlay" id="reserveModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <h3>🎁 Бронирование подарка</h3>
+      <div class="modal-gift-name" id="modalGiftName"></div>
+      <label for="reserveName">Ваше имя (необязательно)</label>
+      <input type="text" id="reserveName" placeholder="Введите имя или оставьте пустым" maxlength="30" />
+      <div class="modal-hint">Оставьте поле пустым, чтобы забронировать анонимно</div>
+      <div class="modal-buttons">
+        <button class="btn btn-cancel" onclick="closeModal()">Отмена</button>
+        <button class="btn btn-confirm" onclick="confirmReserve()">Подтвердить</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <footer class="footer">
@@ -323,6 +553,25 @@
   </footer>
 
   <script>
+    // ===== ГЕНЕРАЦИЯ URL КАРТИНОК WB =====
+    function getWbBasket(vol) {
+      const ranges = [
+        143, 287, 431, 719, 1007, 1061, 1115, 1169, 1313, 1601,
+        1655, 1919, 2045, 2189, 2405
+      ];
+      for (let i = 0; i < ranges.length; i++) {
+        if (vol <= ranges[i]) return String(i + 1).padStart(2, '0');
+      }
+      return String(16 + Math.floor((vol - 2406) / 216)).padStart(2, '0');
+    }
+
+    function getWbImageUrl(productId) {
+      const vol = Math.floor(productId / 100000);
+      const part = Math.floor(productId / 1000);
+      const basket = getWbBasket(vol);
+      return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${productId}/images/big/1.webp`;
+    }
+
     // ===== ПОДАРКИ — РЕДАКТИРУЙТЕ ЗДЕСЬ =====
     const gifts = [
       {
@@ -345,7 +594,7 @@
         id: 3,
         name: "Набор для лепки детский",
         description: "ZAZU-toys — набор для лепки с чемоданчиком-грилем, 6 формочек для разных ингредиентов",
-        image: "https://basket-09.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp",
+        image: "https://basket-10.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/146472439/detail.aspx?size=246541725",
         price: "1 192 ₽"
       },
@@ -361,7 +610,7 @@
         id: 5,
         name: "Рамка-вкладыш Цикл жизни",
         description: "Ulanik — рамка-вкладыш «Жизненный цикл», сортер Монтессори для развития логики",
-        image: "https://basket-17.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
+        image: "https://basket-33.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/615410277/detail.aspx?size=835619819",
         price: "1 474 ₽"
       },
@@ -385,7 +634,7 @@
         id: 8,
         name: "Робот собака",
         description: "IQ BOT — робот-собака на пульте управления, интерактивная игрушка",
-        image: "https://basket-14.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp",
+        image: "https://basket-15.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/226513086/detail.aspx?size=358602578",
         price: "2 240 ₽"
       },
@@ -393,7 +642,7 @@
         id: 9,
         name: "Набор для рисования",
         description: "ПодделычЪ — большой набор для рисования для девочек: карандаши, фломастеры, краски",
-        image: "https://basket-18.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
+        image: "https://basket-35.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673",
         price: "1 295 ₽"
       },
@@ -401,7 +650,7 @@
         id: 10,
         name: "Деревянный алфавит",
         description: "IQtoys — деревянные развивающие игрушки, алфавит для изучения букв",
-        image: "https://basket-16.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
+        image: "https://basket-18.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/286977987/detail.aspx?size=438949379",
         price: "809 ₽"
       },
@@ -409,7 +658,7 @@
         id: 11,
         name: "Раскраски для девочек",
         description: "ALZI — набор раскрасок для девочек с яркими и интересными картинками",
-        image: "https://basket-20.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
+        image: "https://basket-44.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/861392230/detail.aspx?size=1296837436",
         price: "283 ₽"
       },
@@ -417,7 +666,7 @@
         id: 12,
         name: "Раскраска Котики и Животные",
         description: "Раскраска для девочек — котики и животные, милые иллюстрации",
-        image: "https://basket-20.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
+        image: "https://basket-44.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/846100942/detail.aspx?size=1271849664",
         price: "292 ₽"
       },
@@ -425,7 +674,7 @@
         id: 13,
         name: "Пупс с набором доктора",
         description: "UniTrain — кукла-пупс для девочки и набор доктора, игра в больничку",
-        image: "https://basket-16.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
+        image: "https://basket-18.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/289105207/detail.aspx?size=441394293",
         price: "1 958 ₽"
       },
@@ -433,7 +682,7 @@
         id: 14,
         name: "Телефон игрушка",
         description: "Алисюшка — детский развивающий музыкальный телефон на USB, со звуками и мелодиями",
-        image: "https://basket-16.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
+        image: "https://basket-23.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/394261266/detail.aspx?size=570777158",
         price: "575 ₽"
       },
@@ -441,7 +690,7 @@
         id: 15,
         name: "Говорящая карта мира",
         description: "Друг Кузя — развивающая говорящая карта мира с животными, интерактивная игрушка",
-        image: "https://basket-16.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
+        image: "https://basket-27.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/483823060/detail.aspx?size=675270123",
         price: "2 002 ₽"
       }
@@ -460,8 +709,23 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(reserved));
     }
 
+    function handleImgError(img, orderUrl) {
+      // Try to extract product ID from WB URL and compute correct image URL
+      const match = orderUrl && orderUrl.match(/catalog\/(\d+)\//);
+      if (match && !img.dataset.retried) {
+        img.dataset.retried = '1';
+        img.src = getWbImageUrl(parseInt(match[1]));
+        return;
+      }
+      // Show placeholder if retry also fails
+      img.onerror = null;
+      img.style.display = 'none';
+      img.parentElement.insertAdjacentHTML('beforeend',
+        '<div class="gift-image-placeholder">🎁</div>');
+    }
+
     function updateCounter() {
-      const count = Object.values(reserved).filter(Boolean).length;
+      const count = Object.keys(reserved).length;
       const el = document.getElementById("counter");
       const num = document.getElementById("counter-num");
       const total = document.getElementById("counter-total");
@@ -470,12 +734,43 @@
       el.style.display = count > 0 ? "inline-flex" : "none";
     }
 
-    function toggleReserve(id) {
-      reserved[id] = !reserved[id];
+    let pendingReserveId = null;
+
+    function openReserveModal(id) {
+      const gift = gifts.find(g => g.id === id);
+      if (!gift) return;
+      pendingReserveId = id;
+      document.getElementById('modalGiftName').textContent = gift.name;
+      document.getElementById('reserveName').value = '';
+      document.getElementById('reserveModal').classList.add('active');
+      setTimeout(() => document.getElementById('reserveName').focus(), 100);
+    }
+
+    function closeModal() {
+      document.getElementById('reserveModal').classList.remove('active');
+      pendingReserveId = null;
+    }
+
+    function confirmReserve() {
+      if (pendingReserveId === null) return;
+      const name = document.getElementById('reserveName').value.trim();
+      reserved[pendingReserveId] = { name: name || 'Аноним' };
+      saveReserved();
+      closeModal();
+      renderGifts();
+      updateCounter();
+      animateCard(pendingReserveId);
+    }
+
+    function unreserve(id) {
+      delete reserved[id];
       saveReserved();
       renderGifts();
       updateCounter();
+      animateCard(id);
+    }
 
+    function animateCard(id) {
       const card = document.querySelector(`[data-id="${id}"]`);
       if (card) {
         card.classList.add("animating");
@@ -486,13 +781,15 @@
     function renderGifts() {
       const grid = document.getElementById("gifts-grid");
       grid.innerHTML = gifts.map(gift => {
-        const isReserved = reserved[gift.id];
+        const info = reserved[gift.id];
+        const isReserved = !!info;
+        const reservedName = info ? (typeof info === 'object' ? info.name : 'Аноним') : '';
         return `
           <div class="gift-card ${isReserved ? 'reserved' : ''}" data-id="${gift.id}">
-            <div class="badge">❤ Забронировано</div>
+            <div class="badge">❤ Забронировано${reservedName ? `<span class="reserved-by"> (${reservedName})</span>` : ''}</div>
             <div class="gift-image-wrap">
-              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy" />
-              <div class="kitty-tag">🐱 Hello Kitty</div>
+              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy"
+                onerror="handleImgError(this, '${gift.orderUrl}')" />
             </div>
             <div class="gift-body">
               <h3>${gift.name}</h3>
@@ -503,7 +800,7 @@
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   Где купить
                 </a>
-                <button class="btn ${isReserved ? 'btn-unreserve' : 'btn-reserve'}" onclick="toggleReserve(${gift.id})">
+                <button class="btn ${isReserved ? 'btn-unreserve' : 'btn-reserve'}" onclick="${isReserved ? `unreserve(${gift.id})` : `openReserveModal(${gift.id})`}">
                   <svg class="icon" viewBox="0 0 24 24" fill="${isReserved ? 'none' : 'currentColor'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
                   ${isReserved ? 'Отменить' : 'Забронировать'}
                 </button>
@@ -513,6 +810,13 @@
         `;
       }).join('');
     }
+
+    // Keyboard support for modal
+    document.addEventListener('keydown', function(e) {
+      if (!document.getElementById('reserveModal').classList.contains('active')) return;
+      if (e.key === 'Escape') closeModal();
+      if (e.key === 'Enter') confirmReserve();
+    });
 
     renderGifts();
     updateCounter();
