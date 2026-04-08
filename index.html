@@ -172,17 +172,14 @@
       position: relative;
       background: #fce4ec;
     }
-    .kitty-tag {
-      position: absolute;
-      bottom: 8px;
-      left: 8px;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(4px);
-      padding: 4px 10px;
-      border-radius: 50px;
-      font-size: 11px;
-      color: #ec407a;
-      font-weight: 500;
+    .gift-image-placeholder {
+      width: 100%;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #fce4ec, #fff0f3);
+      font-size: 48px;
     }
 
     .gift-body { padding: 16px; }
@@ -323,6 +320,25 @@
   </footer>
 
   <script>
+    // ===== ГЕНЕРАЦИЯ URL КАРТИНОК WB =====
+    function getWbBasket(vol) {
+      const ranges = [
+        143, 287, 431, 719, 1007, 1061, 1115, 1169, 1313, 1601,
+        1655, 1919, 2045, 2189, 2405
+      ];
+      for (let i = 0; i < ranges.length; i++) {
+        if (vol <= ranges[i]) return String(i + 1).padStart(2, '0');
+      }
+      return String(16 + Math.floor((vol - 2406) / 216)).padStart(2, '0');
+    }
+
+    function getWbImageUrl(productId) {
+      const vol = Math.floor(productId / 100000);
+      const part = Math.floor(productId / 1000);
+      const basket = getWbBasket(vol);
+      return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${productId}/images/big/1.webp`;
+    }
+
     // ===== ПОДАРКИ — РЕДАКТИРУЙТЕ ЗДЕСЬ =====
     const gifts = [
       {
@@ -345,7 +361,7 @@
         id: 3,
         name: "Набор для лепки детский",
         description: "ZAZU-toys — набор для лепки с чемоданчиком-грилем, 6 формочек для разных ингредиентов",
-        image: "https://basket-09.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp",
+        image: "https://basket-10.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/146472439/detail.aspx?size=246541725",
         price: "1 192 ₽"
       },
@@ -361,7 +377,7 @@
         id: 5,
         name: "Рамка-вкладыш Цикл жизни",
         description: "Ulanik — рамка-вкладыш «Жизненный цикл», сортер Монтессори для развития логики",
-        image: "https://basket-17.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
+        image: "https://basket-33.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/615410277/detail.aspx?size=835619819",
         price: "1 474 ₽"
       },
@@ -385,7 +401,7 @@
         id: 8,
         name: "Робот собака",
         description: "IQ BOT — робот-собака на пульте управления, интерактивная игрушка",
-        image: "https://basket-14.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp",
+        image: "https://basket-15.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/226513086/detail.aspx?size=358602578",
         price: "2 240 ₽"
       },
@@ -393,7 +409,7 @@
         id: 9,
         name: "Набор для рисования",
         description: "ПодделычЪ — большой набор для рисования для девочек: карандаши, фломастеры, краски",
-        image: "https://basket-18.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
+        image: "https://basket-35.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673",
         price: "1 295 ₽"
       },
@@ -401,7 +417,7 @@
         id: 10,
         name: "Деревянный алфавит",
         description: "IQtoys — деревянные развивающие игрушки, алфавит для изучения букв",
-        image: "https://basket-16.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
+        image: "https://basket-18.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/286977987/detail.aspx?size=438949379",
         price: "809 ₽"
       },
@@ -409,7 +425,7 @@
         id: 11,
         name: "Раскраски для девочек",
         description: "ALZI — набор раскрасок для девочек с яркими и интересными картинками",
-        image: "https://basket-20.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
+        image: "https://basket-44.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/861392230/detail.aspx?size=1296837436",
         price: "283 ₽"
       },
@@ -417,7 +433,7 @@
         id: 12,
         name: "Раскраска Котики и Животные",
         description: "Раскраска для девочек — котики и животные, милые иллюстрации",
-        image: "https://basket-20.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
+        image: "https://basket-44.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/846100942/detail.aspx?size=1271849664",
         price: "292 ₽"
       },
@@ -425,7 +441,7 @@
         id: 13,
         name: "Пупс с набором доктора",
         description: "UniTrain — кукла-пупс для девочки и набор доктора, игра в больничку",
-        image: "https://basket-16.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
+        image: "https://basket-18.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/289105207/detail.aspx?size=441394293",
         price: "1 958 ₽"
       },
@@ -433,7 +449,7 @@
         id: 14,
         name: "Телефон игрушка",
         description: "Алисюшка — детский развивающий музыкальный телефон на USB, со звуками и мелодиями",
-        image: "https://basket-16.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
+        image: "https://basket-23.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/394261266/detail.aspx?size=570777158",
         price: "575 ₽"
       },
@@ -441,7 +457,7 @@
         id: 15,
         name: "Говорящая карта мира",
         description: "Друг Кузя — развивающая говорящая карта мира с животными, интерактивная игрушка",
-        image: "https://basket-16.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
+        image: "https://basket-27.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/483823060/detail.aspx?size=675270123",
         price: "2 002 ₽"
       }
@@ -458,6 +474,21 @@
 
     function saveReserved() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(reserved));
+    }
+
+    function handleImgError(img, orderUrl) {
+      // Try to extract product ID from WB URL and compute correct image URL
+      const match = orderUrl && orderUrl.match(/catalog\/(\d+)\//);
+      if (match && !img.dataset.retried) {
+        img.dataset.retried = '1';
+        img.src = getWbImageUrl(parseInt(match[1]));
+        return;
+      }
+      // Show placeholder if retry also fails
+      img.onerror = null;
+      img.style.display = 'none';
+      img.parentElement.insertAdjacentHTML('beforeend',
+        '<div class="gift-image-placeholder">🎁</div>');
     }
 
     function updateCounter() {
@@ -491,8 +522,8 @@
           <div class="gift-card ${isReserved ? 'reserved' : ''}" data-id="${gift.id}">
             <div class="badge">❤ Забронировано</div>
             <div class="gift-image-wrap">
-              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy" />
-              <div class="kitty-tag">🐱 Hello Kitty</div>
+              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy"
+                onerror="handleImgError(this, '${gift.orderUrl}')" />
             </div>
             <div class="gift-body">
               <h3>${gift.name}</h3>
