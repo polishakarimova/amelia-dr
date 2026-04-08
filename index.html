@@ -489,7 +489,7 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="kitty-avatar"><img src="amelia.jpg" alt="Амелия" /></div>
+    <div class="kitty-avatar"><img src="amelia.jpg" alt="Амелия" onerror="this.onerror=null;this.parentElement.innerHTML='🎀';this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';this.parentElement.style.fontSize='50px'" /></div>
     <h1>С Днём Рождения, Амелия!</h1>
     <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
     <div class="counter" id="counter" style="display:none">
@@ -716,7 +716,16 @@
 
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) reserved = JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Migrate old format: true/false -> {name} / delete
+        for (const [k, v] of Object.entries(parsed)) {
+          if (v && typeof v === 'object') reserved[k] = v;
+          else if (v === true) reserved[k] = { name: 'Аноним' };
+          // false entries are dropped (unreserved)
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(reserved));
+      }
     } catch(e) {}
 
     function saveReserved() {
