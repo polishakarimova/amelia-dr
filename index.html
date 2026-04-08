@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎀 День Рождения Амелии — Виш-лист</title>
+  <meta name="description" content="Виш-лист подарков на День Рождения Амелии. Выберите и забронируйте подарок!">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(180deg, #fff0f3 0%, #fce4ec 30%, #fff3e0 70%, #fff0f3 100%);
+      min-height: 100vh;
+      color: #4a2040;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Floating decorations */
+    .floating {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.15;
+      font-size: 28px;
+      animation: float 6s ease-in-out infinite;
+    }
+    .floating:nth-child(1) { top: 5%; left: 5%; animation-delay: 0s; }
+    .floating:nth-child(2) { top: 12%; right: 8%; animation-delay: 1.5s; font-size: 22px; }
+    .floating:nth-child(3) { top: 30%; left: 10%; animation-delay: 3s; font-size: 18px; }
+    .floating:nth-child(4) { top: 50%; right: 5%; animation-delay: 0.8s; font-size: 24px; }
+    .floating:nth-child(5) { top: 70%; left: 7%; animation-delay: 2.2s; font-size: 20px; }
+    .floating:nth-child(6) { top: 85%; right: 12%; animation-delay: 4s; font-size: 26px; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(5deg); }
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 40px 20px 20px;
+    }
+
+    .kitty-avatar {
+      width: 100px;
+      height: 100px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: 0 4px 20px rgba(236, 64, 122, 0.2);
+      border: 4px solid #f8bbd0;
+      font-size: 50px;
+    }
+
+    .header h1 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 28px;
+      font-weight: 700;
+      color: #e91e8a;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .header .subtitle {
+      font-size: 16px;
+      color: #f06292;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .header .description {
+      font-size: 13px;
+      color: #e48aaf;
+      max-width: 400px;
+      margin: 0 auto 16px;
+      line-height: 1.5;
+    }
+
+    .counter {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #fce4ec;
+      color: #e91e8a;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    /* Gift grid */
+    .gifts-grid {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+    }
+
+    @media (min-width: 580px) {
+      .gifts-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 900px) {
+      .gifts-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+
+    /* Gift card */
+    .gift-card {
+      background: white;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 2px solid #fce4ec;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .gift-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(236, 64, 122, 0.15);
+    }
+    .gift-card.reserved {
+      border-color: #f48fb1;
+      opacity: 0.8;
+    }
+
+    .gift-card .badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 2;
+      background: #ec407a;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(236, 64, 122, 0.3);
+    }
+    .gift-card.reserved .badge { display: flex; }
+
+    .gift-image {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      transition: filter 0.3s, transform 0.3s;
+    }
+    .gift-card.reserved .gift-image {
+      filter: grayscale(30%) brightness(0.95);
+    }
+    .gift-card:not(.reserved):hover .gift-image {
+      transform: scale(1.03);
+    }
+    .gift-image-wrap {
+      overflow: hidden;
+      position: relative;
+      background: #fce4ec;
+    }
+    .kitty-tag {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 11px;
+      color: #ec407a;
+      font-weight: 500;
+    }
+
+    .gift-body { padding: 16px; }
+    .gift-body h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #37162e;
+      margin-bottom: 6px;
+    }
+    .gift-body .desc {
+      font-size: 13px;
+      color: #8e6a82;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .gift-body .price {
+      font-size: 19px;
+      font-weight: 700;
+      color: #e91e8a;
+      margin-bottom: 14px;
+    }
+
+    .buttons { display: flex; gap: 8px; }
+    .btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px 10px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-order {
+      background: linear-gradient(135deg, #f48fb1, #ec407a);
+      color: white;
+    }
+    .btn-order:hover { background: linear-gradient(135deg, #ec407a, #d81b60); }
+
+    .btn-reserve {
+      background: linear-gradient(135deg, #ffcc80, #f48fb1);
+      color: white;
+    }
+    .btn-reserve:hover { background: linear-gradient(135deg, #ffb74d, #ec407a); }
+
+    .btn-unreserve {
+      background: #f5f5f5;
+      color: #999;
+    }
+    .btn-unreserve:hover { background: #eee; color: #777; }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 20px 16px 40px;
+    }
+    .footer .divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .footer .line {
+      width: 50px;
+      height: 1px;
+      background: #f8bbd0;
+    }
+    .footer p {
+      font-size: 13px;
+      color: #e0a0bc;
+    }
+
+    /* SVG icons inline */
+    .icon { width: 14px; height: 14px; flex-shrink: 0; }
+
+    @media (max-width: 400px) {
+      .header h1 { font-size: 24px; }
+      .gift-image { height: 170px; }
+      .btn { padding: 11px 8px; font-size: 12px; }
+    }
+
+    /* Animation for reserve toggle */
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    .gift-card.animating { animation: pop 0.3s ease; }
+  </style>
+</head>
+<body>
+
+  <!-- Floating decorations -->
+  <div class="floating">🎀</div>
+  <div class="floating">💖</div>
+  <div class="floating">⭐</div>
+  <div class="floating">🎀</div>
+  <div class="floating">💕</div>
+  <div class="floating">🌸</div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="kitty-avatar">🎀</div>
+    <h1>С Днём Рождения, Амелия!</h1>
+    <div class="subtitle">🎉 Виш-лист подарков 🎂</div>
+    <p class="description">
+      Выберите подарок для нашей маленькой принцессы! Нажмите «Забронировать», чтобы другие гости знали, что этот подарок уже выбран 💖
+    </p>
+    <div class="counter" id="counter" style="display:none">
+      🎁 Забронировано: <span id="counter-num">0</span> из <span id="counter-total">0</span>
+    </div>
+  </header>
+
+  <!-- Gifts -->
+  <div class="gifts-grid" id="gifts-grid"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="divider">
+      <span class="line"></span>
+      <span style="font-size:22px">🎀</span>
+      <span class="line"></span>
+    </div>
+    <p>С любовью для Амелии 💕</p>
+  </footer>
+
+  <script>
+    // ===== ПОДАРКИ — РЕДАКТИРУЙТЕ ЗДЕСЬ =====
+    const gifts = [
+      {
+        id: 1,
+        name: "Детская декоративная косметика — чемоданчик",
+        description: "Большой чемоданчик косметики для девочек: тени, помады, блески, лаки, браслетик и аксессуары",
+        image: "https://basket-13.wbbasket.ru/vol1975/part197568/197568029/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/197568029/detail.aspx?size=320318581",
+        price: "1 993 ₽"
+      },
+      {
+        id: 2,
+        name: "Деревянный игровой набор «Салат»",
+        description: "Детки36 — деревянный набор для игры в кухню: салатник, овощи, столовые приборы и соусы",
+        image: "https://basket-13.wbbasket.ru/vol2003/part200345/200345516/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/200345516/detail.aspx?size=323925472",
+        price: "666 ₽"
+      },
+      {
+        id: 3,
+        name: "Набор для лепки детский",
+        description: "ZAZU-toys — набор для лепки с чемоданчиком-грилем, 6 формочек для разных ингредиентов",
+        image: "https://basket-09.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/146472439/detail.aspx?size=246541725",
+        price: "1 192 ₽"
+      },
+      {
+        id: 4,
+        name: "Сортер-вкладыш Мишки",
+        description: "Деревянный сортер-вкладыш, конструктор-персонаж, головоломка для малышей",
+        image: "https://basket-12.wbbasket.ru/vol1878/part187830/187830937/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/187830937/detail.aspx?size=307838308",
+        price: "565 ₽"
+      },
+      {
+        id: 5,
+        name: "Рамка-вкладыш Цикл жизни",
+        description: "Ulanik — рамка-вкладыш «Жизненный цикл», сортер Монтессори для развития логики",
+        image: "https://basket-17.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/615410277/detail.aspx?size=835619819",
+        price: "1 474 ₽"
+      },
+      {
+        id: 6,
+        name: "Детская гитара",
+        description: "Гитара для малышей — отличный первый музыкальный инструмент",
+        image: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop",
+        orderUrl: "https://ozon.ru/t/aHRh3Wv",
+        price: "2 845 ₽"
+      },
+      {
+        id: 7,
+        name: "Музыкальная книга БЕМБИ",
+        description: "Эксмо — музыкальная интерактивная книга с плеером БЕМБИ для малышей",
+        image: "https://basket-10.wbbasket.ru/vol1444/part144462/144462664/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/144462664/detail.aspx?size=243690013",
+        price: "1 931 ₽"
+      },
+      {
+        id: 8,
+        name: "Робот собака",
+        description: "IQ BOT — робот-собака на пульте управления, интерактивная игрушка",
+        image: "https://basket-14.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/226513086/detail.aspx?size=358602578",
+        price: "2 240 ₽"
+      },
+      {
+        id: 9,
+        name: "Набор для рисования",
+        description: "ПодделычЪ — большой набор для рисования для девочек: карандаши, фломастеры, краски",
+        image: "https://basket-18.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673",
+        price: "1 295 ₽"
+      },
+      {
+        id: 10,
+        name: "Деревянный алфавит",
+        description: "IQtoys — деревянные развивающие игрушки, алфавит для изучения букв",
+        image: "https://basket-16.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/286977987/detail.aspx?size=438949379",
+        price: "809 ₽"
+      },
+      {
+        id: 11,
+        name: "Раскраски для девочек",
+        description: "ALZI — набор раскрасок для девочек с яркими и интересными картинками",
+        image: "https://basket-20.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/861392230/detail.aspx?size=1296837436",
+        price: "283 ₽"
+      },
+      {
+        id: 12,
+        name: "Раскраска Котики и Животные",
+        description: "Раскраска для девочек — котики и животные, милые иллюстрации",
+        image: "https://basket-20.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/846100942/detail.aspx?size=1271849664",
+        price: "292 ₽"
+      },
+      {
+        id: 13,
+        name: "Пупс с набором доктора",
+        description: "UniTrain — кукла-пупс для девочки и набор доктора, игра в больничку",
+        image: "https://basket-16.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/289105207/detail.aspx?size=441394293",
+        price: "1 958 ₽"
+      },
+      {
+        id: 14,
+        name: "Телефон игрушка",
+        description: "Алисюшка — детский развивающий музыкальный телефон на USB, со звуками и мелодиями",
+        image: "https://basket-16.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/394261266/detail.aspx?size=570777158",
+        price: "575 ₽"
+      },
+      {
+        id: 15,
+        name: "Говорящая карта мира",
+        description: "Друг Кузя — развивающая говорящая карта мира с животными, интерактивная игрушка",
+        image: "https://basket-16.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
+        orderUrl: "https://www.wildberries.ru/catalog/483823060/detail.aspx?size=675270123",
+        price: "2 002 ₽"
+      }
+    ];
+    // ===== КОНЕЦ СПИСКА ПОДАРКОВ =====
+
+    const STORAGE_KEY = "amelia-wishlist-reserved";
+    let reserved = {};
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) reserved = JSON.parse(saved);
+    } catch(e) {}
+
+    function saveReserved() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(reserved));
+    }
+
+    function updateCounter() {
+      const count = Object.values(reserved).filter(Boolean).length;
+      const el = document.getElementById("counter");
+      const num = document.getElementById("counter-num");
+      const total = document.getElementById("counter-total");
+      num.textContent = count;
+      total.textContent = gifts.length;
+      el.style.display = count > 0 ? "inline-flex" : "none";
+    }
+
+    function toggleReserve(id) {
+      reserved[id] = !reserved[id];
+      saveReserved();
+      renderGifts();
+      updateCounter();
+
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (card) {
+        card.classList.add("animating");
+        setTimeout(() => card.classList.remove("animating"), 300);
+      }
+    }
+
+    function renderGifts() {
+      const grid = document.getElementById("gifts-grid");
+      grid.innerHTML = gifts.map(gift => {
+        const isReserved = reserved[gift.id];
+        return `
+          <div class="gift-card ${isReserved ? 'reserved' : ''}" data-id="${gift.id}">
+            <div class="badge">❤ Забронировано</div>
+            <div class="gift-image-wrap">
+              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy" />
+              <div class="kitty-tag">🐱 Hello Kitty</div>
+            </div>
+            <div class="gift-body">
+              <h3>${gift.name}</h3>
+              <p class="desc">${gift.description}</p>
+              ${gift.price ? `<div class="price">${gift.price}</div>` : ''}
+              <div class="buttons">
+                <a href="${gift.orderUrl}" target="_blank" rel="noopener" class="btn btn-order">
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Где купить
+                </a>
+                <button class="btn ${isReserved ? 'btn-unreserve' : 'btn-reserve'}" onclick="toggleReserve(${gift.id})">
+                  <svg class="icon" viewBox="0 0 24 24" fill="${isReserved ? 'none' : 'currentColor'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  ${isReserved ? 'Отменить' : 'Забронировать'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderGifts();
+    updateCounter();
+  </script>
+</body>
+</html>
