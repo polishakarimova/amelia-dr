@@ -556,7 +556,13 @@
     <p>С любовью для Амелии 💕</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // ===== SUPABASE =====
+    const SUPABASE_URL = 'https://onzlncuxpqzsjefdbzxm.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_xZaPIjPHT42S-y9v9EmfHg_U-o92-q7';
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     // ===== ГЕНЕРАЦИЯ URL КАРТИНОК WB =====
     function getWbBasket(vol) {
       const ranges = [
@@ -711,26 +717,20 @@
     ];
     // ===== КОНЕЦ СПИСКА ПОДАРКОВ =====
 
-    const STORAGE_KEY = "amelia-wishlist-reserved";
     let reserved = {};
 
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        // Migrate old format: true/false -> {name} / delete
-        for (const [k, v] of Object.entries(parsed)) {
-          if (v && typeof v === 'object') reserved[k] = v;
-          else if (v === true) reserved[k] = { name: 'Аноним' };
-          // false entries are dropped (unreserved)
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(reserved));
-      }
-    } catch(e) {}
-
-    function saveReserved() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(reserved));
+    async function loadReserved() {
+      const { data } = await sb.from('reservations').select('*');
+      reserved = {};
+      if (data) data.forEach(r => { reserved[r.gift_id] = { name: r.name }; });
+      renderGifts();
+      updateCounter();
     }
+
+    // Realtime: обновляем при изменениях от других гостей
+    sb.channel('reservations')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, () => loadReserved())
+      .subscribe();
 
     function handleImgError(img, orderUrl) {
       const match = orderUrl && orderUrl.match(/catalog\/(\d+)\//);
@@ -784,20 +784,21 @@
       pendingReserveId = null;
     }
 
-    function confirmReserve() {
+    async function confirmReserve() {
       if (pendingReserveId === null) return;
-      const name = document.getElementById('reserveName').value.trim();
-      reserved[pendingReserveId] = { name: name || 'Аноним' };
-      saveReserved();
+      const name = document.getElementById('reserveName').value.trim() || 'Аноним';
+      const id = pendingReserveId;
+      await sb.from('reservations').upsert({ gift_id: id, name });
+      reserved[id] = { name };
       closeModal();
       renderGifts();
       updateCounter();
-      animateCard(pendingReserveId);
+      animateCard(id);
     }
 
-    function unreserve(id) {
+    async function unreserve(id) {
+      await sb.from('reservations').delete().eq('gift_id', id);
       delete reserved[id];
-      saveReserved();
       renderGifts();
       updateCounter();
       animateCard(id);
@@ -853,6 +854,7 @@
 
     renderGifts();
     updateCounter();
+    loadReserved();
   </script>
 </body>
 </html>
