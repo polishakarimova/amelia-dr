@@ -281,6 +281,100 @@
       100% { transform: scale(1); }
     }
     .gift-card.animating { animation: pop 0.3s ease; }
+
+    /* Invitation section */
+    .invitation {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 10px;
+      padding: 28px 24px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 2px solid #fce4ec;
+      text-align: center;
+    }
+    .invitation h2 {
+      font-family: 'Comfortaa', cursive;
+      font-size: 22px;
+      color: #e91e8a;
+      margin-bottom: 16px;
+    }
+    .invitation p {
+      font-size: 14px;
+      color: #4a2040;
+      line-height: 1.7;
+      margin-bottom: 12px;
+    }
+    .invitation .date-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+      color: #c2185b;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 8px 20px;
+      border-radius: 50px;
+      margin-bottom: 16px;
+    }
+
+    /* Address section */
+    .address-block {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 20px;
+      padding: 22px 24px;
+      background: white;
+      border-radius: 24px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+      border: 2px solid #fce4ec;
+      text-align: center;
+    }
+    .address-block .address-title {
+      font-family: 'Comfortaa', cursive;
+      font-size: 17px;
+      font-weight: 700;
+      color: #e91e8a;
+      margin-bottom: 8px;
+    }
+    .address-block .address-text {
+      font-size: 14px;
+      color: #4a2040;
+      line-height: 1.6;
+      margin-bottom: 14px;
+    }
+    .btn-map {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #ec407a, #e91e8a);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.3);
+    }
+    .btn-map:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 64, 122, 0.4);
+    }
+
+    /* Wishlist hint */
+    .wishlist-hint {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 6px;
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 13px;
+      color: #e48aaf;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -297,14 +391,42 @@
   <header class="header">
     <div class="kitty-avatar">🎀</div>
     <h1>С Днём Рождения, Амелия!</h1>
-    <div class="subtitle">🎉 Виш-лист подарков 🎂</div>
-    <p class="description">
-      Выберите подарок для нашей маленькой принцессы! Нажмите «Забронировать», чтобы другие гости знали, что этот подарок уже выбран 💖
-    </p>
+    <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
     <div class="counter" id="counter" style="display:none">
       🎁 Забронировано: <span id="counter-num">0</span> из <span id="counter-total">0</span>
     </div>
   </header>
+
+  <!-- Invitation -->
+  <section class="invitation">
+    <h2>🎈 Приглашение на День Рождения Амелии!</h2>
+    <div class="date-badge">📅 25 апреля 2026</div>
+    <p>
+      Приглашаем вас на День Рождения Амелии, которое состоится <strong>25 апреля 2026</strong> года!
+    </p>
+    <p>
+      Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉
+    </p>
+  </section>
+
+  <!-- Address -->
+  <section class="address-block">
+    <div class="address-title">📍 Место проведения</div>
+    <div class="address-text">
+      Васильковая улица, 4<br>
+      посёлок Прибрежное, Гурьевский муниципальный округ,<br>
+      Калининградская область
+    </div>
+    <a class="btn-map" href="https://yandex.ru/maps?ol=geo&text=%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D1%8C%D0%BA%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0,%204&sll=20.636647,54.701829&sspn=0.004755,0.008211&si=z14zggj6zn7tdujk8tf49yzpu8" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Открыть в Яндекс Картах
+    </a>
+  </section>
+
+  <!-- Wishlist hint -->
+  <div class="wishlist-hint">
+    Для удобства мы создали виш-лист с подарками для Амелии. Просто нажмите на приглянувшийся подарок «Забронировать», чтобы другие гости видели, что подарок уже выбран 💖
+  </div>
 
   <!-- Gifts -->
   <div class="gifts-grid" id="gifts-grid"></div>
