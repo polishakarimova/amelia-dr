@@ -49,17 +49,21 @@
     }
 
     .kitty-avatar {
-      width: 100px;
-      height: 100px;
-      background: white;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       margin: 0 auto 16px;
       box-shadow: 0 4px 20px rgba(236, 64, 122, 0.2);
       border: 4px solid #f8bbd0;
-      font-size: 50px;
+      overflow: hidden;
+      background: #fce4ec;
+    }
+    .kitty-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 20%;
+      display: block;
     }
 
     .header h1 {
@@ -485,7 +489,7 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="kitty-avatar">🎀</div>
+    <div class="kitty-avatar"><img src="amelia.jpg" alt="Амелия" /></div>
     <h1>С Днём Рождения, Амелия!</h1>
     <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
     <div class="counter" id="counter" style="display:none">
