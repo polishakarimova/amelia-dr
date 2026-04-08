@@ -562,13 +562,23 @@
       for (let i = 0; i < ranges.length; i++) {
         if (vol <= ranges[i]) return String(i + 1).padStart(2, '0');
       }
-      return String(16 + Math.floor((vol - 2406) / 216)).padStart(2, '0');
+      return '16';
     }
 
-    function getWbImageUrl(productId) {
-      const vol = Math.floor(productId / 100000);
-      const part = Math.floor(productId / 1000);
-      const basket = getWbBasket(vol);
+    // Для товаров с vol > 2405 — перебираем диапазон корзин
+    function getBasketCandidates(vol) {
+      if (vol <= 2405) return [];
+      const diff = vol - 2406;
+      const lo = 16 + Math.floor(diff / 300);
+      const hi = 16 + Math.ceil(diff / 190);
+      const result = [];
+      for (let b = lo; b <= hi; b++) {
+        result.push(String(b).padStart(2, '0'));
+      }
+      return result;
+    }
+
+    function buildWbUrl(basket, vol, part, productId) {
       return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${productId}/images/big/1.webp`;
     }
 
@@ -610,7 +620,7 @@
         id: 5,
         name: "Рамка-вкладыш Цикл жизни",
         description: "Ulanik — рамка-вкладыш «Жизненный цикл», сортер Монтессори для развития логики",
-        image: "https://basket-33.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/615410277/detail.aspx?size=835619819",
         price: "1 474 ₽"
       },
@@ -642,7 +652,7 @@
         id: 9,
         name: "Набор для рисования",
         description: "ПодделычЪ — большой набор для рисования для девочек: карандаши, фломастеры, краски",
-        image: "https://basket-35.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673",
         price: "1 295 ₽"
       },
@@ -650,7 +660,7 @@
         id: 10,
         name: "Деревянный алфавит",
         description: "IQtoys — деревянные развивающие игрушки, алфавит для изучения букв",
-        image: "https://basket-18.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/286977987/detail.aspx?size=438949379",
         price: "809 ₽"
       },
@@ -658,7 +668,7 @@
         id: 11,
         name: "Раскраски для девочек",
         description: "ALZI — набор раскрасок для девочек с яркими и интересными картинками",
-        image: "https://basket-44.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/861392230/detail.aspx?size=1296837436",
         price: "283 ₽"
       },
@@ -666,7 +676,7 @@
         id: 12,
         name: "Раскраска Котики и Животные",
         description: "Раскраска для девочек — котики и животные, милые иллюстрации",
-        image: "https://basket-44.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/846100942/detail.aspx?size=1271849664",
         price: "292 ₽"
       },
@@ -674,7 +684,7 @@
         id: 13,
         name: "Пупс с набором доктора",
         description: "UniTrain — кукла-пупс для девочки и набор доктора, игра в больничку",
-        image: "https://basket-18.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/289105207/detail.aspx?size=441394293",
         price: "1 958 ₽"
       },
@@ -682,7 +692,7 @@
         id: 14,
         name: "Телефон игрушка",
         description: "Алисюшка — детский развивающий музыкальный телефон на USB, со звуками и мелодиями",
-        image: "https://basket-23.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/394261266/detail.aspx?size=570777158",
         price: "575 ₽"
       },
@@ -690,7 +700,7 @@
         id: 15,
         name: "Говорящая карта мира",
         description: "Друг Кузя — развивающая говорящая карта мира с животными, интерактивная игрушка",
-        image: "https://basket-27.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
+        image: "https://basket-16.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
         orderUrl: "https://www.wildberries.ru/catalog/483823060/detail.aspx?size=675270123",
         price: "2 002 ₽"
       }
@@ -710,14 +720,24 @@
     }
 
     function handleImgError(img, orderUrl) {
-      // Try to extract product ID from WB URL and compute correct image URL
       const match = orderUrl && orderUrl.match(/catalog\/(\d+)\//);
-      if (match && !img.dataset.retried) {
-        img.dataset.retried = '1';
-        img.src = getWbImageUrl(parseInt(match[1]));
-        return;
+      if (!match) { showPlaceholder(img); return; }
+
+      const productId = parseInt(match[1]);
+      const vol = Math.floor(productId / 100000);
+      const part = Math.floor(productId / 1000);
+      const tried = parseInt(img.dataset.tried || '0');
+      const candidates = getBasketCandidates(vol);
+
+      if (tried < candidates.length) {
+        img.dataset.tried = String(tried + 1);
+        img.src = buildWbUrl(candidates[tried], vol, part, productId);
+      } else {
+        showPlaceholder(img);
       }
-      // Show placeholder if retry also fails
+    }
+
+    function showPlaceholder(img) {
       img.onerror = null;
       img.style.display = 'none';
       img.parentElement.insertAdjacentHTML('beforeend',
