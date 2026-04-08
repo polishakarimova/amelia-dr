@@ -563,6 +563,17 @@
     const SUPABASE_KEY = 'sb_publishable_xZaPIjPHT42S-y9v9EmfHg_U-o92-q7';
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Уникальный ID устройства — чтобы отменить бронь мог только тот, кто её поставил
+    function getDeviceId() {
+      let id = localStorage.getItem('amelia-device-id');
+      if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem('amelia-device-id', id);
+      }
+      return id;
+    }
+    const DEVICE_ID = getDeviceId();
+
     // ===== ГЕНЕРАЦИЯ URL КАРТИНОК WB =====
     function getWbBasket(vol) {
       const ranges = [
@@ -722,7 +733,7 @@
     async function loadReserved() {
       const { data } = await sb.from('reservations').select('*');
       reserved = {};
-      if (data) data.forEach(r => { reserved[r.gift_id] = { name: r.name }; });
+      if (data) data.forEach(r => { reserved[r.gift_id] = { name: r.name, device_id: r.device_id }; });
       renderGifts();
       updateCounter();
     }
@@ -788,8 +799,8 @@
       if (pendingReserveId === null) return;
       const name = document.getElementById('reserveName').value.trim() || 'Аноним';
       const id = pendingReserveId;
-      await sb.from('reservations').upsert({ gift_id: id, name });
-      reserved[id] = { name };
+      await sb.from('reservations').upsert({ gift_id: id, name, device_id: DEVICE_ID });
+      reserved[id] = { name, device_id: DEVICE_ID };
       closeModal();
       renderGifts();
       updateCounter();
@@ -817,7 +828,18 @@
       grid.innerHTML = gifts.map(gift => {
         const info = reserved[gift.id];
         const isReserved = !!info;
-        const reservedName = info ? (typeof info === 'object' ? info.name : 'Аноним') : '';
+        const isMine = info && info.device_id === DEVICE_ID;
+        const reservedName = info ? info.name || 'Аноним' : '';
+        let reserveBtn = '';
+        if (!isReserved) {
+          reserveBtn = `<button class="btn btn-reserve" onclick="openReserveModal(${gift.id})">
+            <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Забронировать</button>`;
+        } else if (isMine) {
+          reserveBtn = `<button class="btn btn-unreserve" onclick="unreserve(${gift.id})">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Отменить</button>`;
+        }
         return `
           <div class="gift-card ${isReserved ? 'reserved' : ''}" data-id="${gift.id}">
             <div class="badge">❤ Забронировано${reservedName ? `<span class="reserved-by"> (${reservedName})</span>` : ''}</div>
@@ -834,10 +856,7 @@
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                   Где купить
                 </a>
-                <button class="btn ${isReserved ? 'btn-unreserve' : 'btn-reserve'}" onclick="${isReserved ? `unreserve(${gift.id})` : `openReserveModal(${gift.id})`}">
-                  <svg class="icon" viewBox="0 0 24 24" fill="${isReserved ? 'none' : 'currentColor'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                  ${isReserved ? 'Отменить' : 'Забронировать'}
-                </button>
+                ${reserveBtn}
               </div>
             </div>
           </div>
