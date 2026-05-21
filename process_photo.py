@@ -2,7 +2,7 @@
 """
 Helper script: crop and resize a photo for the avatar.
 Usage: python3 process_photo.py /path/to/original_photo.jpg
-Creates amelia.jpg (cropped square, 400x400) in the current directory.
+Creates avatar.jpg (cropped square, 400x400) in the current directory.
 """
 import sys
 from PIL import Image
@@ -23,5 +23,5 @@ img_cropped = img.crop((left, top, left + size, top + size))
 
 # Resize to 400x400 for web
 img_cropped = img_cropped.resize((400, 400), Image.LANCZOS)
-img_cropped.save("amelia.jpg", "JPEG", quality=85)
-print("Saved amelia.jpg (400x400)")
+img_cropped.save("avatar.jpg", "JPEG", quality=85)
+print("Saved avatar.jpg (400x400)")

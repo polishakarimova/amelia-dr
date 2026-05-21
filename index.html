@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎀 День Рождения Амелии — Виш-лист</title>
-  <meta name="description" content="Виш-лист подарков на День Рождения Амелии. Выберите и забронируйте подарок!">
+  <title>🎀 Демо-вишлист подарков</title>
+  <meta name="description" content="Демо-вишлист подарков: выберите товар, откройте ссылку на магазин и забронируйте подарок.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -64,6 +64,14 @@
       object-fit: cover;
       object-position: center 20%;
       display: block;
+    }
+    .avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 50px;
     }
 
     .header h1 {
@@ -482,6 +490,18 @@
       color: #e48aaf;
       line-height: 1.6;
     }
+
+    .sync-note {
+      position: relative;
+      z-index: 1;
+      max-width: 620px;
+      margin: 0 auto 10px;
+      padding: 0 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #b97998;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -496,9 +516,9 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="kitty-avatar"><img src="amelia.jpg" alt="Амелия" onerror="this.onerror=null;this.parentElement.innerHTML='🎀';this.parentElement.style.display='flex';this.parentElement.style.alignItems='center';this.parentElement.style.justifyContent='center';this.parentElement.style.fontSize='50px'" /></div>
-    <h1>С Днём Рождения, Амелия!</h1>
-    <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
+    <div class="kitty-avatar"><div class="avatar-placeholder">🎀</div></div>
+    <h1>Виш-лист подарков</h1>
+    <div class="subtitle">🎉 Пример страницы для праздника 🎂</div>
     <div class="counter" id="counter" style="display:none">
       🎁 Забронировано: <span id="counter-num">0</span> из <span id="counter-total">0</span>
     </div>
@@ -506,34 +526,21 @@
 
   <!-- Invitation -->
   <section class="invitation">
-    <h2>🎈 Приглашение на День Рождения Амелии!</h2>
-    <div class="date-badge">📅 25 апреля 2026 в 16:00</div>
+    <h2>🎈 Демо-вишлист для подарков</h2>
+    <div class="date-badge">📅 Дата и место скрыты</div>
     <p>
-      Приглашаем вас на День Рождения Амелии, которое состоится <strong>25 апреля 2026 в 16:00</strong>!
+      Это пример страницы, которую можно отправить гостям или клиентам: они выбирают подарок, открывают ссылку на магазин и бронируют позицию.
     </p>
     <p>
-      Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉
+      Личные данные убраны, а список подарков и кнопки можно быстро адаптировать под любой праздник или подборку товаров.
     </p>
-  </section>
-
-  <!-- Address -->
-  <section class="address-block">
-    <div class="address-title">📍 Место проведения</div>
-    <div class="address-text">
-      Васильковая улица, 4<br>
-      посёлок Прибрежное, Гурьевский муниципальный округ,<br>
-      Калининградская область
-    </div>
-    <a class="btn-map" href="https://yandex.ru/maps?ol=geo&text=%D0%92%D0%B0%D1%81%D0%B8%D0%BB%D1%8C%D0%BA%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%83%D0%BB%D0%B8%D1%86%D0%B0,%204&sll=20.636647,54.701829&sspn=0.004755,0.008211&si=z14zggj6zn7tdujk8tf49yzpu8" target="_blank" rel="noopener">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      Открыть в Яндекс Картах
-    </a>
   </section>
 
   <!-- Wishlist hint -->
   <div class="wishlist-hint">
-    Для удобства мы создали виш-лист с подарками для Амелии. Просто нажмите на приглянувшийся подарок «Забронировать», чтобы другие гости видели, что подарок уже выбран 💖
+    Нажмите «Где купить», чтобы открыть товар, или «Забронировать», чтобы отметить подарок выбранным. Для общей синхронизации подключите бесплатную Google-таблицу по инструкции в репозитории.
   </div>
+  <div class="sync-note" id="sync-note"></div>
 
   <!-- Gifts -->
   <div class="gifts-grid" id="gifts-grid"></div>
@@ -560,22 +567,22 @@
       <span style="font-size:22px">🎀</span>
       <span class="line"></span>
     </div>
-    <p>С любовью для Амелии 💕</p>
+    <p>Демо виш-листа для подарков 💕</p>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // ===== SUPABASE =====
-    const SUPABASE_URL = 'https://onzlncuxpqzsjefdbzxm.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_xZaPIjPHT42S-y9v9EmfHg_U-o92-q7';
-    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // ===== RESERVATIONS BACKEND =====
+    // Paste a Google Apps Script Web App URL here to sync reservations for everyone.
+    // Keep it empty for local demo mode in one browser.
+    const RESERVATION_API_URL = '';
+    const LOCAL_STORAGE_KEY = 'wishlist-demo-reservations';
 
     // Уникальный ID устройства — чтобы отменить бронь мог только тот, кто её поставил
     function getDeviceId() {
-      let id = localStorage.getItem('amelia-device-id');
+      let id = localStorage.getItem('wishlist-demo-device-id');
       if (!id) {
         id = crypto.randomUUID();
-        localStorage.setItem('amelia-device-id', id);
+        localStorage.setItem('wishlist-demo-device-id', id);
       }
       return id;
     }
@@ -785,18 +792,68 @@
 
     let reserved = {};
 
+    function setSyncNote(text) {
+      document.getElementById('sync-note').textContent = text || '';
+    }
+
+    function getLocalReservations() {
+      try {
+        return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}');
+      } catch {
+        return {};
+      }
+    }
+
+    function setLocalReservations(nextReserved) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextReserved));
+    }
+
+    async function apiRequest(action, payload = {}) {
+      if (!RESERVATION_API_URL) {
+        if (action === 'list') return Object.values(getLocalReservations());
+
+        const nextReserved = getLocalReservations();
+        if (action === 'reserve') {
+          nextReserved[payload.gift_id] = {
+            gift_id: payload.gift_id,
+            name: payload.name,
+            device_id: payload.device_id
+          };
+        }
+        if (action === 'unreserve') delete nextReserved[payload.gift_id];
+        setLocalReservations(nextReserved);
+        return { ok: true };
+      }
+
+      const response = await fetch(RESERVATION_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const result = await response.json();
+      if (!result.ok) throw new Error(result.error || 'Reservation API error');
+      return action === 'list' ? result.reservations : result;
+    }
+
     async function loadReserved() {
-      const { data } = await sb.from('reservations').select('*');
-      reserved = {};
-      if (data) data.forEach(r => { reserved[r.gift_id] = { name: r.name, device_id: r.device_id }; });
+      try {
+        const data = await apiRequest('list');
+        reserved = {};
+        if (data) {
+          data.forEach(r => {
+            reserved[r.gift_id] = { name: r.name, device_id: r.device_id };
+          });
+        }
+        setSyncNote(RESERVATION_API_URL
+          ? 'Бронирования синхронизируются через подключенную таблицу.'
+          : 'Демо-режим: бронирования сохраняются только в этом браузере. Для общей ссылки подключите Google-таблицу.');
+      } catch (error) {
+        console.error(error);
+        setSyncNote('Не удалось загрузить бронирования. Проверьте адрес Google Apps Script в настройках страницы.');
+      }
       renderGifts();
       updateCounter();
     }
-
-    // Realtime: обновляем при изменениях от других гостей
-    sb.channel('reservations')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, () => loadReserved())
-      .subscribe();
 
     function handleImgError(img, orderUrl) {
       const match = orderUrl && orderUrl.match(/catalog\/(\d+)\//);
@@ -854,20 +911,30 @@
       if (pendingReserveId === null) return;
       const name = document.getElementById('reserveName').value.trim() || 'Аноним';
       const id = pendingReserveId;
-      await sb.from('reservations').upsert({ gift_id: id, name, device_id: DEVICE_ID });
-      reserved[id] = { name, device_id: DEVICE_ID };
-      closeModal();
-      renderGifts();
-      updateCounter();
-      animateCard(id);
+      try {
+        await apiRequest('reserve', { gift_id: id, name, device_id: DEVICE_ID });
+        reserved[id] = { name, device_id: DEVICE_ID };
+        closeModal();
+        renderGifts();
+        updateCounter();
+        animateCard(id);
+      } catch (error) {
+        console.error(error);
+        setSyncNote('Не удалось сохранить бронь. Обновите страницу и попробуйте еще раз.');
+      }
     }
 
     async function unreserve(id) {
-      await sb.from('reservations').delete().eq('gift_id', id);
-      delete reserved[id];
-      renderGifts();
-      updateCounter();
-      animateCard(id);
+      try {
+        await apiRequest('unreserve', { gift_id: id, device_id: DEVICE_ID });
+        delete reserved[id];
+        renderGifts();
+        updateCounter();
+        animateCard(id);
+      } catch (error) {
+        console.error(error);
+        setSyncNote('Не удалось отменить бронь. Обновите страницу и попробуйте еще раз.');
+      }
     }
 
     function animateCard(id) {
@@ -933,6 +1000,7 @@
     renderGifts();
     updateCounter();
     loadReserved();
+    if (RESERVATION_API_URL) setInterval(loadReserved, 15000);
   </script>
 </body>
 </html>
