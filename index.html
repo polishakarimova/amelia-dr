@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎀 Демо-вишлист подарков</title>
-  <meta name="description" content="Демо-вишлист подарков: выберите товар, откройте ссылку на магазин и забронируйте подарок.">
+  <title>🎀 Виш-лист подарков на день рождения</title>
+  <meta name="description" content="Виш-лист подарков на день рождения: выберите товар, откройте ссылку на магазин и забронируйте подарок.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -423,7 +423,9 @@
       margin-bottom: 12px;
     }
     .invitation .date-badge {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       background: linear-gradient(135deg, #fce4ec, #f8bbd0);
       color: #c2185b;
       font-weight: 700;
@@ -431,6 +433,49 @@
       padding: 8px 20px;
       border-radius: 50px;
       margin-bottom: 16px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.12);
+    }
+    .calendar-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .calendar-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(300px, calc(100vw - 40px));
+      background: white;
+      border: 2px solid #fce4ec;
+      border-radius: 18px;
+      box-shadow: 0 14px 40px rgba(74, 32, 64, 0.18);
+      padding: 10px;
+      display: none;
+      z-index: 5;
+      text-align: left;
+    }
+    .calendar-menu.active { display: block; }
+    .calendar-menu a,
+    .calendar-menu button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #4a2040;
+      text-decoration: none;
+      font: 600 14px 'Inter', sans-serif;
+      cursor: pointer;
+    }
+    .calendar-menu a:hover,
+    .calendar-menu button:hover {
+      background: #fff0f3;
     }
 
     /* Address section */
@@ -491,17 +536,6 @@
       line-height: 1.6;
     }
 
-    .sync-note {
-      position: relative;
-      z-index: 1;
-      max-width: 620px;
-      margin: 0 auto 10px;
-      padding: 0 24px;
-      text-align: center;
-      font-size: 12px;
-      color: #b97998;
-      line-height: 1.5;
-    }
   </style>
 </head>
 <body>
@@ -516,9 +550,9 @@
 
   <!-- Header -->
   <header class="header">
-    <div class="kitty-avatar"><div class="avatar-placeholder">🎀</div></div>
-    <h1>Виш-лист подарков</h1>
-    <div class="subtitle">🎉 Пример страницы для праздника 🎂</div>
+    <div class="kitty-avatar"><div class="avatar-placeholder">👧</div></div>
+    <h1>С Днём Рождения, София!</h1>
+    <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
     <div class="counter" id="counter" style="display:none">
       🎁 Забронировано: <span id="counter-num">0</span> из <span id="counter-total">0</span>
     </div>
@@ -526,21 +560,39 @@
 
   <!-- Invitation -->
   <section class="invitation">
-    <h2>🎈 Демо-вишлист для подарков</h2>
-    <div class="date-badge">📅 Дата и место скрыты</div>
+    <h2>🎈 Приглашение на День Рождения Софии!</h2>
+    <div class="calendar-wrap">
+      <button class="date-badge" type="button" onclick="toggleCalendarMenu(event)">📅 14 июня 2026 в 15:00</button>
+      <div class="calendar-menu" id="calendarMenu">
+        <a id="googleCalendarLink" target="_blank" rel="noopener">📆 Добавить в Google Calendar</a>
+        <button type="button" onclick="downloadIcs()">📱 Скачать для iPhone / Apple</button>
+      </div>
+    </div>
     <p>
-      Это пример страницы, которую можно отправить гостям или клиентам: они выбирают подарок, открывают ссылку на магазин и бронируют позицию.
+      Приглашаем вас на День Рождения Софии, которое состоится <strong>14 июня 2026 в 15:00</strong>!
     </p>
     <p>
-      Личные данные убраны, а список подарков и кнопки можно быстро адаптировать под любой праздник или подборку товаров.
+      Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉
     </p>
+  </section>
+
+  <!-- Address -->
+  <section class="address-block">
+    <div class="address-title">📍 Место проведения</div>
+    <div class="address-text">
+      Центральный парк культуры и отдыха имени Горького<br>
+      Москва, улица Крымский Вал, 9
+    </div>
+    <a class="btn-map" href="https://yandex.ru/maps/?text=%D0%A6%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B%20%D0%B8%20%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0%20%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8%20%D0%93%D0%BE%D1%80%D1%8C%D0%BA%D0%BE%D0%B3%D0%BE%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Открыть в Яндекс Картах
+    </a>
   </section>
 
   <!-- Wishlist hint -->
   <div class="wishlist-hint">
-    Нажмите «Где купить», чтобы открыть товар, или «Забронировать», чтобы отметить подарок выбранным. Для общей синхронизации подключите бесплатную Google-таблицу по инструкции в репозитории.
+    Для удобства мы создали виш-лист с подарками для Софии. Просто нажмите на приглянувшийся подарок «Забронировать», чтобы другие гости видели, что подарок уже выбран 💖
   </div>
-  <div class="sync-note" id="sync-note"></div>
 
   <!-- Gifts -->
   <div class="gifts-grid" id="gifts-grid"></div>
@@ -567,26 +619,91 @@
       <span style="font-size:22px">🎀</span>
       <span class="line"></span>
     </div>
-    <p>Демо виш-листа для подарков 💕</p>
+    <p>С любовью для Софии 💕</p>
   </footer>
 
   <script>
     // ===== RESERVATIONS BACKEND =====
     // Paste a Google Apps Script Web App URL here to sync reservations for everyone.
-    // Keep it empty for local demo mode in one browser.
+    // Keep it empty for single-browser preview mode.
     const RESERVATION_API_URL = '';
-    const LOCAL_STORAGE_KEY = 'wishlist-demo-reservations';
+    const LOCAL_STORAGE_KEY = 'birthday-wishlist-reservations';
+    const EVENT = {
+      title: 'День Рождения Софии',
+      details: 'Праздник в парке и виш-лист подарков.',
+      location: 'Центральный парк культуры и отдыха имени Горького, Москва, улица Крымский Вал, 9',
+      startUtc: '20260614T120000Z',
+      endUtc: '20260614T150000Z',
+      fileName: 'sofia-birthday.ics'
+    };
 
     // Уникальный ID устройства — чтобы отменить бронь мог только тот, кто её поставил
     function getDeviceId() {
-      let id = localStorage.getItem('wishlist-demo-device-id');
+      let id = localStorage.getItem('birthday-wishlist-device-id');
       if (!id) {
         id = crypto.randomUUID();
-        localStorage.setItem('wishlist-demo-device-id', id);
+        localStorage.setItem('birthday-wishlist-device-id', id);
       }
       return id;
     }
     const DEVICE_ID = getDeviceId();
+
+    function initCalendarLinks() {
+      const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: EVENT.title,
+        dates: `${EVENT.startUtc}/${EVENT.endUtc}`,
+        details: EVENT.details,
+        location: EVENT.location
+      });
+      document.getElementById('googleCalendarLink').href = `https://calendar.google.com/calendar/render?${params.toString()}`;
+    }
+
+    function toggleCalendarMenu(event) {
+      event.stopPropagation();
+      document.getElementById('calendarMenu').classList.toggle('active');
+    }
+
+    function closeCalendarMenu() {
+      document.getElementById('calendarMenu').classList.remove('active');
+    }
+
+    function escapeIcsText(text) {
+      return text
+        .replace(/\\/g, '\\\\')
+        .replace(/\n/g, '\\n')
+        .replace(/,/g, '\\,')
+        .replace(/;/g, '\\;');
+    }
+
+    function downloadIcs() {
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Birthday Wishlist//Birthday//RU',
+        'CALSCALE:GREGORIAN',
+        'BEGIN:VEVENT',
+        `UID:${EVENT.startUtc}-birthday-wishlist`,
+        `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
+        `DTSTART:${EVENT.startUtc}`,
+        `DTEND:${EVENT.endUtc}`,
+        `SUMMARY:${escapeIcsText(EVENT.title)}`,
+        `DESCRIPTION:${escapeIcsText(EVENT.details)}`,
+        `LOCATION:${escapeIcsText(EVENT.location)}`,
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = EVENT.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      closeCalendarMenu();
+    }
 
     // ===== ГЕНЕРАЦИЯ URL КАРТИНОК WB =====
     function getWbBasket(vol) {
@@ -792,10 +909,6 @@
 
     let reserved = {};
 
-    function setSyncNote(text) {
-      document.getElementById('sync-note').textContent = text || '';
-    }
-
     function getLocalReservations() {
       try {
         return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}');
@@ -844,12 +957,8 @@
             reserved[r.gift_id] = { name: r.name, device_id: r.device_id };
           });
         }
-        setSyncNote(RESERVATION_API_URL
-          ? 'Бронирования синхронизируются через подключенную таблицу.'
-          : 'Демо-режим: бронирования сохраняются только в этом браузере. Для общей ссылки подключите Google-таблицу.');
       } catch (error) {
         console.error(error);
-        setSyncNote('Не удалось загрузить бронирования. Проверьте адрес Google Apps Script в настройках страницы.');
       }
       renderGifts();
       updateCounter();
@@ -920,7 +1029,7 @@
         animateCard(id);
       } catch (error) {
         console.error(error);
-        setSyncNote('Не удалось сохранить бронь. Обновите страницу и попробуйте еще раз.');
+        alert('Не удалось сохранить бронь. Обновите страницу и попробуйте еще раз.');
       }
     }
 
@@ -933,7 +1042,7 @@
         animateCard(id);
       } catch (error) {
         console.error(error);
-        setSyncNote('Не удалось отменить бронь. Обновите страницу и попробуйте еще раз.');
+        alert('Не удалось отменить бронь. Обновите страницу и попробуйте еще раз.');
       }
     }
 
@@ -992,11 +1101,16 @@
 
     // Keyboard support for modal
     document.addEventListener('keydown', function(e) {
-      if (!document.getElementById('reserveModal').classList.contains('active')) return;
-      if (e.key === 'Escape') closeModal();
-      if (e.key === 'Enter') confirmReserve();
+      if (e.key === 'Escape') {
+        closeCalendarMenu();
+        if (document.getElementById('reserveModal').classList.contains('active')) closeModal();
+      }
+      if (e.key === 'Enter' && document.getElementById('reserveModal').classList.contains('active')) confirmReserve();
     });
+    document.addEventListener('click', closeCalendarMenu);
+    document.getElementById('calendarMenu').addEventListener('click', e => e.stopPropagation());
 
+    initCalendarLinks();
     renderGifts();
     updateCounter();
     loadReserved();
