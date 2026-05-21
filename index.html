@@ -81,6 +81,7 @@
       color: #e91e8a;
       margin-bottom: 8px;
       line-height: 1.3;
+      text-wrap: balance;
     }
 
     .header .subtitle {
@@ -415,12 +416,15 @@
       font-size: 22px;
       color: #e91e8a;
       margin-bottom: 16px;
+      text-wrap: balance;
     }
     .invitation p {
       font-size: 14px;
       color: #4a2040;
       line-height: 1.7;
-      margin-bottom: 12px;
+      max-width: 510px;
+      margin: 0 auto 12px;
+      text-wrap: pretty;
     }
     .invitation .date-badge {
       display: inline-flex;
@@ -437,6 +441,7 @@
       cursor: pointer;
       font-family: 'Inter', sans-serif;
       box-shadow: 0 4px 14px rgba(236, 64, 122, 0.12);
+      white-space: nowrap;
     }
     .calendar-wrap {
       position: relative;
@@ -534,7 +539,10 @@
       font-size: 13px;
       color: #e48aaf;
       line-height: 1.6;
+      text-wrap: pretty;
     }
+    .wishlist-hint span { display: block; }
+    .nowrap { white-space: nowrap; }
 
   </style>
 </head>
@@ -569,7 +577,8 @@
       </div>
     </div>
     <p>
-      Приглашаем вас на День Рождения Софии, которое состоится <strong>14 июня 2026 в 15:00</strong>!
+      Приглашаем вас на праздник в честь дня рождения Софии.
+      Ждём гостей <strong class="nowrap">14 июня 2026</strong>, начало <strong class="nowrap">в 15:00</strong>.
     </p>
     <p>
       Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉
@@ -591,7 +600,9 @@
 
   <!-- Wishlist hint -->
   <div class="wishlist-hint">
-    Для удобства мы создали виш-лист с подарками для Софии. Просто нажмите на приглянувшийся подарок «Забронировать», чтобы другие гости видели, что подарок уже выбран 💖
+    <span>Мы собрали виш-лист подарков для Софии.</span>
+    <span>Выберите карточку и нажмите «Забронировать».</span>
+    <span>Так гости увидят, что подарок уже выбран 💖</span>
   </div>
 
   <!-- Gifts -->
