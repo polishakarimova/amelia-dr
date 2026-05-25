@@ -2,653 +2,818 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎀 Виш-лист подарков на день рождения</title>
-  <meta name="description" content="Виш-лист подарков на день рождения: выберите товар, откройте ссылку на магазин и забронируйте подарок.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>WishCard - Виш-лист Амелии</title>
+  <meta name="description" content="Одна ссылка для гостей: куда прийти, что учесть и что подарить." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+    :root {
+      --pink: #ec407a;
+      --pink-dark: #c2185b;
+      --peach: #ffcc80;
+      --rose-1: #fff0f3;
+      --rose-2: #fce4ec;
+      --text: #4a2040;
+      --muted: #8e6a82;
+      --card: #fff;
+      --line: #f8bbd0;
+      --shadow: 0 10px 34px rgba(236, 64, 122, 0.14);
+    }
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(180deg, #fff0f3 0%, #fce4ec 30%, #fff3e0 70%, #fff0f3 100%);
+      background: linear-gradient(180deg, #fff0f3 0%, #fce4ec 38%, #fff3e0 75%, #fff0f3 100%);
+      color: var(--text);
       min-height: 100vh;
-      color: #4a2040;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
-
-    /* Floating decorations */
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
     .floating {
       position: fixed;
       pointer-events: none;
       z-index: 0;
-      opacity: 0.15;
-      font-size: 28px;
-      animation: float 6s ease-in-out infinite;
+      opacity: 0.14;
+      font-size: 24px;
+      animation: float 7s ease-in-out infinite;
     }
-    .floating:nth-child(1) { top: 5%; left: 5%; animation-delay: 0s; }
-    .floating:nth-child(2) { top: 12%; right: 8%; animation-delay: 1.5s; font-size: 22px; }
-    .floating:nth-child(3) { top: 30%; left: 10%; animation-delay: 3s; font-size: 18px; }
-    .floating:nth-child(4) { top: 50%; right: 5%; animation-delay: 0.8s; font-size: 24px; }
-    .floating:nth-child(5) { top: 70%; left: 7%; animation-delay: 2.2s; font-size: 20px; }
-    .floating:nth-child(6) { top: 85%; right: 12%; animation-delay: 4s; font-size: 26px; }
-
+    .floating:nth-child(1) { top: 7%; left: 6%; }
+    .floating:nth-child(2) { top: 14%; right: 8%; animation-delay: 1.2s; }
+    .floating:nth-child(3) { top: 34%; left: 10%; animation-delay: 2.4s; }
+    .floating:nth-child(4) { top: 58%; right: 5%; animation-delay: 0.7s; }
+    .floating:nth-child(5) { top: 78%; left: 8%; animation-delay: 3.2s; }
     @keyframes float {
       0%, 100% { transform: translateY(0) rotate(0deg); }
-      50% { transform: translateY(-15px) rotate(5deg); }
+      50% { transform: translateY(-14px) rotate(5deg); }
     }
-
-    /* Header */
-    .header {
+    .app-shell {
       position: relative;
       z-index: 1;
-      text-align: center;
-      padding: 40px 20px 20px;
+      width: min(100%, 1120px);
+      margin: 0 auto;
+      padding: calc(22px + env(safe-area-inset-top)) 14px 34px;
     }
-
-    .kitty-avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      margin: 0 auto 16px;
-      box-shadow: 0 4px 20px rgba(236, 64, 122, 0.2);
-      border: 4px solid #f8bbd0;
-      overflow: hidden;
-      background: #fce4ec;
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: calc(8px + env(safe-area-inset-top)) 0 10px;
+      margin: calc(-8px - env(safe-area-inset-top)) 0 14px;
+      background: linear-gradient(180deg, rgba(255,240,243,0.98), rgba(255,240,243,0.76));
+      backdrop-filter: blur(10px);
     }
-    .kitty-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center 20%;
-      display: block;
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 6px;
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(248,187,208,0.7);
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgba(236,64,122,0.1);
     }
-    .avatar-placeholder {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 50px;
-    }
-
-    .header h1 {
-      font-family: 'Comfortaa', cursive;
-      font-size: 28px;
+    .tab-btn {
+      min-height: 42px;
+      border: 0;
+      border-radius: 13px;
+      background: transparent;
+      color: var(--pink-dark);
       font-weight: 700;
-      color: #e91e8a;
-      margin-bottom: 8px;
-      line-height: 1.3;
-      text-wrap: balance;
     }
-
-    .header .subtitle {
-      font-size: 16px;
-      color: #f06292;
-      font-weight: 500;
-      margin-bottom: 8px;
+    .tab-btn.active {
+      background: linear-gradient(135deg, #f48fb1, #ec407a);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(236,64,122,0.25);
     }
-
-    .header .description {
-      font-size: 13px;
-      color: #e48aaf;
-      max-width: 400px;
+    .hero {
+      text-align: center;
+      padding: 12px 8px 16px;
+    }
+    .avatar {
+      width: 118px;
+      height: 118px;
       margin: 0 auto 16px;
-      line-height: 1.5;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 4px solid #f8bbd0;
+      background: #fce4ec;
+      box-shadow: 0 10px 34px rgba(236,64,122,0.18);
+      font-size: 52px;
     }
-
-    .counter {
+    h1, h2, h3 {
+      font-family: 'Comfortaa', cursive;
+      color: #e91e8a;
+      text-wrap: balance;
+      letter-spacing: 0;
+    }
+    h1 {
+      font-size: clamp(25px, 7vw, 32px);
+      line-height: 1.22;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #f06292;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .section {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+    .section.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .panel {
+      background: var(--card);
+      border: 2px solid var(--rose-2);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+      max-width: 640px;
+      margin: 0 auto 14px;
+      text-align: center;
+    }
+    .panel h2 {
+      font-size: 21px;
+      margin-bottom: 14px;
+    }
+    .panel p {
+      max-width: 520px;
+      margin: 0 auto 12px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.7;
+      text-wrap: pretty;
+    }
+    .date-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 14px;
+    }
+    .date-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #fce4ec;
-      color: #e91e8a;
-      padding: 8px 18px;
-      border-radius: 50px;
-      font-size: 14px;
-      font-weight: 600;
+      border: 0;
+      border-radius: 999px;
+      padding: 9px 18px;
+      background: linear-gradient(135deg, #fce4ec, #f8bbd0);
+      color: var(--pink-dark);
+      font-weight: 800;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(236,64,122,0.12);
     }
-
-    /* Gift grid */
+    .calendar-menu {
+      position: absolute;
+      top: calc(100% + 9px);
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      width: min(300px, calc(100vw - 38px));
+      padding: 10px;
+      background: #fff;
+      border: 2px solid var(--rose-2);
+      border-radius: 18px;
+      box-shadow: 0 16px 42px rgba(74,32,64,0.2);
+      text-align: left;
+      z-index: 30;
+    }
+    .calendar-menu.active { display: block; }
+    .calendar-menu a, .calendar-menu button {
+      display: flex;
+      width: 100%;
+      gap: 10px;
+      align-items: center;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      color: var(--text);
+      background: transparent;
+      text-decoration: none;
+      font-weight: 700;
+      text-align: left;
+    }
+    .calendar-menu a:hover, .calendar-menu button:hover { background: var(--rose-1); }
+    .map-btn, .primary-btn, .secondary-btn, .soft-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .map-btn, .primary-btn {
+      color: #fff;
+      background: linear-gradient(135deg, #ec407a, #e91e8a);
+      box-shadow: 0 7px 20px rgba(236,64,122,0.28);
+    }
+    .secondary-btn {
+      color: var(--pink-dark);
+      background: #fff;
+      border: 2px solid var(--line);
+    }
+    .soft-btn {
+      color: var(--pink-dark);
+      background: var(--rose-2);
+    }
+    .map-btn:hover, .primary-btn:hover, .secondary-btn:hover, .soft-btn:hover {
+      transform: translateY(-1px);
+    }
+    .meta-list {
+      display: grid;
+      gap: 10px;
+      max-width: 640px;
+      margin: 0 auto 14px;
+    }
+    .meta-card {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 16px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(248,187,208,0.72);
+      border-radius: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .meta-card b {
+      display: block;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .wishlist-head {
+      max-width: 720px;
+      margin: 0 auto 14px;
+      text-align: center;
+      padding: 8px 6px 0;
+    }
+    .wishlist-head h2 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .wishlist-head p {
+      color: #d45f92;
+      font-size: 14px;
+      line-height: 1.65;
+      text-wrap: pretty;
+    }
+    .gentle-note {
+      max-width: 640px;
+      margin: 0 auto 16px;
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.72);
+      border: 1px solid rgba(248,187,208,0.76);
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.65;
+      font-size: 13px;
+    }
+    .filters {
+      max-width: 720px;
+      margin: 0 auto 18px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 2px 8px;
+      scrollbar-width: none;
+    }
+    .filters::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.78);
+      color: var(--pink-dark);
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .filter-btn.active {
+      color: #fff;
+      background: linear-gradient(135deg, #f48fb1, #ec407a);
+      border-color: transparent;
+    }
     .gifts-grid {
-      position: relative;
-      z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 20px 16px 40px;
       display: grid;
       grid-template-columns: 1fr;
-      gap: 20px;
+      gap: 16px;
+      max-width: 1120px;
+      margin: 0 auto 20px;
     }
-
-    @media (min-width: 580px) {
-      .gifts-grid { grid-template-columns: 1fr 1fr; }
+    @media (min-width: 680px) {
+      .gifts-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-    @media (min-width: 900px) {
-      .gifts-grid { grid-template-columns: 1fr 1fr 1fr; }
+    @media (min-width: 1040px) {
+      .gifts-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
-
-    /* Gift card */
     .gift-card {
-      background: white;
+      background: #fff;
+      border: 2px solid var(--rose-2);
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-      border: 2px solid #fce4ec;
-      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 8px 26px rgba(74,32,64,0.08);
       position: relative;
-    }
-    .gift-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 30px rgba(236, 64, 122, 0.15);
     }
     .gift-card.reserved {
       border-color: #f48fb1;
-      opacity: 0.8;
-    }
-
-    .gift-card .badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 2;
-      background: #ec407a;
-      color: white;
-      padding: 4px 12px;
-      border-radius: 50px;
-      font-size: 11px;
-      font-weight: 700;
-      display: none;
-      align-items: center;
-      gap: 4px;
-      box-shadow: 0 2px 8px rgba(236, 64, 122, 0.3);
-    }
-    .gift-card.reserved .badge { display: flex; }
-
-    .gift-image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      display: block;
-      transition: filter 0.3s, transform 0.3s;
-    }
-    .gift-card.reserved .gift-image {
-      filter: grayscale(30%) brightness(0.95);
-    }
-    .gift-card:not(.reserved):hover .gift-image {
-      transform: scale(1.03);
+      opacity: 0.86;
     }
     .gift-image-wrap {
+      height: 190px;
+      background: var(--rose-2);
       overflow: hidden;
       position: relative;
-      background: #fce4ec;
     }
-    .gift-image-placeholder {
+    .gift-image {
       width: 100%;
-      height: 200px;
-      display: flex;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .gift-card.reserved .gift-image {
+      filter: grayscale(24%) brightness(0.95);
+    }
+    .status-pill {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 2;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #fce4ec, #fff0f3);
-      font-size: 48px;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.93);
+      color: #2e7d32;
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 5px 14px rgba(74,32,64,0.12);
     }
-
-    .gift-body { padding: 16px; }
-    .gift-body h3 {
-      font-size: 17px;
-      font-weight: 700;
+    .gift-card.reserved .status-pill {
+      color: var(--pink-dark);
+    }
+    .gift-body { padding: 15px; }
+    .gift-title {
       color: #37162e;
-      margin-bottom: 6px;
+      font-size: 16px;
+      line-height: 1.32;
+      margin-bottom: 7px;
+      font-weight: 900;
+      text-wrap: balance;
     }
-    .gift-body .desc {
+    .gift-desc {
+      color: var(--muted);
       font-size: 13px;
-      color: #8e6a82;
-      line-height: 1.4;
-      margin-bottom: 12px;
+      line-height: 1.45;
+      min-height: 54px;
+      margin-bottom: 10px;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .gift-body .price {
-      font-size: 19px;
-      font-weight: 700;
-      color: #e91e8a;
-      margin-bottom: 14px;
-    }
-
-    .buttons { display: flex; gap: 8px; }
-    .btn {
-      flex: 1;
+    .gift-meta {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 12px 10px;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .price {
+      color: var(--pink);
+      font-weight: 900;
+      font-size: 18px;
+    }
+    .category {
+      color: #a06483;
+      background: var(--rose-1);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .gift-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .gift-actions .map-btn,
+    .gift-actions .secondary-btn,
+    .gift-actions .soft-btn {
+      min-height: 42px;
       border-radius: 14px;
+      padding: 10px 8px;
       font-size: 13px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
     }
-    .btn-order {
-      background: linear-gradient(135deg, #f48fb1, #ec407a);
-      color: white;
-    }
-    .btn-order:hover { background: linear-gradient(135deg, #ec407a, #d81b60); }
-
-    .btn-reserve {
-      background: linear-gradient(135deg, #ffcc80, #f48fb1);
-      color: white;
-    }
-    .btn-reserve:hover { background: linear-gradient(135deg, #ffb74d, #ec407a); }
-
-    .btn-unreserve {
-      background: #f5f5f5;
-      color: #999;
-    }
-    .btn-unreserve:hover { background: #eee; color: #777; }
-
-    .btn-taken {
-      background: #f5f5f5;
-      color: #ccc;
-      cursor: default;
+    .gift-actions .disabled {
+      color: #b28ca2;
+      background: #f5edf2;
+      box-shadow: none;
       pointer-events: none;
     }
-
-    /* Footer */
-    .footer {
-      position: relative;
-      z-index: 1;
+    .empty-state {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 24px;
+      border-radius: 22px;
+      background: #fff;
       text-align: center;
-      padding: 20px 16px 40px;
+      color: var(--muted);
+      box-shadow: var(--shadow);
     }
-    .footer .divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .product-block {
+      max-width: 720px;
+      margin: 20px auto 0;
+      display: grid;
       gap: 12px;
-      margin-bottom: 10px;
     }
-    .footer .line {
-      width: 50px;
-      height: 1px;
-      background: #f8bbd0;
+    .upgrade-card, .viral-card, .future-card {
+      background: rgba(255,255,255,0.8);
+      border: 1px solid rgba(248,187,208,0.8);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(74,32,64,0.07);
     }
-    .footer p {
+    .upgrade-card h3, .viral-card h3, .future-card h3 {
+      font-size: 17px;
+      margin-bottom: 8px;
+    }
+    .upgrade-card p, .viral-card p, .future-card p {
+      color: var(--muted);
       font-size: 13px;
-      color: #e0a0bc;
+      line-height: 1.6;
+      margin-bottom: 12px;
     }
-
-    /* SVG icons inline */
-    .icon { width: 14px; height: 14px; flex-shrink: 0; }
-
-    @media (max-width: 400px) {
-      .header h1 { font-size: 24px; }
-      .gift-image { height: 170px; }
-      .btn { padding: 11px 8px; font-size: 12px; }
+    .feature-list {
+      display: grid;
+      gap: 7px;
+      color: var(--text);
+      font-size: 13px;
+      margin: 10px 0 14px;
     }
-
-    /* Animation for reserve toggle */
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(0.95); }
-      100% { transform: scale(1); }
+    .thanks-options, .rating-grid, .template-list, .idea-list {
+      display: grid;
+      gap: 8px;
     }
-    .gift-card.animating { animation: pop 0.3s ease; }
-
-    /* Reservation modal */
+    .future-card > .primary-btn { margin-bottom: 10px; }
+    .mini-option {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: left;
+    }
+    .rating-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      padding: 10px 0;
+      border-top: 1px solid #f6dce8;
+    }
+    .rating-buttons {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .rating-buttons button {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .rating-buttons button.active {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #f48fb1, #ec407a);
+    }
+    .footer {
+      max-width: 720px;
+      margin: 20px auto 0;
+      padding: 18px 0 8px;
+      text-align: center;
+      color: #d879a3;
+      font-size: 13px;
+    }
+    .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(4px);
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
+      background: rgba(74,32,64,0.38);
+      backdrop-filter: blur(6px);
       align-items: center;
       justify-content: center;
-      padding: 16px;
     }
     .modal-overlay.active { display: flex; }
-
     .modal {
-      background: white;
+      width: min(100%, 420px);
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      background: #fff;
       border-radius: 24px;
-      padding: 28px 24px;
-      max-width: 380px;
-      width: 100%;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+      padding: 22px;
+      box-shadow: 0 18px 50px rgba(74,32,64,0.25);
       text-align: center;
-      animation: modalIn 0.25s ease;
-    }
-    @keyframes modalIn {
-      from { opacity: 0; transform: scale(0.9) translateY(20px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
     }
     .modal h3 {
-      font-family: 'Comfortaa', cursive;
-      font-size: 18px;
-      color: #e91e8a;
-      margin-bottom: 6px;
-    }
-    .modal .modal-gift-name {
-      font-size: 14px;
-      color: #4a2040;
-      margin-bottom: 18px;
-      font-weight: 600;
-    }
-    .modal label {
-      display: block;
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 6px;
-      text-align: left;
-    }
-    .modal input[type="text"] {
-      width: 100%;
-      padding: 12px 14px;
-      border: 2px solid #fce4ec;
-      border-radius: 12px;
-      font-size: 15px;
-      font-family: 'Inter', sans-serif;
-      color: #4a2040;
-      outline: none;
-      transition: border-color 0.2s;
-      margin-bottom: 14px;
-    }
-    .modal input[type="text"]:focus {
-      border-color: #f48fb1;
-    }
-    .modal input[type="text"]::placeholder {
-      color: #ccc;
-    }
-    .modal .modal-hint {
-      font-size: 12px;
-      color: #bbb;
-      margin-bottom: 18px;
-    }
-    .modal-buttons {
-      display: flex;
-      gap: 8px;
-    }
-    .modal-buttons .btn {
-      flex: 1;
-      padding: 12px 10px;
-      font-size: 14px;
-    }
-    .btn-confirm {
-      background: linear-gradient(135deg, #f48fb1, #ec407a);
-      color: white;
-    }
-    .btn-confirm:hover { background: linear-gradient(135deg, #ec407a, #d81b60); }
-    .btn-cancel {
-      background: #f5f5f5;
-      color: #999;
-    }
-    .btn-cancel:hover { background: #eee; color: #777; }
-
-    .reserved-by {
-      font-size: 10px;
-      color: white;
-      opacity: 0.9;
-    }
-
-    /* Invitation section */
-    .invitation {
-      position: relative;
-      z-index: 1;
-      max-width: 620px;
-      margin: 0 auto 10px;
-      padding: 28px 24px;
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-      border: 2px solid #fce4ec;
-      text-align: center;
-    }
-    .invitation h2 {
-      font-family: 'Comfortaa', cursive;
-      font-size: 22px;
-      color: #e91e8a;
-      margin-bottom: 16px;
-      text-wrap: balance;
-    }
-    .invitation p {
-      font-size: 14px;
-      color: #4a2040;
-      line-height: 1.7;
-      max-width: 510px;
-      margin: 0 auto 12px;
-      text-wrap: pretty;
-    }
-    .invitation .date-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: linear-gradient(135deg, #fce4ec, #f8bbd0);
-      color: #c2185b;
-      font-weight: 700;
-      font-size: 15px;
-      padding: 8px 20px;
-      border-radius: 50px;
-      margin-bottom: 16px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.12);
-      white-space: nowrap;
-    }
-    .calendar-wrap {
-      position: relative;
-      display: inline-block;
-    }
-    .calendar-menu {
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(300px, calc(100vw - 40px));
-      background: white;
-      border: 2px solid #fce4ec;
-      border-radius: 18px;
-      box-shadow: 0 14px 40px rgba(74, 32, 64, 0.18);
-      padding: 10px;
-      display: none;
-      z-index: 5;
-      text-align: left;
-    }
-    .calendar-menu.active { display: block; }
-    .calendar-menu a,
-    .calendar-menu button {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 14px;
-      border: 0;
-      border-radius: 12px;
-      background: transparent;
-      color: #4a2040;
-      text-decoration: none;
-      font: 600 14px 'Inter', sans-serif;
-      cursor: pointer;
-    }
-    .calendar-menu a:hover,
-    .calendar-menu button:hover {
-      background: #fff0f3;
-    }
-
-    /* Address section */
-    .address-block {
-      position: relative;
-      z-index: 1;
-      max-width: 620px;
-      margin: 0 auto 20px;
-      padding: 22px 24px;
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-      border: 2px solid #fce4ec;
-      text-align: center;
-    }
-    .address-block .address-title {
-      font-family: 'Comfortaa', cursive;
-      font-size: 17px;
-      font-weight: 700;
-      color: #e91e8a;
+      font-size: 19px;
       margin-bottom: 8px;
     }
-    .address-block .address-text {
-      font-size: 14px;
-      color: #4a2040;
+    .modal p {
+      color: var(--muted);
+      font-size: 13px;
       line-height: 1.6;
       margin-bottom: 14px;
     }
-    .btn-map {
-      display: inline-flex;
-      align-items: center;
+    .form-stack {
+      display: grid;
+      gap: 10px;
+      text-align: left;
+      margin: 14px 0;
+    }
+    label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    input, textarea {
+      width: 100%;
+      border: 2px solid var(--rose-2);
+      border-radius: 14px;
+      padding: 12px 13px;
+      color: var(--text);
+      outline: none;
+      background: #fff;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 74px;
+    }
+    input:focus, textarea:focus { border-color: #f48fb1; }
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 8px;
-      background: linear-gradient(135deg, #ec407a, #e91e8a);
-      color: white;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 12px 24px;
-      border-radius: 50px;
-      text-decoration: none;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 14px rgba(236, 64, 122, 0.3);
     }
-    .btn-map:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(236, 64, 122, 0.4);
-    }
-
-    /* Wishlist hint */
-    .wishlist-hint {
-      position: relative;
-      z-index: 1;
-      max-width: 620px;
-      margin: 0 auto 6px;
-      padding: 16px 24px;
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      z-index: 140;
+      transform: translate(-50%, 120px);
+      opacity: 0;
+      width: min(92vw, 420px);
+      padding: 13px 16px;
+      border-radius: 999px;
+      background: #fff;
+      color: var(--pink-dark);
       text-align: center;
-      font-size: 13px;
-      color: #e48aaf;
-      line-height: 1.6;
-      text-wrap: pretty;
+      font-weight: 900;
+      box-shadow: 0 12px 36px rgba(74,32,64,0.2);
+      transition: 0.25s ease;
     }
-    .wishlist-hint span { display: block; }
+    .toast.active {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
     .nowrap { white-space: nowrap; }
-
+    @media (max-width: 430px) {
+      .app-shell { padding-left: 0; padding-right: 0; }
+      .topbar { padding-left: 12px; padding-right: 12px; }
+      .hero { padding-left: 14px; padding-right: 14px; }
+      .panel, .upgrade-card, .viral-card, .future-card, .empty-state {
+        border-radius: 22px;
+        margin-left: 0;
+        margin-right: 0;
+      }
+      .gift-card { border-radius: 18px; }
+      .gifts-grid, .product-block { padding: 0 10px; }
+      .wishlist-head, .filters { padding-left: 12px; padding-right: 12px; }
+      .gift-image-wrap { height: 178px; }
+      .gift-actions { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
-
-  <!-- Floating decorations -->
   <div class="floating">🎀</div>
   <div class="floating">💖</div>
   <div class="floating">⭐</div>
-  <div class="floating">🎀</div>
-  <div class="floating">💕</div>
   <div class="floating">🌸</div>
+  <div class="floating">💕</div>
 
-  <!-- Header -->
-  <header class="header">
-    <div class="kitty-avatar"><div class="avatar-placeholder">👧</div></div>
-    <h1>С Днём Рождения, Амелия!</h1>
-    <div class="subtitle">🎉 Приглашение на праздник 🎂</div>
-    <div class="counter" id="counter" style="display:none">
-      🎁 Забронировано: <span id="counter-num">0</span> из <span id="counter-total">0</span>
-    </div>
-  </header>
-
-  <!-- Invitation -->
-  <section class="invitation">
-    <h2>🎈 Приглашение на День Рождения Амелии!</h2>
-    <div class="calendar-wrap">
-      <button class="date-badge" type="button" onclick="toggleCalendarMenu(event)">📅 14 июня 2026 в 15:00</button>
-      <div class="calendar-menu" id="calendarMenu">
-        <a id="googleCalendarLink" target="_blank" rel="noopener">📆 Добавить в Google Calendar</a>
-        <button type="button" onclick="downloadIcs()">📱 Скачать для iPhone / Apple</button>
+  <main class="app-shell">
+    <nav class="topbar" aria-label="Навигация по карточке">
+      <div class="tabs">
+        <button class="tab-btn active" type="button" data-tab="about">🎈 О празднике</button>
+        <button class="tab-btn" type="button" data-tab="gifts">🎁 Виш-лист</button>
       </div>
-    </div>
-    <p>
-      Приглашаем вас на праздник в честь дня рождения Амелии.
-      Ждём гостей <strong class="nowrap">14 июня 2026</strong>, начало <strong class="nowrap">в 15:00</strong>.
-    </p>
-    <p>
-      Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉
-    </p>
-  </section>
+    </nav>
 
-  <!-- Address -->
-  <section class="address-block">
-    <div class="address-title">📍 Место проведения</div>
-    <div class="address-text">
-      Центральный парк культуры и отдыха имени Горького<br>
-      Москва, улица Крымский Вал, 9
-    </div>
-    <a class="btn-map" href="https://yandex.ru/maps/?text=%D0%A6%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B%20%D0%B8%20%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0%20%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8%20%D0%93%D0%BE%D1%80%D1%8C%D0%BA%D0%BE%D0%B3%D0%BE%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" target="_blank" rel="noopener">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      Открыть в Яндекс Картах
-    </a>
-  </section>
+    <header class="hero">
+      <div class="avatar" aria-label="Место для фото ребёнка">👧</div>
+      <h1 id="heroTitle"></h1>
+      <div class="subtitle">Одна ссылка для гостей: куда прийти, что учесть и что подарить</div>
+    </header>
 
-  <!-- Wishlist hint -->
-  <div class="wishlist-hint">
-    <span>Мы собрали виш-лист подарков для Амелии.</span>
-    <span>Выберите карточку и нажмите «Забронировать».</span>
-    <span>Так гости увидят, что подарок уже выбран 💖</span>
-  </div>
+    <section class="section active" id="aboutSection">
+      <div class="panel">
+        <h2 id="eventHeading"></h2>
+        <div class="date-wrap">
+          <button class="date-badge" type="button" onclick="toggleCalendarMenu(event)" id="eventDateButton"></button>
+          <div class="calendar-menu" id="calendarMenu">
+            <a id="googleCalendarLink" target="_blank" rel="noopener">📆 Добавить в Google Calendar</a>
+            <button type="button" onclick="downloadIcs()">📱 Скачать для iPhone / Apple</button>
+          </div>
+        </div>
+        <p id="introText"></p>
+        <p id="weatherText"></p>
+      </div>
 
-  <!-- Gifts -->
-  <div class="gifts-grid" id="gifts-grid"></div>
+      <div class="panel">
+        <h2>📍 Место проведения</h2>
+        <p id="placeText"></p>
+        <a class="map-btn" id="mapLink" target="_blank" rel="noopener">Открыть в Яндекс Картах</a>
+      </div>
 
-  <!-- Reservation modal -->
-  <div class="modal-overlay" id="reserveModal" onclick="if(event.target===this)closeModal()">
+      <div class="meta-list">
+        <div class="meta-card"><span>👗</span><div><b>Что учесть</b><span>Активная часть будет на улице, лучше выбрать удобную одежду по погоде.</span></div></div>
+        <div class="meta-card"><span>🎁</span><div><b>Про подарки</b><span>Виш-лист помогает гостям выбрать идею и не повториться с другими подарками.</span></div></div>
+      </div>
+
+      <div class="product-block" id="aboutProductBlocks"></div>
+    </section>
+
+    <section class="section" id="giftsSection">
+      <div class="wishlist-head">
+        <h2 id="wishlistTitle"></h2>
+        <p>Выберите подарок и нажмите «Забронировать», чтобы другие гости видели, что он уже выбран 💝</p>
+      </div>
+      <div class="gentle-note">Мы собрали небольшой виш-лист, чтобы гостям было проще выбрать подарок, а подарки не повторялись. Конечно, главное - ваше присутствие 💕</div>
+      <div class="filters" id="filters" aria-label="Фильтры подарков"></div>
+      <div class="gifts-grid" id="giftsGrid"></div>
+      <div class="empty-state" id="emptyState" hidden>Пока подарков нет. Организатор скоро добавит идеи 💝</div>
+      <div class="product-block" id="giftProductBlocks"></div>
+    </section>
+
+    <footer class="footer">
+      <div id="serviceSignature"></div>
+      <div class="footer-actions">
+        <button class="secondary-btn" type="button" onclick="openCreateStub()">Сделать такую же карточку</button>
+        <button class="soft-btn" type="button" onclick="switchTab('gifts')">Посмотреть подарки</button>
+      </div>
+    </footer>
+  </main>
+
+  <div class="modal-overlay" id="reserveModal" onclick="if(event.target===this)closeModal('reserveModal')">
     <div class="modal">
       <h3>🎁 Бронирование подарка</h3>
-      <div class="modal-gift-name" id="modalGiftName"></div>
-      <label for="reserveName">Ваше имя (необязательно)</label>
-      <input type="text" id="reserveName" placeholder="Введите имя или оставьте пустым" maxlength="30" />
-      <div class="modal-hint">Оставьте поле пустым, чтобы забронировать анонимно</div>
-      <div class="modal-buttons">
-        <button class="btn btn-cancel" onclick="closeModal()">Отмена</button>
-        <button class="btn btn-confirm" onclick="confirmReserve()">Подтвердить</button>
+      <p id="reserveGiftName"></p>
+      <p>После бронирования другие гости увидят, что этот подарок уже выбран.</p>
+      <div class="form-stack">
+        <label>Имя гостя<input id="reserveName" type="text" maxlength="40" placeholder="Например, Мария" /></label>
+        <label>Контакт необязательно<input id="reserveContact" type="text" maxlength="60" placeholder="Телефон или мессенджер" /></label>
+        <label>Комментарий необязательно<textarea id="reserveComment" maxlength="140" placeholder="Например, куплю на Wildberries"></textarea></label>
+      </div>
+      <div class="modal-actions">
+        <button class="secondary-btn" type="button" onclick="closeModal('reserveModal')">Отмена</button>
+        <button class="primary-btn" type="button" onclick="confirmReserve()">Подтвердить бронь</button>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="divider">
-      <span class="line"></span>
-      <span style="font-size:22px">🎀</span>
-      <span class="line"></span>
+  <div class="modal-overlay" id="upgradeModal" onclick="if(event.target===this)closeModal('upgradeModal')">
+    <div class="modal">
+      <h3>Хотите добавить больше подарков?</h3>
+      <p>В бесплатной карточке можно добавить до 5 подарков. Полная карточка за 199 ₽ открывает больше подарков, красивые шаблоны и благодарность гостям.</p>
+      <div class="modal-actions">
+        <button class="secondary-btn" type="button" onclick="activateTestAccess()">Активировать тестовый доступ</button>
+        <button class="primary-btn" type="button" onclick="activateTestAccess()">Открыть полную карточку за 199 ₽</button>
+      </div>
     </div>
-    <p>С любовью для Амелии 💕</p>
-  </footer>
+  </div>
+
+  <div class="modal-overlay" id="createModal" onclick="if(event.target===this)closeModal('createModal')">
+    <div class="modal">
+      <h3>Скоро здесь можно будет создать свою карточку праздника 💝</h3>
+      <p>Конструктор уже заложен в структуру: событие, тексты, подарки, тарифы и будущие шаблоны вынесены в данные страницы.</p>
+      <button class="primary-btn" type="button" onclick="closeModal('createModal')">Понятно</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
 
   <script>
-    // ===== RESERVATIONS BACKEND =====
-    // Paste a Google Apps Script Web App URL here to sync reservations for everyone.
-    // Keep it empty for single-browser preview mode.
+    const SERVICE_NAME = 'WishCard';
+    const FREE_GIFT_LIMIT = 5;
+    const PAID_PRICE = 199;
+    let isPaidPlan = false;
     const RESERVATION_API_URL = '';
     const LOCAL_STORAGE_KEY = 'birthday-wishlist-reservations';
-    const EVENT = {
+    const RATING_STORAGE_KEY = 'birthday-wishlist-ratings';
+
+    const eventData = {
+      childName: 'Амелия',
       title: 'День Рождения Амелии',
-      details: 'Праздник в парке и виш-лист подарков.',
+      dateLabel: '14 июня 2026 в 15:00',
+      intro: 'Приглашаем вас на праздник в честь дня рождения Амелии. Ждём гостей 14 июня 2026, начало в 15:00.',
+      weather: 'Активная часть будет проходить на улице, поэтому одевайтесь по погоде. Будем рады разделить с вами наш праздник! 🎉',
       location: 'Центральный парк культуры и отдыха имени Горького, Москва, улица Крымский Вал, 9',
-      startUtc: '20260614T120000Z',
-      endUtc: '20260614T150000Z',
-      fileName: 'amelia-birthday.ics'
+      mapUrl: 'https://yandex.ru/maps/?text=%D0%A6%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%BA%D1%83%D0%BB%D1%8C%D1%82%D1%83%D1%80%D1%8B%20%D0%B8%20%D0%BE%D1%82%D0%B4%D1%8B%D1%85%D0%B0%20%D0%B8%D0%BC%D0%B5%D0%BD%D0%B8%20%D0%93%D0%BE%D1%80%D1%8C%D0%BA%D0%BE%D0%B3%D0%BE%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0',
+      calendar: {
+        startUtc: '20260614T120000Z',
+        endUtc: '20260614T150000Z',
+        details: 'Праздник в парке и виш-лист подарков.',
+        fileName: 'amelia-birthday.ics'
+      }
     };
 
-    // Уникальный ID устройства — чтобы отменить бронь мог только тот, кто её поставил
+    const filters = [
+      { id: 'all', label: 'Все' },
+      { id: 'under1000', label: 'До 1000 ₽', test: gift => gift.priceValue < 1000 },
+      { id: '1000-3000', label: '1000-3000 ₽', test: gift => gift.priceValue >= 1000 && gift.priceValue <= 3000 },
+      { id: '3000plus', label: '3000+ ₽', test: gift => gift.priceValue > 3000 },
+      { id: 'Игрушки', label: 'Игрушки', test: gift => gift.category === 'Игрушки' },
+      { id: 'Творчество', label: 'Творчество', test: gift => gift.category === 'Творчество' },
+      { id: 'Полезное', label: 'Полезное', test: gift => gift.category === 'Полезное' }
+    ];
+
+    const gifts = [
+      { id: 1, name: 'Детская декоративная косметика - чемоданчик', category: 'Творчество', description: 'Большой чемоданчик косметики для игры: тени, помады, блески, лаки и аксессуары.', image: 'https://basket-13.wbbasket.ru/vol1975/part197568/197568029/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/197568029/detail.aspx?size=320318581', price: '1 993 ₽', priceValue: 1993 },
+      { id: 2, name: 'Деревянный игровой набор «Салат»', category: 'Полезное', description: 'Набор для игры в кухню: салатник, овощи, приборы и соусы.', image: 'https://basket-13.wbbasket.ru/vol2003/part200345/200345516/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/200345516/detail.aspx?size=323925472', price: '666 ₽', priceValue: 666 },
+      { id: 3, name: 'Набор для лепки детский', category: 'Творчество', description: 'Чемоданчик-гриль для лепки с формочками и аксессуарами.', image: 'https://basket-10.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/146472439/detail.aspx?size=246541725', price: '1 192 ₽', priceValue: 1192 },
+      { id: 4, name: 'Сортер-вкладыш Мишки', category: 'Полезное', description: 'Деревянный сортер, конструктор-персонаж и головоломка для малышей.', image: 'https://basket-12.wbbasket.ru/vol1878/part187830/187830937/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/187830937/detail.aspx?size=307838308', price: '565 ₽', priceValue: 565 },
+      { id: 5, name: 'Рамка-вкладыш «Цикл жизни»', category: 'Полезное', description: 'Сортер Монтессори для развития логики и наблюдательности.', image: 'https://basket-16.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/615410277/detail.aspx?size=835619819', price: '1 474 ₽', priceValue: 1474 },
+      { id: 6, name: 'Детская гитара', category: 'Игрушки', description: 'Первый музыкальный инструмент для игры и домашних концертов.', image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop', orderUrl: 'https://ozon.ru/t/aHRh3Wv', price: '2 845 ₽', priceValue: 2845 },
+      { id: 7, name: 'Музыкальная книга БЕМБИ', category: 'Полезное', description: 'Интерактивная музыкальная книга с плеером для малышей.', image: 'https://basket-10.wbbasket.ru/vol1444/part144462/144462664/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/144462664/detail.aspx?size=243690013', price: '1 931 ₽', priceValue: 1931 },
+      { id: 8, name: 'Робот-собака', category: 'Игрушки', description: 'Интерактивная игрушка на пульте управления.', image: 'https://basket-15.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/226513086/detail.aspx?size=358602578', price: '2 240 ₽', priceValue: 2240 },
+      { id: 9, name: 'Большой набор для рисования', category: 'Творчество', description: 'Карандаши, фломастеры, краски и всё для первых творческих экспериментов.', image: 'https://basket-16.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673', price: '1 295 ₽', priceValue: 1295 },
+      { id: 10, name: 'Деревянный алфавит', category: 'Полезное', description: 'Развивающая игрушка для изучения букв в игровой форме.', image: 'https://basket-16.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/286977987/detail.aspx?size=438949379', price: '809 ₽', priceValue: 809 },
+      { id: 11, name: 'Раскраски для девочек', category: 'Творчество', description: 'Набор раскрасок с яркими и понятными картинками.', image: 'https://basket-16.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/861392230/detail.aspx?size=1296837436', price: '283 ₽', priceValue: 283 },
+      { id: 12, name: 'Раскраска «Котики и животные»', category: 'Творчество', description: 'Милые иллюстрации для спокойного творчества.', image: 'https://basket-16.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/846100942/detail.aspx?size=1271849664', price: '292 ₽', priceValue: 292 },
+      { id: 13, name: 'Пупс с набором доктора', category: 'Игрушки', description: 'Кукла-пупс и набор доктора для сюжетной игры.', image: 'https://basket-16.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/289105207/detail.aspx?size=441394293', price: '1 958 ₽', priceValue: 1958 },
+      { id: 14, name: 'Телефон-игрушка', category: 'Игрушки', description: 'Музыкальный телефон со звуками и мелодиями.', image: 'https://basket-16.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/394261266/detail.aspx?size=570777158', price: '575 ₽', priceValue: 575 },
+      { id: 15, name: 'Говорящая карта мира', category: 'Полезное', description: 'Интерактивная карта с животными и звуками.', image: 'https://basket-16.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/483823060/detail.aspx?size=675270123', price: '2 002 ₽', priceValue: 2002 },
+      { id: 16, name: 'Кухонный набор Монтессори', category: 'Полезное', description: 'Кухонный набор из 27 предметов для сюжетных игр.', image: 'https://basket-16.wbbasket.ru/vol3958/part395843/395843188/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/395843188/detail.aspx?size=572510789', price: '1 914 ₽', priceValue: 1914 },
+      { id: 17, name: 'Игрушечная стиральная машинка', category: 'Игрушки', description: 'Мини-техника с водой для игры в дом.', image: 'https://basket-14.wbbasket.ru/vol2087/part208791/208791754/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/208791754/detail.aspx?size=334583404', price: '1 943 ₽', priceValue: 1943 },
+      { id: 18, name: 'Детская посудомоечная машина', category: 'Игрушки', description: 'Мини-посудомойка для игры в бытовую технику.', image: 'https://basket-12.wbbasket.ru/vol1828/part182869/182869013/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/182869013/detail.aspx?size=301548010', price: '1 621 ₽', priceValue: 1621 },
+      { id: 19, name: 'Туалетный столик с зеркалом', category: 'Игрушки', description: 'Деревянный столик с зеркалом для сюжетной игры.', image: 'https://basket-15.wbbasket.ru/vol2317/part231733/231733020/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/231733020/detail.aspx?size=365681437', price: '2 172 ₽', priceValue: 2172 },
+      { id: 20, name: 'Деревянная лавка-магазин', category: 'Игрушки', description: 'Большая лавка для игры в магазин и продавца.', image: 'https://basket-16.wbbasket.ru/vol2999/part299909/299909899/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/299909899/detail.aspx?size=455814021', price: '6 505 ₽', priceValue: 6505 },
+      { id: 21, name: 'Игровой набор «Салон красоты»', category: 'Игрушки', description: 'Деревянный набор для игры в салон красоты.', image: 'https://basket-10.wbbasket.ru/vol1333/part133393/133393539/images/big/1.webp', orderUrl: 'https://www.wildberries.ru/catalog/133393539/detail.aspx?size=229014397', price: '1 684 ₽', priceValue: 1684 }
+    ];
+
+    const thanksTemplates = [
+      { name: 'Нежная', text: 'Спасибо, что были с нами на празднике Амелии 💕 Нам было очень приятно разделить этот день с вами!' },
+      { name: 'Короткая', text: 'Спасибо за праздник, тепло и подарки для Амелии 💝' },
+      { name: 'Праздничная', text: 'Спасибо, что сделали день рождения Амелии таким радостным! Мы очень ценим ваше внимание и заботу 🎉' }
+    ];
+
+    const invitationTemplates = [
+      { name: 'Классический', text: 'Приглашаем вас на день рождения Амелии! Будем рады разделить с вами этот праздник.' },
+      { name: 'Нежный', text: 'У Амелии скоро особенный день, и нам очень хочется провести его рядом с близкими людьми.' },
+      { name: 'Короткий', text: 'Ждём вас на празднике Амелии! Дата, время и место - ниже.' }
+    ];
+
+    const futureIdeas = ['Подарки девочке 3-4 года', 'Подарки до 1000 ₽', 'Подарки, которые не бесят родителей', 'Подарки для творчества'];
+    let currentTab = 'about';
+    let currentFilter = 'all';
+    let pendingReserveId = null;
+    let reserved = {};
+    let ratings = {};
+
     function getDeviceId() {
       let id = localStorage.getItem('birthday-wishlist-device-id');
       if (!id) {
@@ -659,34 +824,44 @@
     }
     const DEVICE_ID = getDeviceId();
 
+    function money(value) { return `${value.toLocaleString('ru-RU')} ₽`; }
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      toast.textContent = text;
+      toast.classList.add('active');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('active'), 2600);
+    }
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      document.getElementById('aboutSection').classList.toggle('active', tab === 'about');
+      document.getElementById('giftsSection').classList.toggle('active', tab === 'gifts');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     function initCalendarLinks() {
       const params = new URLSearchParams({
         action: 'TEMPLATE',
-        text: EVENT.title,
-        dates: `${EVENT.startUtc}/${EVENT.endUtc}`,
-        details: EVENT.details,
-        location: EVENT.location
+        text: eventData.title,
+        dates: `${eventData.calendar.startUtc}/${eventData.calendar.endUtc}`,
+        details: eventData.calendar.details,
+        location: eventData.location
       });
       document.getElementById('googleCalendarLink').href = `https://calendar.google.com/calendar/render?${params.toString()}`;
     }
-
     function toggleCalendarMenu(event) {
       event.stopPropagation();
       document.getElementById('calendarMenu').classList.toggle('active');
     }
-
     function closeCalendarMenu() {
       document.getElementById('calendarMenu').classList.remove('active');
     }
-
     function escapeIcsText(text) {
-      return text
-        .replace(/\\/g, '\\\\')
-        .replace(/\n/g, '\\n')
-        .replace(/,/g, '\\,')
-        .replace(/;/g, '\\;');
+      return text.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
     }
-
     function downloadIcs() {
       const ics = [
         'BEGIN:VCALENDAR',
@@ -694,21 +869,20 @@
         'PRODID:-//Birthday Wishlist//Birthday//RU',
         'CALSCALE:GREGORIAN',
         'BEGIN:VEVENT',
-        `UID:${EVENT.startUtc}-birthday-wishlist`,
+        `UID:${eventData.calendar.startUtc}-birthday-wishlist`,
         `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
-        `DTSTART:${EVENT.startUtc}`,
-        `DTEND:${EVENT.endUtc}`,
-        `SUMMARY:${escapeIcsText(EVENT.title)}`,
-        `DESCRIPTION:${escapeIcsText(EVENT.details)}`,
-        `LOCATION:${escapeIcsText(EVENT.location)}`,
+        `DTSTART:${eventData.calendar.startUtc}`,
+        `DTEND:${eventData.calendar.endUtc}`,
+        `SUMMARY:${escapeIcsText(eventData.title)}`,
+        `DESCRIPTION:${escapeIcsText(eventData.calendar.details)}`,
+        `LOCATION:${escapeIcsText(eventData.location)}`,
         'END:VEVENT',
         'END:VCALENDAR'
       ].join('\r\n');
-
       const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
       const link = document.createElement('a');
       link.href = url;
-      link.download = EVENT.fileName;
+      link.download = eventData.calendar.fileName;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -716,239 +890,30 @@
       closeCalendarMenu();
     }
 
-    // ===== ГЕНЕРАЦИЯ URL КАРТИНОК WB =====
-    function getWbBasket(vol) {
-      const ranges = [
-        143, 287, 431, 719, 1007, 1061, 1115, 1169, 1313, 1601,
-        1655, 1919, 2045, 2189, 2405
-      ];
-      for (let i = 0; i < ranges.length; i++) {
-        if (vol <= ranges[i]) return String(i + 1).padStart(2, '0');
-      }
-      return '16';
-    }
-
-    // Для товаров с vol > 2405 — перебираем диапазон корзин
-    function getBasketCandidates(vol) {
-      if (vol <= 2405) return [];
-      const diff = vol - 2406;
-      const lo = 16 + Math.floor(diff / 300);
-      const hi = 16 + Math.ceil(diff / 190);
-      const result = [];
-      for (let b = lo; b <= hi; b++) {
-        result.push(String(b).padStart(2, '0'));
-      }
-      return result;
-    }
-
-    function buildWbUrl(basket, vol, part, productId) {
-      return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${productId}/images/big/1.webp`;
-    }
-
-    // ===== ПОДАРКИ — РЕДАКТИРУЙТЕ ЗДЕСЬ =====
-    const gifts = [
-      {
-        id: 1,
-        name: "Детская декоративная косметика — чемоданчик",
-        description: "Большой чемоданчик косметики для девочек: тени, помады, блески, лаки, браслетик и аксессуары",
-        image: "https://basket-13.wbbasket.ru/vol1975/part197568/197568029/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/197568029/detail.aspx?size=320318581",
-        price: "1 993 ₽"
-      },
-      {
-        id: 2,
-        name: "Деревянный игровой набор «Салат»",
-        description: "Детки36 — деревянный набор для игры в кухню: салатник, овощи, столовые приборы и соусы",
-        image: "https://basket-13.wbbasket.ru/vol2003/part200345/200345516/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/200345516/detail.aspx?size=323925472",
-        price: "666 ₽"
-      },
-      {
-        id: 3,
-        name: "Набор для лепки детский",
-        description: "ZAZU-toys — набор для лепки с чемоданчиком-грилем, 6 формочек для разных ингредиентов",
-        image: "https://basket-10.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/146472439/detail.aspx?size=246541725",
-        price: "1 192 ₽"
-      },
-      {
-        id: 4,
-        name: "Сортер-вкладыш Мишки",
-        description: "Деревянный сортер-вкладыш, конструктор-персонаж, головоломка для малышей",
-        image: "https://basket-12.wbbasket.ru/vol1878/part187830/187830937/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/187830937/detail.aspx?size=307838308",
-        price: "565 ₽"
-      },
-      {
-        id: 5,
-        name: "Рамка-вкладыш Цикл жизни",
-        description: "Ulanik — рамка-вкладыш «Жизненный цикл», сортер Монтессори для развития логики",
-        image: "https://basket-16.wbbasket.ru/vol6154/part615410/615410277/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/615410277/detail.aspx?size=835619819",
-        price: "1 474 ₽"
-      },
-      {
-        id: 6,
-        name: "Детская гитара",
-        description: "Гитара для малышей — отличный первый музыкальный инструмент",
-        image: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop",
-        orderUrl: "https://ozon.ru/t/aHRh3Wv",
-        price: "2 845 ₽"
-      },
-      {
-        id: 7,
-        name: "Музыкальная книга БЕМБИ",
-        description: "Эксмо — музыкальная интерактивная книга с плеером БЕМБИ для малышей",
-        image: "https://basket-10.wbbasket.ru/vol1444/part144462/144462664/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/144462664/detail.aspx?size=243690013",
-        price: "1 931 ₽"
-      },
-      {
-        id: 8,
-        name: "Робот собака",
-        description: "IQ BOT — робот-собака на пульте управления, интерактивная игрушка",
-        image: "https://basket-15.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/226513086/detail.aspx?size=358602578",
-        price: "2 240 ₽"
-      },
-      {
-        id: 9,
-        name: "Набор для рисования",
-        description: "ПодделычЪ — большой набор для рисования для девочек: карандаши, фломастеры, краски",
-        image: "https://basket-16.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673",
-        price: "1 295 ₽"
-      },
-      {
-        id: 10,
-        name: "Деревянный алфавит",
-        description: "IQtoys — деревянные развивающие игрушки, алфавит для изучения букв",
-        image: "https://basket-16.wbbasket.ru/vol2869/part286977/286977987/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/286977987/detail.aspx?size=438949379",
-        price: "809 ₽"
-      },
-      {
-        id: 11,
-        name: "Раскраски для девочек",
-        description: "ALZI — набор раскрасок для девочек с яркими и интересными картинками",
-        image: "https://basket-16.wbbasket.ru/vol8613/part861392/861392230/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/861392230/detail.aspx?size=1296837436",
-        price: "283 ₽"
-      },
-      {
-        id: 12,
-        name: "Раскраска Котики и Животные",
-        description: "Раскраска для девочек — котики и животные, милые иллюстрации",
-        image: "https://basket-16.wbbasket.ru/vol8461/part846100/846100942/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/846100942/detail.aspx?size=1271849664",
-        price: "292 ₽"
-      },
-      {
-        id: 13,
-        name: "Пупс с набором доктора",
-        description: "UniTrain — кукла-пупс для девочки и набор доктора, игра в больничку",
-        image: "https://basket-16.wbbasket.ru/vol2891/part289105/289105207/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/289105207/detail.aspx?size=441394293",
-        price: "1 958 ₽"
-      },
-      {
-        id: 14,
-        name: "Телефон игрушка",
-        description: "Алисюшка — детский развивающий музыкальный телефон на USB, со звуками и мелодиями",
-        image: "https://basket-16.wbbasket.ru/vol3942/part394261/394261266/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/394261266/detail.aspx?size=570777158",
-        price: "575 ₽"
-      },
-      {
-        id: 15,
-        name: "Говорящая карта мира",
-        description: "Друг Кузя — развивающая говорящая карта мира с животными, интерактивная игрушка",
-        image: "https://basket-16.wbbasket.ru/vol4838/part483823/483823060/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/483823060/detail.aspx?size=675270123",
-        price: "2 002 ₽"
-      },
-      {
-        id: 16,
-        name: "Набор кухонный Монтессори",
-        description: "Игрозаврик — кухонный набор Монтессори для детей, 27 предметов",
-        image: "https://basket-16.wbbasket.ru/vol3958/part395843/395843188/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/395843188/detail.aspx?size=572510789",
-        price: "1 914 ₽"
-      },
-      {
-        id: 17,
-        name: "Стиральная машинка игрушечная",
-        description: "IGRUSHKI — стиральная машинка игрушечная с водой для детей",
-        image: "https://basket-14.wbbasket.ru/vol2087/part208791/208791754/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/208791754/detail.aspx?size=334583404",
-        price: "1 943 ₽"
-      },
-      {
-        id: 18,
-        name: "Детская посудомоечная машина",
-        description: "Happy Baby — посудомоечная машина мини, бытовая техника для детей",
-        image: "https://basket-12.wbbasket.ru/vol1828/part182869/182869013/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/182869013/detail.aspx?size=301548010",
-        price: "1 621 ₽"
-      },
-      {
-        id: 19,
-        name: "Детский туалетный столик с зеркалом",
-        description: "ChaoriMall — деревянный туалетный столик с зеркалом, игрушка для девочек",
-        image: "https://basket-15.wbbasket.ru/vol2317/part231733/231733020/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/231733020/detail.aspx?size=365681437",
-        price: "2 172 ₽"
-      },
-      {
-        id: 20,
-        name: "Деревянная лавка — Магазин детский",
-        description: "Zapata_toys — деревянная лавка-магазин для сюжетных игр",
-        image: "https://basket-16.wbbasket.ru/vol2999/part299909/299909899/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/299909899/detail.aspx?size=455814021",
-        price: "6 505 ₽"
-      },
-      {
-        id: 21,
-        name: "Игровой набор «Салон красоты»",
-        description: "Toys@Children — деревянный игровой набор «Салон красоты» для детей",
-        image: "https://basket-10.wbbasket.ru/vol1333/part133393/133393539/images/big/1.webp",
-        orderUrl: "https://www.wildberries.ru/catalog/133393539/detail.aspx?size=229014397",
-        price: "1 684 ₽"
-      }
-    ];
-    // ===== КОНЕЦ СПИСКА ПОДАРКОВ =====
-
-    let reserved = {};
-
     function getLocalReservations() {
-      try {
-        return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}');
-      } catch {
-        return {};
-      }
+      try { return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}'); }
+      catch { return {}; }
     }
-
     function setLocalReservations(nextReserved) {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextReserved));
     }
-
+    function getRatings() {
+      try { return JSON.parse(localStorage.getItem(RATING_STORAGE_KEY) || '{}'); }
+      catch { return {}; }
+    }
+    function setRatings(nextRatings) {
+      ratings = nextRatings;
+      localStorage.setItem(RATING_STORAGE_KEY, JSON.stringify(nextRatings));
+    }
     async function apiRequest(action, payload = {}) {
       if (!RESERVATION_API_URL) {
         if (action === 'list') return Object.values(getLocalReservations());
-
         const nextReserved = getLocalReservations();
-        if (action === 'reserve') {
-          nextReserved[payload.gift_id] = {
-            gift_id: payload.gift_id,
-            name: payload.name,
-            device_id: payload.device_id
-          };
-        }
+        if (action === 'reserve') nextReserved[payload.gift_id] = { ...payload };
         if (action === 'unreserve') delete nextReserved[payload.gift_id];
         setLocalReservations(nextReserved);
         return { ok: true };
       }
-
       const response = await fetch(RESERVATION_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -958,33 +923,36 @@
       if (!result.ok) throw new Error(result.error || 'Reservation API error');
       return action === 'list' ? result.reservations : result;
     }
-
     async function loadReserved() {
       try {
         const data = await apiRequest('list');
         reserved = {};
-        if (data) {
-          data.forEach(r => {
-            reserved[r.gift_id] = { name: r.name, device_id: r.device_id };
-          });
-        }
+        data.forEach(r => { reserved[r.gift_id] = { name: r.name, device_id: r.device_id, contact: r.contact, comment: r.comment }; });
       } catch (error) {
         console.error(error);
+        showToast('Не удалось загрузить бронирования. Попробуйте обновить страницу.');
       }
       renderGifts();
-      updateCounter();
     }
 
+    function buildWbUrl(basket, vol, part, productId) {
+      return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${productId}/images/big/1.webp`;
+    }
+    function getBasketCandidates(vol) {
+      if (vol <= 2405) return [];
+      const diff = vol - 2406;
+      const lo = 16 + Math.floor(diff / 300);
+      const hi = 16 + Math.ceil(diff / 190);
+      return Array.from({ length: hi - lo + 1 }, (_, i) => String(lo + i).padStart(2, '0'));
+    }
     function handleImgError(img, orderUrl) {
       const match = orderUrl && orderUrl.match(/catalog\/(\d+)\//);
       if (!match) { showPlaceholder(img); return; }
-
-      const productId = parseInt(match[1]);
+      const productId = parseInt(match[1], 10);
       const vol = Math.floor(productId / 100000);
       const part = Math.floor(productId / 1000);
-      const tried = parseInt(img.dataset.tried || '0');
+      const tried = parseInt(img.dataset.tried || '0', 10);
       const candidates = getBasketCandidates(vol);
-
       if (tried < candidates.length) {
         img.dataset.tried = String(tried + 1);
         img.src = buildWbUrl(candidates[tried], vol, part, productId);
@@ -992,138 +960,201 @@
         showPlaceholder(img);
       }
     }
-
     function showPlaceholder(img) {
       img.onerror = null;
       img.style.display = 'none';
-      img.parentElement.insertAdjacentHTML('beforeend',
-        '<div class="gift-image-placeholder">🎁</div>');
+      img.parentElement.insertAdjacentHTML('beforeend', '<div class="gift-image" style="display:grid;place-items:center;font-size:48px;">🎁</div>');
     }
 
-    function updateCounter() {
-      const count = Object.keys(reserved).length;
-      const el = document.getElementById("counter");
-      const num = document.getElementById("counter-num");
-      const total = document.getElementById("counter-total");
-      num.textContent = count;
-      total.textContent = gifts.length;
-      el.style.display = count > 0 ? "inline-flex" : "none";
+    function renderEvent() {
+      document.getElementById('heroTitle').textContent = `С Днём Рождения, ${eventData.childName}!`;
+      document.getElementById('eventHeading').textContent = `🎈 Приглашение на ${eventData.title}`;
+      document.getElementById('eventDateButton').textContent = `📅 ${eventData.dateLabel}`;
+      document.getElementById('introText').textContent = eventData.intro;
+      document.getElementById('weatherText').textContent = eventData.weather;
+      document.getElementById('placeText').innerHTML = `${eventData.location.replace(', Москва,', '<br>Москва,')}`;
+      document.getElementById('mapLink').href = eventData.mapUrl;
+      document.getElementById('wishlistTitle').textContent = `Виш-лист ${eventData.childName} 🎁`;
+      document.getElementById('serviceSignature').textContent = `Создано в ${SERVICE_NAME}`;
+      initCalendarLinks();
     }
-
-    let pendingReserveId = null;
-
-    function openReserveModal(id) {
-      const gift = gifts.find(g => g.id === id);
-      if (!gift) return;
-      pendingReserveId = id;
-      document.getElementById('modalGiftName').textContent = gift.name;
-      document.getElementById('reserveName').value = '';
-      document.getElementById('reserveModal').classList.add('active');
-      setTimeout(() => document.getElementById('reserveName').focus(), 100);
+    function renderFilters() {
+      document.getElementById('filters').innerHTML = filters.map(filter =>
+        `<button class="filter-btn ${currentFilter === filter.id ? 'active' : ''}" type="button" onclick="setFilter('${filter.id}')">${filter.label}</button>`
+      ).join('');
     }
-
-    function closeModal() {
-      document.getElementById('reserveModal').classList.remove('active');
-      pendingReserveId = null;
+    function setFilter(filterId) {
+      currentFilter = filterId;
+      renderFilters();
+      renderGifts();
     }
-
-    async function confirmReserve() {
-      if (pendingReserveId === null) return;
-      const name = document.getElementById('reserveName').value.trim() || 'Аноним';
-      const id = pendingReserveId;
-      try {
-        await apiRequest('reserve', { gift_id: id, name, device_id: DEVICE_ID });
-        reserved[id] = { name, device_id: DEVICE_ID };
-        closeModal();
-        renderGifts();
-        updateCounter();
-        animateCard(id);
-      } catch (error) {
-        console.error(error);
-        alert('Не удалось сохранить бронь. Обновите страницу и попробуйте еще раз.');
-      }
+    function getFilteredGifts() {
+      const filter = filters.find(item => item.id === currentFilter);
+      return filter && filter.test ? gifts.filter(filter.test) : gifts;
     }
-
-    async function unreserve(id) {
-      try {
-        await apiRequest('unreserve', { gift_id: id, device_id: DEVICE_ID });
-        delete reserved[id];
-        renderGifts();
-        updateCounter();
-        animateCard(id);
-      } catch (error) {
-        console.error(error);
-        alert('Не удалось отменить бронь. Обновите страницу и попробуйте еще раз.');
-      }
+    function statusText(giftId) {
+      return reserved[giftId] ? '💝 Уже выбрали' : '🟢 Свободен';
     }
-
-    function animateCard(id) {
-      const card = document.querySelector(`[data-id="${id}"]`);
-      if (card) {
-        card.classList.add("animating");
-        setTimeout(() => card.classList.remove("animating"), 300);
-      }
-    }
-
     function renderGifts() {
-      const grid = document.getElementById("gifts-grid");
-      grid.innerHTML = gifts.map(gift => {
+      const filtered = getFilteredGifts();
+      document.getElementById('emptyState').hidden = filtered.length !== 0;
+      document.getElementById('giftsGrid').innerHTML = filtered.map(gift => {
         const info = reserved[gift.id];
         const isReserved = !!info;
         const isMine = info && info.device_id === DEVICE_ID;
-        const reservedName = info ? info.name || 'Аноним' : '';
-        let reserveBtn = '';
-        if (!isReserved) {
-          reserveBtn = `<button class="btn btn-reserve" onclick="openReserveModal(${gift.id})">
-            <svg class="icon" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            Забронировать</button>`;
-        } else if (isMine) {
-          reserveBtn = `<button class="btn btn-unreserve" onclick="unreserve(${gift.id})">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            Отменить</button>`;
-        } else {
-          reserveBtn = `<button class="btn btn-taken" disabled>
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-            Уже забронировано</button>`;
-        }
+        const buyButton = gift.orderUrl
+          ? `<a href="${gift.orderUrl}" target="_blank" rel="noopener" class="map-btn">Где купить</a>`
+          : `<button class="secondary-btn disabled" type="button">Ссылка скоро</button>`;
+        const reserveButton = isReserved
+          ? `<button class="soft-btn disabled" type="button">${isMine ? 'Забронировано' : 'Уже выбрали'}</button>`
+          : `<button class="secondary-btn" type="button" onclick="openReserveModal(${gift.id})">Забронировать</button>`;
         return `
-          <div class="gift-card ${isReserved ? 'reserved' : ''}" data-id="${gift.id}">
-            <div class="badge">❤ Забронировано${reservedName ? `<span class="reserved-by"> (${reservedName})</span>` : ''}</div>
+          <article class="gift-card ${isReserved ? 'reserved' : ''}">
+            <span class="status-pill">${statusText(gift.id)}</span>
             <div class="gift-image-wrap">
-              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy"
-                onerror="handleImgError(this, '${gift.orderUrl}')" />
+              <img class="gift-image" src="${gift.image}" alt="${gift.name}" loading="lazy" onerror="handleImgError(this, '${gift.orderUrl || ''}')" />
             </div>
             <div class="gift-body">
-              <h3>${gift.name}</h3>
-              <p class="desc">${gift.description}</p>
-              ${gift.price ? `<div class="price">${gift.price}</div>` : ''}
-              <div class="buttons">
-                <a href="${gift.orderUrl}" target="_blank" rel="noopener" class="btn btn-order">
-                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  Где купить
-                </a>
-                ${reserveBtn}
+              <h3 class="gift-title">${gift.name}</h3>
+              <p class="gift-desc">${gift.description}</p>
+              <div class="gift-meta">
+                <span class="price">${gift.price}</span>
+                <span class="category">${gift.category}</span>
               </div>
+              <div class="gift-actions">${buyButton}${reserveButton}</div>
             </div>
-          </div>
-        `;
+          </article>`;
       }).join('');
+      renderRatings();
+    }
+    function openReserveModal(id) {
+      const gift = gifts.find(item => item.id === id);
+      if (!gift) return;
+      pendingReserveId = id;
+      document.getElementById('reserveGiftName').textContent = gift.name;
+      document.getElementById('reserveName').value = '';
+      document.getElementById('reserveContact').value = '';
+      document.getElementById('reserveComment').value = '';
+      openModal('reserveModal');
+      setTimeout(() => document.getElementById('reserveName').focus(), 80);
+    }
+    async function confirmReserve() {
+      if (pendingReserveId === null) return;
+      const payload = {
+        gift_id: pendingReserveId,
+        name: document.getElementById('reserveName').value.trim() || 'Гость',
+        contact: document.getElementById('reserveContact').value.trim(),
+        comment: document.getElementById('reserveComment').value.trim(),
+        device_id: DEVICE_ID
+      };
+      try {
+        await apiRequest('reserve', payload);
+        reserved[pendingReserveId] = payload;
+        pendingReserveId = null;
+        closeModal('reserveModal');
+        renderGifts();
+        showToast('Готово! Подарок забронирован 💝');
+      } catch (error) {
+        console.error(error);
+        showToast('Не удалось сохранить бронь. Попробуйте ещё раз.');
+      }
     }
 
-    // Keyboard support for modal
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeCalendarMenu();
-        if (document.getElementById('reserveModal').classList.contains('active')) closeModal();
-      }
-      if (e.key === 'Enter' && document.getElementById('reserveModal').classList.contains('active')) confirmReserve();
-    });
-    document.addEventListener('click', closeCalendarMenu);
-    document.getElementById('calendarMenu').addEventListener('click', e => e.stopPropagation());
+    function renderProductBlocks() {
+      document.getElementById('aboutProductBlocks').innerHTML = `
+        <div class="upgrade-card">
+          <h3>Полная карточка - ${PAID_PRICE} ₽</h3>
+          <p>Апгрейд для карточек, где нужно больше подарков, больше оформления и тёплое продолжение после праздника.</p>
+          <div class="feature-list">
+            <span>✓ больше подарков</span>
+            <span>✓ красивые шаблоны</span>
+            <span>✓ благодарность гостям после праздника</span>
+            <span>✓ расширенное оформление</span>
+          </div>
+          <button class="primary-btn" type="button" onclick="openModal('upgradeModal')">Посмотреть апгрейд</button>
+        </div>
+        <div class="future-card">
+          <h3>Шаблоны приглашений</h3>
+          <div class="template-list">${invitationTemplates.map(t => `<div class="mini-option"><b>${t.name}</b><br>${t.text}</div>`).join('')}</div>
+        </div>`;
 
-    initCalendarLinks();
-    renderGifts();
-    updateCounter();
+      document.getElementById('giftProductBlocks').innerHTML = `
+        <div class="upgrade-card">
+          <h3>Бесплатная карточка</h3>
+          <p>Бесплатно: до ${FREE_GIFT_LIMIT} подарков, базовая карточка и подпись «Создано в ${SERVICE_NAME}».</p>
+          <button class="primary-btn" type="button" onclick="tryAddGift()">Добавить подарок</button>
+        </div>
+        <div class="future-card">
+          <h3>Благодарность гостям</h3>
+          <p>Платная заготовка: выберите текст и скопируйте его после праздника.</p>
+          <button class="primary-btn" type="button" onclick="showToast('Выберите один из текстов ниже 💕')">Создать благодарность гостям</button>
+          <div class="thanks-options">${thanksTemplates.map((t, index) => `<button class="mini-option" type="button" onclick="copyThanks(${index})"><b>${t.name}</b><br>${t.text}</button>`).join('')}</div>
+        </div>
+        <div class="future-card">
+          <h3>Что реально понравилось ребёнку?</h3>
+          <p>Локальная UI-заготовка для будущей базы реального опыта подарков.</p>
+          <div id="ratingList"></div>
+        </div>
+        <div class="future-card">
+          <h3>Скоро: идеи подарков по возрасту и интересам</h3>
+          <div class="idea-list">${futureIdeas.map(item => `<div class="mini-option">${item}</div>`).join('')}</div>
+        </div>`;
+    }
+    function tryAddGift() {
+      if (!isPaidPlan && gifts.length >= FREE_GIFT_LIMIT) {
+        openModal('upgradeModal');
+        return;
+      }
+      showToast('Заготовка добавления подарка появится в конструкторе 💝');
+    }
+    function activateTestAccess() {
+      isPaidPlan = true;
+      closeModal('upgradeModal');
+      showToast('Тестовый доступ активирован.');
+    }
+    function openCreateStub() { openModal('createModal'); }
+    async function copyThanks(index) {
+      const text = thanksTemplates[index].text;
+      try {
+        await navigator.clipboard.writeText(text);
+        showToast('Текст благодарности скопирован 💕');
+      } catch {
+        showToast(text);
+      }
+    }
+    function renderRatings() {
+      const ratingList = document.getElementById('ratingList');
+      if (!ratingList) return;
+      ratingList.innerHTML = gifts.slice(0, 5).map(gift => `
+        <div class="rating-row">
+          <b>${gift.name}</b>
+          <div class="rating-buttons">
+            ${['🔥 очень понравился', '🙂 нормально', '😕 почти не играли', '💎 лучший подарок'].map(value =>
+              `<button type="button" class="${ratings[gift.id] === value ? 'active' : ''}" onclick="setRating(${gift.id}, '${value}')">${value}</button>`
+            ).join('')}
+          </div>
+        </div>`).join('');
+    }
+    function setRating(giftId, value) {
+      setRatings({ ...ratings, [giftId]: value });
+      renderRatings();
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+    document.addEventListener('click', closeCalendarMenu);
+    document.getElementById('calendarMenu').addEventListener('click', event => event.stopPropagation());
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') {
+        closeCalendarMenu();
+        ['reserveModal', 'upgradeModal', 'createModal'].forEach(closeModal);
+      }
+      if (event.key === 'Enter' && document.getElementById('reserveModal').classList.contains('active')) confirmReserve();
+    });
+
+    renderEvent();
+    renderFilters();
+    renderProductBlocks();
+    ratings = getRatings();
     loadReserved();
     if (RESERVATION_API_URL) setInterval(loadReserved, 15000);
   </script>
