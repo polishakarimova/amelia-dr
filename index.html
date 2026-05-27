@@ -216,7 +216,10 @@
       background: linear-gradient(145deg, #fff, #ffe4ee);
       font-size: 42px;
       box-shadow: inset 0 0 0 1px rgba(237,79,134,.15), 0 14px 36px rgba(237,79,134,.18);
+      background-size: cover;
+      background-position: center;
     }
+    .child-avatar.has-photo { color: transparent; }
     .phone-title {
       text-align: center;
       font-size: 24px;
@@ -571,6 +574,63 @@
       grid-template-columns: 1fr 1fr;
       gap: 12px;
     }
+    .photo-uploader {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 94px 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.72);
+    }
+    .photo-preview {
+      width: 94px;
+      height: 94px;
+      border-radius: 28px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, #fff, var(--soft));
+      box-shadow: inset 0 0 0 1px rgba(31,31,36,.08);
+      font-size: 38px;
+      overflow: hidden;
+      background-size: cover;
+      background-position: center;
+    }
+    .photo-preview.has-photo { color: transparent; }
+    .photo-uploader h3 {
+      font-size: 18px;
+      letter-spacing: -.03em;
+      margin-bottom: 5px;
+    }
+    .photo-uploader p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+    .photo-uploader input { display: none; }
+    .place-tools {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.62);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .place-tools a {
+      flex: 0 0 auto;
+      color: var(--pink-dark);
+      font-weight: 800;
+      text-decoration: none;
+    }
     .theme-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -797,6 +857,7 @@
       .gift-grid { grid-template-columns: 1fr; }
       .gift-actions { grid-template-columns: 1fr; }
       .form-grid { grid-template-columns: 1fr; }
+      .photo-uploader { grid-template-columns: 1fr; }
       .builder-actions { display: grid; }
       .edit-gift { grid-template-columns: 52px 1fr; }
       .edit-gift .btn { grid-column: 1 / -1; }
@@ -858,7 +919,7 @@
             <h3>День рождения Амелии</h3>
             <div class="pill">📅 14 июня 2026 в 15:00</div>
             <p>Центральный парк культуры и отдыха имени Горького, Москва</p>
-            <a class="btn btn-soft" href="https://yandex.ru/maps/?text=%D0%A6%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%93%D0%BE%D1%80%D1%8C%D0%BA%D0%BE%D0%B3%D0%BE%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" target="_blank" rel="noopener">Открыть карту</a>
+            <a class="btn btn-soft" id="exampleMapLink" href="https://yandex.ru/maps/?text=%D0%A6%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%93%D0%BE%D1%80%D1%8C%D0%BA%D0%BE%D0%B3%D0%BE%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" target="_blank" rel="noopener">Открыть карту</a>
           </div>
           <div class="mini-panel"><b>Что учесть</b><p>Активная часть будет на улице, лучше выбрать удобную одежду по погоде.</p></div>
           <div class="mini-panel"><b>Про подарки</b><p>Главное - ваше присутствие. Вишлист только помогает не повторяться.</p></div>
@@ -918,9 +979,22 @@
             <h2>Расскажите о празднике</h2>
             <p>Это основа карточки: имя ребёнка, дата, место и мягкий текст приглашения.</p>
             <div class="form-grid">
+              <div class="photo-uploader">
+                <div class="photo-preview" id="photoPreview">👧</div>
+                <div>
+                  <h3>Фото ребёнка</h3>
+                  <p>Загрузите фото, а WishCard аккуратно обрежет его в квадрат и вставит в карточку праздника.</p>
+                  <label class="btn btn-soft" for="childPhoto">Добавить фото</label>
+                  <input id="childPhoto" type="file" accept="image/*" />
+                </div>
+              </div>
               <label>Имя ребёнка<input id="childName" value="Амелия" /></label>
               <label>Дата и время<input id="eventDate" value="14 июня 2026 в 15:00" /></label>
               <label class="full">Место<input id="eventPlace" value="Центральный парк Горького, Москва" /></label>
+              <div class="place-tools">
+                <span>Пишите название места или адрес — ссылка на Яндекс Карты обновится автоматически.</span>
+                <a id="yandexPlaceLink" href="#" target="_blank" rel="noopener">Проверить на карте</a>
+              </div>
               <label class="full">Текст приглашения<textarea id="inviteText">Приглашаем вас на праздник в честь дня рождения Амелии. Будем рады провести этот день рядом с близкими людьми.</textarea></label>
             </div>
             <div class="builder-actions">
@@ -988,6 +1062,7 @@
     let builderUnlocked = false;
     let builderGiftCount = 5;
     let selectedTheme = 'girl';
+    let childPhotoDataUrl = '';
     const reserved = {};
 
     const gifts = [
@@ -1034,13 +1109,69 @@
       });
       if (theme === 'boy') {
         document.querySelector('.brand-mark').textContent = '🚀';
+        document.getElementById('photoPreview').textContent = childPhotoDataUrl ? '' : '🚀';
         document.getElementById('childName').value = 'Миша';
         document.getElementById('inviteText').value = 'Приглашаем вас на праздник в честь дня рождения Миши. Будем рады провести этот день рядом с близкими людьми.';
       } else {
         document.querySelector('.brand-mark').textContent = '💝';
+        document.getElementById('photoPreview').textContent = childPhotoDataUrl ? '' : '👧';
         document.getElementById('childName').value = 'Амелия';
         document.getElementById('inviteText').value = 'Приглашаем вас на праздник в честь дня рождения Амелии. Будем рады провести этот день рядом с близкими людьми.';
       }
+    }
+    function cropImageToSquare(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          const image = new Image();
+          image.onerror = reject;
+          image.onload = () => {
+            const size = Math.min(image.width, image.height);
+            const sourceX = Math.round((image.width - size) / 2);
+            const sourceY = Math.round((image.height - size) / 2);
+            const canvas = document.createElement('canvas');
+            canvas.width = 720;
+            canvas.height = 720;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(image, sourceX, sourceY, size, size, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL('image/jpeg', 0.9));
+          };
+          image.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    function applyChildPhoto(dataUrl) {
+      childPhotoDataUrl = dataUrl;
+      const targets = [document.getElementById('photoPreview'), ...document.querySelectorAll('.child-avatar')];
+      targets.forEach(target => {
+        target.classList.add('has-photo');
+        target.style.backgroundImage = `url("${dataUrl}")`;
+        target.textContent = '';
+      });
+    }
+    async function handleChildPhoto(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await cropImageToSquare(file);
+        applyChildPhoto(dataUrl);
+        showToast('Фото добавлено и красиво обрезано');
+      } catch (error) {
+        console.error(error);
+        showToast('Не удалось загрузить фото. Попробуйте другой файл.');
+      }
+    }
+    function yandexMapsUrl(place) {
+      const query = encodeURIComponent((place || '').trim() || 'Центральный парк Горького, Москва');
+      return `https://yandex.ru/maps/?text=${query}`;
+    }
+    function syncPlaceMapLink() {
+      const place = document.getElementById('eventPlace').value;
+      const href = yandexMapsUrl(place);
+      document.getElementById('yandexPlaceLink').href = href;
+      document.getElementById('exampleMapLink').href = href;
     }
     function renderHomePreview() {
     }
@@ -1137,6 +1268,8 @@
       }
     }
     document.querySelectorAll('.step-btn').forEach(btn => btn.addEventListener('click', () => setBuilderStep(btn.dataset.step)));
+    document.getElementById('childPhoto').addEventListener('change', handleChildPhoto);
+    document.getElementById('eventPlace').addEventListener('input', syncPlaceMapLink);
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape') closeReserveModal();
       if (event.key === 'Enter' && document.getElementById('reserveModal').classList.contains('active')) confirmReserve();
@@ -1146,6 +1279,7 @@
     renderFilters();
     renderGifts();
     renderBuilderGifts();
+    syncPlaceMapLink();
   </script>
 </body>
 </html>
