@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>Повод</title>
+  <script>
+    const base = '/amelia-dr';
+    const path = location.pathname.startsWith(base)
+      ? location.pathname.slice(base.length)
+      : location.pathname;
+    location.replace(`${base}/?path=${encodeURIComponent((path || '/') + location.search + location.hash)}`);
+  </script>
+</head>
+<body></body>
+</html>

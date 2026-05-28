@@ -3,105 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>WishCard - цифровой вишлист праздника</title>
-  <meta name="description" content="Одна ссылка для гостей: приглашение, место, детали праздника и вишлист подарков." />
+  <title>Повод — карточка праздника в одной ссылке</title>
+  <meta name="description" content="Есть повод — собрать праздник в одной ссылке. Дата, место, пожелания и подарки в аккуратной карточке для гостей." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; }
     :root {
-      --bg: #fbf7f8;
-      --surface: rgba(255,255,255,.78);
-      --surface-strong: #fff;
-      --text: #1f1f24;
-      --muted: #6f6870;
-      --soft: #f3edf0;
-      --line: rgba(31,31,36,.09);
-      --pink: #ed4f86;
-      --pink-dark: #c7356a;
-      --peach: #ffb36c;
-      --green: #2f8f63;
-      --shadow: 0 24px 70px rgba(45, 31, 41, .12);
-      --radius: 28px;
+      --milk: #fbf6ef;
+      --paper: rgba(255,255,255,.76);
+      --paper-strong: #fff;
+      --ink: #252321;
+      --muted: #706a64;
+      --line: rgba(37,35,33,.1);
+      --coral: #e66f5c;
+      --coral-dark: #b84839;
+      --lavender: #b9a8ff;
+      --blue: #8fc7e8;
+      --sand: #f2e5d7;
+      --green: #3f8d68;
+      --shadow: 0 24px 70px rgba(53,39,31,.13);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 16px;
     }
-    body.theme-boy {
-      --bg: #f5f9ff;
-      --soft: #eef6ff;
-      --pink: #3b82f6;
-      --pink-dark: #1d4ed8;
-      --peach: #67e8f9;
-      --green: #0f8a73;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(103, 232, 249, .25), transparent 38%),
-        radial-gradient(circle at 8% 16%, rgba(59, 130, 246, .15), transparent 28%),
-        linear-gradient(180deg, #fff 0%, var(--bg) 44%, #f0fbff 100%);
-    }
+    html { scroll-behavior: smooth; }
     body {
+      margin: 0;
       min-height: 100vh;
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+      color: var(--ink);
       background:
-        radial-gradient(circle at 50% -10%, rgba(255, 179, 108, .26), transparent 38%),
-        radial-gradient(circle at 8% 16%, rgba(237, 79, 134, .14), transparent 28%),
-        linear-gradient(180deg, #fff 0%, var(--bg) 44%, #fff7f0 100%);
+        radial-gradient(circle at 9% 10%, rgba(230,111,92,.20), transparent 28%),
+        radial-gradient(circle at 84% 7%, rgba(185,168,255,.24), transparent 26%),
+        radial-gradient(circle at 76% 74%, rgba(143,199,232,.20), transparent 30%),
+        linear-gradient(180deg, #fffaf4 0%, var(--milk) 45%, #fff 100%);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
-    button, input, textarea { font: inherit; }
+    button, input, textarea, select { font: inherit; }
     button { cursor: pointer; }
     a { color: inherit; }
-    .app {
+    .shell {
       width: min(1180px, 100%);
       margin: 0 auto;
       padding: calc(16px + env(safe-area-inset-top)) 18px 34px;
     }
-    .nav {
+    .topbar {
       position: sticky;
       top: 0;
-      z-index: 30;
+      z-index: 20;
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      align-items: center;
+      gap: 14px;
       padding: calc(10px + env(safe-area-inset-top)) 0 12px;
       margin-top: calc(-10px - env(safe-area-inset-top));
+      background: linear-gradient(180deg, rgba(251,246,239,.95), rgba(251,246,239,.68));
       backdrop-filter: blur(18px);
-      background: linear-gradient(180deg, rgba(251,247,248,.92), rgba(251,247,248,.62));
     }
     .brand {
       display: inline-flex;
       align-items: center;
       gap: 10px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
       font-weight: 800;
-      letter-spacing: -.02em;
+      font-size: 18px;
+      letter-spacing: -.03em;
+      text-decoration: none;
     }
     .brand-mark {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       display: grid;
       place-items: center;
-      border-radius: 12px;
-      background: linear-gradient(145deg, #ffb2cd, #fff);
-      box-shadow: inset 0 0 0 1px rgba(237,79,134,.18), 0 10px 24px rgba(237,79,134,.16);
+      border-radius: 14px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.95), rgba(255,255,255,.56)),
+        radial-gradient(circle at 30% 25%, rgba(230,111,92,.35), transparent 42%);
+      border: 1px solid rgba(230,111,92,.22);
+      box-shadow: 0 10px 28px rgba(230,111,92,.16);
+      color: var(--coral-dark);
+      font-size: 18px;
     }
-    body.theme-boy .brand-mark {
-      background: linear-gradient(145deg, #bfdbfe, #fff);
-      box-shadow: inset 0 0 0 1px rgba(59,130,246,.18), 0 10px 24px rgba(59,130,246,.16);
-    }
-    .nav-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
     .btn {
-      min-height: 44px;
+      min-height: 42px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      border: 0;
       border-radius: 999px;
-      padding: 12px 18px;
+      border: 0;
+      padding: 11px 17px;
       font-weight: 750;
       text-decoration: none;
       transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
@@ -109,27 +105,28 @@
     }
     .btn:active { transform: scale(.98); }
     .btn-primary {
+      background: var(--ink);
       color: #fff;
-      background: #1f1f24;
-      box-shadow: 0 16px 34px rgba(31,31,36,.18);
+      box-shadow: 0 16px 34px rgba(37,35,33,.18);
     }
-    .btn-primary:hover { box-shadow: 0 18px 42px rgba(31,31,36,.24); }
-    .btn-pink {
+    .btn-accent {
+      background: linear-gradient(135deg, var(--coral), #e8a05d);
       color: #fff;
-      background: linear-gradient(135deg, var(--pink), var(--peach));
-      box-shadow: 0 18px 42px rgba(237,79,134,.24);
-    }
-    .btn-ghost {
-      color: var(--text);
-      background: rgba(255,255,255,.74);
-      border: 1px solid var(--line);
+      box-shadow: 0 18px 42px rgba(230,111,92,.24);
     }
     .btn-soft {
-      color: var(--pink-dark);
-      background: #fff0f5;
-      border: 1px solid rgba(237,79,134,.15);
+      background: rgba(255,255,255,.72);
+      color: var(--ink);
+      border: 1px solid var(--line);
     }
-    .view { display: none; animation: enter .28s ease both; }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid transparent;
+    }
+    .btn-small { min-height: 34px; padding: 8px 12px; font-size: 13px; }
+    .btn-danger { color: #9b2f26; background: #fff1ee; border: 1px solid rgba(230,111,92,.25); }
+    .view { display: none; animation: enter .24s ease both; }
     .view.active { display: block; }
     @keyframes enter {
       from { opacity: 0; transform: translateY(8px); }
@@ -137,1149 +134,774 @@
     }
     .hero {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr .92fr;
+      gap: 42px;
       align-items: center;
-      max-width: 820px;
-      margin: 0 auto;
-      text-align: center;
-      padding: 58px 0 28px;
+      padding: 58px 0 38px;
     }
     .eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
+      margin-bottom: 18px;
       border-radius: 999px;
-      background: rgba(255,255,255,.78);
+      background: rgba(255,255,255,.75);
       border: 1px solid var(--line);
-      color: var(--pink-dark);
+      color: var(--coral-dark);
       font-size: 13px;
       font-weight: 800;
-      margin-bottom: 18px;
     }
+    h1, h2, h3, h4 { margin: 0; letter-spacing: -.045em; }
     h1 {
-      font-size: clamp(42px, 6vw, 74px);
+      max-width: 760px;
+      font-size: clamp(42px, 6vw, 76px);
       line-height: .98;
-      letter-spacing: -.065em;
       margin-bottom: 20px;
       text-wrap: balance;
     }
     .lead {
-      max-width: 580px;
-      margin-left: auto;
-      margin-right: auto;
+      max-width: 640px;
       color: var(--muted);
-      font-size: clamp(17px, 2.2vw, 21px);
+      font-size: clamp(17px, 2vw, 21px);
       line-height: 1.55;
-      margin-bottom: 26px;
+      margin: 0 0 26px;
       text-wrap: pretty;
     }
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-    .microcopy {
-      color: #8b838b;
-      font-size: 13px;
-      line-height: 1.5;
-      max-width: 560px;
-      margin: 0 auto;
-    }
-    .device {
-      width: min(380px, 100%);
-      margin: 0 auto;
-      padding: 12px;
-      border-radius: 44px;
-      background: linear-gradient(145deg, rgba(255,255,255,.88), rgba(255,255,255,.5));
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+    .microcopy { max-width: 620px; color: #817970; font-size: 13px; line-height: 1.55; }
+    .mockup {
+      position: relative;
+      min-height: 560px;
+      padding: 20px;
+      border-radius: 42px;
+      background: linear-gradient(145deg, rgba(255,255,255,.86), rgba(255,255,255,.48));
       border: 1px solid rgba(255,255,255,.9);
       box-shadow: var(--shadow);
-    }
-    .phone-screen {
-      min-height: 650px;
-      border-radius: 34px;
       overflow: hidden;
-      background: linear-gradient(180deg, #fff7fa, #fff 48%, #fff7ee);
-      border: 1px solid rgba(31,31,36,.08);
+    }
+    .mockup::before {
+      content: "";
+      position: absolute;
+      inset: -80px -60px auto auto;
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(185,168,255,.38), transparent 68%);
+    }
+    .mock-card {
       position: relative;
-    }
-    .phone-content { padding: 26px 18px; }
-    .child-avatar {
-      width: 88px;
-      height: 88px;
-      margin: 0 auto 14px;
-      display: grid;
-      place-items: center;
-      border-radius: 32px;
-      background: linear-gradient(145deg, #fff, #ffe4ee);
-      font-size: 42px;
-      box-shadow: inset 0 0 0 1px rgba(237,79,134,.15), 0 14px 36px rgba(237,79,134,.18);
-      background-size: cover;
-      background-position: center;
-    }
-    .child-avatar.has-photo { color: transparent; }
-    .phone-title {
-      text-align: center;
-      font-size: 24px;
-      line-height: 1.15;
-      letter-spacing: -.04em;
-      margin-bottom: 7px;
-    }
-    .phone-subtitle {
-      text-align: center;
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 16px;
-    }
-    .mini-panel, .card {
-      background: var(--surface);
+      padding: 22px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.86);
       border: 1px solid var(--line);
+      box-shadow: 0 18px 54px rgba(53,39,31,.12);
+    }
+    .cover {
+      min-height: 132px;
       border-radius: 24px;
-      box-shadow: 0 12px 38px rgba(31,31,36,.08);
-    }
-    .mini-panel {
-      padding: 15px;
-      margin-bottom: 10px;
-    }
-    .mini-panel b {
-      display: block;
-      margin-bottom: 5px;
-      letter-spacing: -.02em;
-    }
-    .mini-panel p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    .gift-mini {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(230,111,92,.34), transparent 34%),
+        radial-gradient(circle at 78% 16%, rgba(143,199,232,.34), transparent 34%),
+        linear-gradient(135deg, #fff2e8, #efeaff);
+      margin-bottom: 16px;
       display: grid;
-      grid-template-columns: 64px 1fr;
-      gap: 12px;
+      align-items: end;
+      padding: 16px;
+    }
+    .cover span {
+      width: fit-content;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+      color: var(--coral-dark);
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .mock-card h3 { font-size: 28px; margin-bottom: 8px; }
+    .muted { color: var(--muted); }
+    .mini-row {
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 10px;
       align-items: center;
-      padding: 11px;
-      background: rgba(255,255,255,.72);
+      padding: 11px 0;
+      border-top: 1px solid var(--line);
+    }
+    .mini-icon {
+      width: 32px; height: 32px;
+      display: grid; place-items: center;
+      border-radius: 11px;
+      background: var(--sand);
+      color: var(--coral-dark);
+      font-size: 14px;
+    }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
       border: 1px solid var(--line);
-      border-radius: 20px;
-      margin-bottom: 8px;
-    }
-    .gift-mini img {
-      width: 64px;
-      height: 64px;
-      border-radius: 16px;
-      object-fit: cover;
-      background: var(--soft);
-    }
-    .gift-mini b {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 4px;
-    }
-    .gift-mini span {
-      color: var(--pink-dark);
+      color: var(--muted);
       font-size: 12px;
       font-weight: 800;
     }
-    .section-title {
-      max-width: 720px;
-      margin: 42px auto 20px;
-      text-align: center;
-    }
-    .section-title h2 {
-      font-size: clamp(30px, 4vw, 48px);
-      letter-spacing: -.055em;
-      margin-bottom: 10px;
-      text-wrap: balance;
-    }
-    .section-title p {
-      color: var(--muted);
-      line-height: 1.6;
-      text-wrap: pretty;
-    }
-    .feature-grid {
+    .gift-list { display: grid; gap: 9px; margin-top: 10px; }
+    .gift-chip {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-      margin: 0 0 26px;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(251,246,239,.72);
+      border: 1px solid var(--line);
     }
-    .feature {
-      padding: 22px;
-      min-height: 164px;
+    .gift-chip b { display: block; font-size: 14px; margin-bottom: 3px; }
+    .status { font-size: 12px; font-weight: 850; color: var(--green); }
+    .status.reserved { color: var(--coral-dark); }
+    .section-title { max-width: 780px; margin: 54px auto 20px; text-align: center; }
+    .section-title h2 { font-size: clamp(30px, 4vw, 48px); line-height: 1.04; margin-bottom: 10px; text-wrap: balance; }
+    .section-title p { color: var(--muted); line-height: 1.65; text-wrap: pretty; }
+    .grid { display: grid; gap: 14px; }
+    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 14px 42px rgba(53,39,31,.08);
     }
-    .feature-icon {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border-radius: 16px;
-      background: #fff0f5;
-      margin-bottom: 14px;
-      font-size: 22px;
+    .info-card { padding: 22px; min-height: 156px; }
+    .info-card .icon {
+      width: 42px; height: 42px;
+      display: grid; place-items: center;
+      border-radius: 15px;
+      background: #fff;
+      color: var(--coral-dark);
+      margin-bottom: 13px;
+      font-weight: 900;
     }
-    body.theme-boy .feature-icon { background: #eaf4ff; }
-    .feature h3 {
-      font-size: 18px;
-      letter-spacing: -.025em;
-      margin-bottom: 8px;
+    .info-card h3 { font-size: 18px; margin-bottom: 8px; }
+    .info-card p { color: var(--muted); line-height: 1.55; font-size: 14px; margin: 0; }
+    .steps-line { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .step-card { padding: 24px; }
+    .step-num {
+      width: 34px; height: 34px; display: grid; place-items: center;
+      border-radius: 50%; background: var(--ink); color: #fff;
+      font-weight: 800; margin-bottom: 14px;
     }
-    .feature p {
+    .occasion-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+    .occasion-chip {
+      padding: 12px 15px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid var(--line);
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
+      font-weight: 750;
     }
     .page-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 16px;
-      padding: 34px 0 18px;
+      padding: 36px 0 20px;
     }
-    .page-head h2 {
-      font-size: clamp(34px, 5vw, 58px);
-      letter-spacing: -.06em;
-      line-height: 1;
-      margin-bottom: 10px;
-    }
-    .page-head p {
-      color: var(--muted);
-      line-height: 1.55;
-      max-width: 570px;
-    }
-    .example-layout {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-    .example-sidebar {
-      position: sticky;
-      top: 88px;
-      padding: 18px;
-    }
-    .event-card {
-      padding: 22px;
-      text-align: center;
-    }
-    .event-card h3 {
-      font-size: 25px;
-      letter-spacing: -.045em;
-      margin-bottom: 10px;
-    }
-    .event-card p {
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 14px;
-      margin-bottom: 12px;
-    }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      min-height: 34px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #fff0f5;
-      color: var(--pink-dark);
-      font-size: 13px;
-      font-weight: 800;
-      margin-bottom: 10px;
-      white-space: nowrap;
-    }
-    .wishlist-intro {
-      padding: 22px;
-      margin-bottom: 14px;
-    }
-    .wishlist-intro h3 {
-      font-size: 30px;
-      letter-spacing: -.05em;
-      margin-bottom: 8px;
-    }
-    .wishlist-intro p {
-      color: var(--muted);
-      line-height: 1.6;
-      text-wrap: pretty;
-    }
-    .filters {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 2px 0 14px;
-      scrollbar-width: none;
-    }
-    .filters::-webkit-scrollbar { display: none; }
-    .filter-btn {
-      flex: 0 0 auto;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255,255,255,.78);
-      min-height: 38px;
-      padding: 9px 14px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .filter-btn.active {
-      color: #fff;
-      background: #1f1f24;
-      border-color: #1f1f24;
-    }
-    .gift-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-    .gift-card {
-      overflow: hidden;
-      background: rgba(255,255,255,.84);
-    }
-    .gift-card.reserved { opacity: .76; }
-    .gift-image {
-      height: 180px;
-      background: var(--soft);
-      position: relative;
-      overflow: hidden;
-    }
-    .gift-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .status {
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.9);
-      color: var(--green);
-      font-size: 12px;
-      font-weight: 850;
-      box-shadow: 0 8px 22px rgba(31,31,36,.1);
-    }
-    .reserved .status { color: var(--pink-dark); }
-    .gift-body {
-      padding: 15px;
-    }
-    .gift-body h4 {
-      font-size: 16px;
-      line-height: 1.25;
-      letter-spacing: -.025em;
-      margin-bottom: 7px;
-    }
-    .gift-body p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      min-height: 56px;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-    .gift-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .price {
-      font-weight: 850;
-      color: var(--text);
-    }
-    .tag {
-      color: var(--pink-dark);
-      background: #fff0f5;
-      border-radius: 999px;
-      padding: 6px 9px;
-      font-size: 11px;
-      font-weight: 850;
-      white-space: nowrap;
-    }
-    .gift-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .gift-actions .btn {
-      min-height: 40px;
-      border-radius: 14px;
-      padding: 9px 10px;
-      font-size: 13px;
-    }
-    .gift-actions .disabled {
-      pointer-events: none;
-      color: #92888f;
-      background: #f2eef0;
-      box-shadow: none;
-    }
-    .builder {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-    .steps {
-      position: sticky;
-      top: 88px;
-      padding: 16px;
-    }
-    .step-btn {
-      width: 100%;
-      display: grid;
-      grid-template-columns: 34px 1fr;
-      gap: 10px;
-      align-items: center;
-      text-align: left;
-      border: 0;
-      border-radius: 18px;
-      padding: 12px;
-      background: transparent;
-      margin-bottom: 6px;
-      color: var(--muted);
-      font-weight: 750;
-    }
-    .step-btn span:first-child {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      background: var(--soft);
-      color: var(--text);
-    }
-    .step-btn.active {
-      background: #fff;
-      color: var(--text);
-      box-shadow: 0 12px 30px rgba(31,31,36,.08);
-    }
-    .builder-panel {
-      padding: 24px;
-    }
-    .builder-panel h2 {
-      font-size: clamp(28px, 4vw, 44px);
-      letter-spacing: -.055em;
-      margin-bottom: 10px;
-    }
-    .builder-panel > p {
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .photo-uploader {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: 94px 1fr;
-      gap: 14px;
-      align-items: center;
-      padding: 14px;
-      border-radius: 22px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.72);
-    }
-    .photo-preview {
-      width: 94px;
-      height: 94px;
-      border-radius: 28px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(145deg, #fff, var(--soft));
-      box-shadow: inset 0 0 0 1px rgba(31,31,36,.08);
-      font-size: 38px;
-      overflow: hidden;
-      background-size: cover;
-      background-position: center;
-    }
-    .photo-preview.has-photo { color: transparent; }
-    .photo-uploader h3 {
-      font-size: 18px;
-      letter-spacing: -.03em;
-      margin-bottom: 5px;
-    }
-    .photo-uploader p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-      margin-bottom: 10px;
-    }
-    .photo-uploader input { display: none; }
-    .place-tools {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.62);
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-    .place-tools a {
-      flex: 0 0 auto;
-      color: var(--pink-dark);
-      font-weight: 800;
-      text-decoration: none;
-    }
-    .theme-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .theme-card {
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      background: rgba(255,255,255,.78);
-      padding: 18px;
-      text-align: left;
-      min-height: 166px;
-      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
-    }
-    .theme-card:hover { transform: translateY(-2px); }
-    .theme-card.active {
-      border-color: rgba(237,79,134,.45);
-      box-shadow: 0 18px 44px rgba(237,79,134,.14);
-    }
-    body.theme-boy .theme-card.active {
-      border-color: rgba(59,130,246,.45);
-      box-shadow: 0 18px 44px rgba(59,130,246,.14);
-    }
-    .theme-emoji {
-      width: 52px;
-      height: 52px;
-      display: grid;
-      place-items: center;
-      border-radius: 18px;
-      background: var(--soft);
-      font-size: 28px;
-      margin-bottom: 14px;
-    }
-    .theme-card h3 {
-      font-size: 19px;
-      letter-spacing: -.03em;
-      margin-bottom: 7px;
-    }
-    .theme-card p {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    label {
-      display: grid;
-      gap: 7px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 750;
-    }
+    .page-head h2 { font-size: clamp(34px, 5vw, 58px); line-height: 1; margin-bottom: 10px; }
+    .page-head p { color: var(--muted); line-height: 1.6; max-width: 640px; }
+    .auth-card, .panel { max-width: 520px; margin: 26px auto; padding: 24px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 750; }
     label.full { grid-column: 1 / -1; }
     input, textarea, select {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 16px;
       background: rgba(255,255,255,.9);
-      color: var(--text);
+      color: var(--ink);
       outline: none;
       padding: 13px 14px;
     }
-    textarea {
-      min-height: 92px;
-      resize: vertical;
+    textarea { resize: vertical; min-height: 92px; }
+    input:focus, textarea:focus, select:focus { border-color: rgba(230,111,92,.42); box-shadow: 0 0 0 4px rgba(230,111,92,.08); }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .event-item { padding: 18px; display: grid; grid-template-columns: 80px 1fr; gap: 14px; }
+    .event-preview {
+      height: 80px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fff0e7, #ede9ff);
+      display: grid; place-items: center;
+      color: var(--coral-dark);
+      font-weight: 900;
     }
-    input:focus, textarea:focus, select:focus {
-      border-color: rgba(237,79,134,.42);
-      box-shadow: 0 0 0 4px rgba(237,79,134,.08);
+    .event-item h3 { font-size: 20px; margin-bottom: 5px; }
+    .event-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .status-pill {
+      display: inline-flex; width: fit-content;
+      padding: 6px 9px; border-radius: 999px;
+      background: #fff; border: 1px solid var(--line);
+      color: var(--muted); font-size: 12px; font-weight: 800;
     }
-    .builder-actions {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 22px;
+    .editor-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+    .editor-card { padding: 22px; }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 14px; }
+    .tab { flex: 0 0 auto; }
+    .tab.active { background: var(--ink); color: #fff; }
+    .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .theme-option {
+      padding: 15px; border-radius: 20px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.72); text-align: left;
     }
-    .builder-step { display: none; }
-    .builder-step.active { display: block; }
-    .gift-editor-list {
-      display: grid;
-      gap: 10px;
-      margin: 16px 0;
+    .theme-option.active { border-color: rgba(230,111,92,.45); box-shadow: 0 14px 32px rgba(230,111,92,.12); }
+    .gift-editor { display: grid; gap: 10px; }
+    .gift-row {
+      display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center;
+      padding: 10px; border-radius: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.7);
     }
-    .edit-gift {
-      display: grid;
-      grid-template-columns: 58px 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 10px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,.7);
+    .gift-row img { width: 64px; height: 64px; border-radius: 16px; object-fit: cover; background: var(--sand); }
+    .guest-layout { display: grid; grid-template-columns: 360px 1fr; gap: 18px; align-items: start; }
+    .guest-side { position: sticky; top: 88px; padding: 18px; }
+    .guest-cover {
+      min-height: 170px; border-radius: 26px; margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff0e7, #ede9ff);
+      display: grid; place-items: center; overflow: hidden;
     }
-    .edit-gift img {
-      width: 58px;
-      height: 58px;
-      border-radius: 15px;
-      object-fit: cover;
-    }
-    .edit-gift b {
-      display: block;
-      margin-bottom: 4px;
-    }
-    .edit-gift small { color: var(--muted); }
-    .paywall-note {
-      display: none;
-      margin-top: 14px;
-      padding: 16px;
-      border-radius: 18px;
-      background: #fff6e8;
-      border: 1px solid rgba(255,179,108,.3);
-      color: #80512a;
-      line-height: 1.55;
-    }
-    .paywall-note.active { display: block; }
-    .publish-card {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-    .link-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 18px;
-      background: #fff;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      overflow: hidden;
-    }
-    .link-box code {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--text);
-    }
+    .guest-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .guest-side h2 { font-size: 28px; margin-bottom: 10px; }
+    .guest-side p { color: var(--muted); line-height: 1.6; }
+    .guest-gifts { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+    .gift-card { overflow: hidden; }
+    .gift-card.reserved { opacity: .72; }
+    .gift-img { height: 178px; background: var(--sand); position: relative; }
+    .gift-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .gift-body { padding: 15px; }
+    .gift-body h3 { font-size: 17px; margin-bottom: 7px; }
+    .gift-body p { color: var(--muted); line-height: 1.45; min-height: 58px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .gift-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 12px 0; }
+    .price { font-weight: 850; }
+    .tag { font-size: 12px; color: var(--coral-dark); background: #fff1ec; padding: 6px 9px; border-radius: 999px; font-weight: 800; }
+    .gift-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: none;
-      align-items: center;
-      justify-content: center;
+      position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center;
       padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom));
-      background: rgba(31,31,36,.34);
-      backdrop-filter: blur(10px);
+      background: rgba(37,35,33,.36); backdrop-filter: blur(10px);
     }
     .modal.active { display: flex; }
-    .modal-card {
-      width: min(430px, 100%);
-      padding: 24px;
-      background: #fff;
-      border-radius: 28px;
-      box-shadow: 0 30px 90px rgba(31,31,36,.22);
-    }
-    .modal-card h3 {
-      font-size: 24px;
-      letter-spacing: -.04em;
-      margin-bottom: 10px;
-    }
-    .modal-card p {
-      color: var(--muted);
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-    .modal-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 12px;
-    }
+    .modal-card { width: min(460px, 100%); padding: 24px; background: #fff; border-radius: 28px; box-shadow: 0 30px 90px rgba(37,35,33,.25); }
+    .modal-card h3 { font-size: 24px; margin-bottom: 10px; }
     .toast {
-      position: fixed;
-      left: 50%;
-      bottom: calc(18px + env(safe-area-inset-bottom));
-      z-index: 140;
-      transform: translate(-50%, 120px);
-      opacity: 0;
-      width: min(92vw, 420px);
-      padding: 13px 16px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.94);
-      color: var(--text);
-      text-align: center;
-      font-weight: 850;
-      box-shadow: 0 18px 54px rgba(31,31,36,.18);
-      transition: .24s ease;
+      position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 140;
+      width: min(92vw, 420px); transform: translate(-50%, 120px); opacity: 0;
+      padding: 13px 16px; border-radius: 999px; background: rgba(255,255,255,.96); color: var(--ink);
+      text-align: center; font-weight: 850; box-shadow: 0 18px 54px rgba(37,35,33,.18); transition: .24s ease;
     }
-    .toast.active {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-    .footer {
-      padding: 34px 0 12px;
-      color: var(--muted);
-      text-align: center;
-      font-size: 13px;
-    }
+    .toast.active { opacity: 1; transform: translate(-50%, 0); }
     .hidden { display: none !important; }
-    @media (max-width: 900px) {
-      .hero, .example-layout, .builder {
-        grid-template-columns: 1fr;
-      }
-      .example-sidebar, .steps { position: static; }
-      .feature-grid { grid-template-columns: 1fr; }
-      .page-head {
-        display: block;
-      }
-      .page-head .btn { margin-top: 16px; }
+    .footer { padding: 34px 0 12px; color: var(--muted); text-align: center; font-size: 13px; }
+    @media (max-width: 940px) {
+      .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
+      .guest-side { position: static; }
+      .grid.cols-3, .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
+      .mockup { min-height: auto; }
     }
     @media (max-width: 560px) {
-      .app { padding-left: 14px; padding-right: 14px; }
-      .nav-actions .btn-ghost { display: none; }
-      .hero { padding-top: 26px; }
-      .hero-actions .btn, .page-head .btn, .builder-actions .btn {
-        width: 100%;
-      }
-      .device { border-radius: 34px; padding: 8px; }
-      .phone-screen { border-radius: 28px; min-height: 590px; }
-      .feature, .builder-panel, .wishlist-intro, .event-card, .example-sidebar {
-        padding: 18px;
-      }
-      .gift-grid { grid-template-columns: 1fr; }
+      .shell { padding-left: 14px; padding-right: 14px; }
+      .top-actions .btn-soft { display: none; }
+      .hero { padding-top: 30px; }
+      .hero-actions .btn, .page-head .btn { width: 100%; }
+      .page-head { display: block; }
+      .page-head .btn { margin-top: 14px; }
+      .form-grid, .theme-grid { grid-template-columns: 1fr; }
+      .event-item, .gift-row { grid-template-columns: 1fr; }
+      .event-preview, .gift-row img { width: 100%; height: 120px; }
       .gift-actions { grid-template-columns: 1fr; }
-      .form-grid { grid-template-columns: 1fr; }
-      .photo-uploader { grid-template-columns: 1fr; }
-      .builder-actions { display: grid; }
-      .edit-gift { grid-template-columns: 52px 1fr; }
-      .edit-gift .btn { grid-column: 1 / -1; }
-      .modal-actions { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <nav class="nav">
-      <button class="brand" type="button" onclick="showView('home')">
-        <span class="brand-mark">💝</span>
-        <span>WishCard</span>
+  <main class="shell">
+    <nav class="topbar">
+      <button class="brand" type="button" data-route="/">
+        <span class="brand-mark">✦</span>
+        <span>Повод</span>
       </button>
-      <div class="nav-actions">
-        <button class="btn btn-ghost" type="button" onclick="showView('example')">Пример</button>
-        <button class="btn btn-primary" type="button" onclick="showView('builder')">Создать</button>
-      </div>
+      <div class="top-actions" id="topActions"></div>
     </nav>
 
-    <section class="view active" id="homeView">
-      <div class="hero">
-        <div>
-          <div class="eyebrow">Для детских праздников, дней рождения и семейных встреч</div>
-          <h1>Одна красивая ссылка для гостей</h1>
-          <p class="lead">Приглашение, дата, место, важные детали и вишлист подарков - в одной аккуратной карточке, которую удобно отправить в чат.</p>
-          <div class="hero-actions">
-            <button class="btn btn-pink" type="button" onclick="showView('builder')">Создать вишлист</button>
-            <button class="btn btn-ghost" type="button" onclick="showView('example')">Посмотреть пример</button>
-          </div>
-          <p class="microcopy">Без сложной авторизации и без обещаний “праздника под ключ”: только понятная карточка, которая помогает гостям.</p>
-        </div>
-      </div>
+    <section class="view active" id="homeView"></section>
+    <section class="view" id="authView"></section>
+    <section class="view" id="dashboardView"></section>
+    <section class="view" id="editorView"></section>
+    <section class="view" id="publicView"></section>
 
-      <div class="section-title">
-        <h2>Не организует праздник за вас. Просто убирает хаос.</h2>
-        <p>WishCard помогает маме собрать всё важное в одном месте, а гостям - быстро понять, куда прийти и что подарить.</p>
-      </div>
-      <div class="feature-grid">
-        <div class="card feature"><div class="feature-icon">📍</div><h3>Карточка праздника</h3><p>Дата, время, место, карта и детали, которые гости обычно ищут в переписке.</p></div>
-        <div class="card feature"><div class="feature-icon">🎁</div><h3>Умный вишлист</h3><p>Подарки со статусами: свободен или уже выбран. Меньше дублей и неловкости.</p></div>
-        <div class="card feature"><div class="feature-icon">✨</div><h3>Мягкая подача</h3><p>Тексты звучат как забота о гостях, а не как требование подарков.</p></div>
-      </div>
-    </section>
-
-    <section class="view" id="exampleView">
-      <div class="page-head">
-        <div>
-          <h2>Пример готовой карточки</h2>
-          <p>Так может выглядеть ссылка, которую организатор отправляет гостям. Сначала видно приглашение, потом - аккуратный вишлист.</p>
-        </div>
-        <button class="btn btn-pink" type="button" onclick="showView('builder')">Создать свою</button>
-      </div>
-
-      <div class="example-layout">
-        <aside class="card example-sidebar">
-          <div class="event-card">
-            <div class="child-avatar">👧</div>
-            <h3>День рождения Амелии</h3>
-            <div class="pill">📅 14 июня 2026 в 15:00</div>
-            <p>Центральный парк культуры и отдыха имени Горького, Москва</p>
-            <a class="btn btn-soft" id="exampleMapLink" href="https://yandex.ru/maps/?text=%D0%A6%D0%B5%D0%BD%D1%82%D1%80%D0%B0%D0%BB%D1%8C%D0%BD%D1%8B%D0%B9%20%D0%BF%D0%B0%D1%80%D0%BA%20%D0%93%D0%BE%D1%80%D1%8C%D0%BA%D0%BE%D0%B3%D0%BE%2C%20%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0" target="_blank" rel="noopener">Открыть карту</a>
-          </div>
-          <div class="mini-panel"><b>Что учесть</b><p>Активная часть будет на улице, лучше выбрать удобную одежду по погоде.</p></div>
-          <div class="mini-panel"><b>Про подарки</b><p>Главное - ваше присутствие. Вишлист только помогает не повторяться.</p></div>
-        </aside>
-
-        <div>
-          <div class="card wishlist-intro">
-            <h3>Вишлист Амелии 🎁</h3>
-            <p>Мы собрали небольшой вишлист, чтобы гостям было проще выбрать подарок. Выберите подарок и нажмите «Забронировать», чтобы другие гости видели, что он уже выбран 💝</p>
-          </div>
-          <div class="filters" id="filters"></div>
-          <div class="gift-grid" id="giftGrid"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="view" id="builderView">
-      <div class="page-head">
-        <div>
-          <h2>Создать вишлист</h2>
-          <p>Пошаговая заготовка будущего конструктора: заполните праздник, добавьте подарки и получите черновик ссылки.</p>
-        </div>
-        <button class="btn btn-ghost" type="button" onclick="showView('example')">Сначала пример</button>
-      </div>
-
-      <div class="builder">
-        <aside class="card steps">
-          <button class="step-btn active" type="button" data-step="1"><span>1</span><span>Тема</span></button>
-          <button class="step-btn" type="button" data-step="2"><span>2</span><span>Праздник</span></button>
-          <button class="step-btn" type="button" data-step="3"><span>3</span><span>Подарки</span></button>
-          <button class="step-btn" type="button" data-step="4"><span>4</span><span>Ссылка</span></button>
-        </aside>
-
-        <section class="card builder-panel">
-          <div class="builder-step active" data-step-panel="1">
-            <h2>Выберите настроение карточки</h2>
-            <p>Тема задаёт палитру и визуальные акценты будущего вишлиста. Её можно будет поменять позже.</p>
-            <div class="theme-grid">
-              <button class="theme-card active" type="button" data-theme-card="girl" onclick="selectTheme('girl')">
-                <div class="theme-emoji">🎀</div>
-                <h3>Для девочки</h3>
-                <p>Нежная розово-персиковая тема: бантики, сердечки, мягкий праздничный стиль.</p>
-              </button>
-              <button class="theme-card" type="button" data-theme-card="boy" onclick="selectTheme('boy')">
-                <div class="theme-emoji">🚀</div>
-                <h3>Для мальчика</h3>
-                <p>Свежая голубая тема: ракеты, машинки и более динамичное настроение.</p>
-              </button>
-            </div>
-            <div class="builder-actions">
-              <button class="btn btn-ghost" type="button" onclick="showView('home')">Назад</button>
-              <button class="btn btn-primary" type="button" onclick="setBuilderStep(2)">Дальше</button>
-            </div>
-          </div>
-
-          <div class="builder-step" data-step-panel="2">
-            <h2>Расскажите о празднике</h2>
-            <p>Это основа карточки: имя ребёнка, дата, место и мягкий текст приглашения.</p>
-            <div class="form-grid">
-              <div class="photo-uploader">
-                <div class="photo-preview" id="photoPreview">👧</div>
-                <div>
-                  <h3>Фото ребёнка</h3>
-                  <p>Загрузите фото, а WishCard аккуратно обрежет его в квадрат и вставит в карточку праздника.</p>
-                  <label class="btn btn-soft" for="childPhoto">Добавить фото</label>
-                  <input id="childPhoto" type="file" accept="image/*" />
-                </div>
-              </div>
-              <label>Имя ребёнка<input id="childName" value="Амелия" /></label>
-              <label>Дата и время<input id="eventDate" value="14 июня 2026 в 15:00" /></label>
-              <label class="full">Место<input id="eventPlace" value="Центральный парк Горького, Москва" /></label>
-              <div class="place-tools">
-                <span>Пишите название места или адрес — ссылка на Яндекс Карты обновится автоматически.</span>
-                <a id="yandexPlaceLink" href="#" target="_blank" rel="noopener">Проверить на карте</a>
-              </div>
-              <label class="full">Текст приглашения<textarea id="inviteText">Приглашаем вас на праздник в честь дня рождения Амелии. Будем рады провести этот день рядом с близкими людьми.</textarea></label>
-            </div>
-            <div class="builder-actions">
-              <button class="btn btn-ghost" type="button" onclick="setBuilderStep(1)">Назад</button>
-              <button class="btn btn-primary" type="button" onclick="setBuilderStep(3)">Дальше</button>
-            </div>
-          </div>
-
-          <div class="builder-step" data-step-panel="3">
-            <h2>Добавьте подарки</h2>
-            <p>В бесплатной карточке можно добавить до 5 подарков. Для полного списка предусмотрен апгрейд за 199 ₽.</p>
-            <div class="gift-editor-list" id="builderGiftList"></div>
-            <button class="btn btn-pink" type="button" onclick="tryAddBuilderGift()">Добавить подарок</button>
-            <div class="paywall-note" id="paywallNote">
-              <b>Хотите добавить больше подарков?</b><br>
-              Полная карточка за 199 ₽ откроет больше подарков, красивые шаблоны и благодарность гостям.
-              <div style="margin-top:10px"><button class="btn btn-primary" type="button" onclick="unlockBuilder()">Активировать тестовый доступ</button></div>
-            </div>
-            <div class="builder-actions">
-              <button class="btn btn-ghost" type="button" onclick="setBuilderStep(2)">Назад</button>
-              <button class="btn btn-primary" type="button" onclick="setBuilderStep(4)">Дальше</button>
-            </div>
-          </div>
-
-          <div class="builder-step" data-step-panel="4">
-            <h2>Черновик ссылки готов</h2>
-            <p>В настоящем продукте здесь будет публикация карточки. Пока это аккуратная заглушка, чтобы цепочка была понятной.</p>
-            <div class="publish-card">
-              <div class="link-box"><code>https://wishcard.app/amelia-birthday</code><button class="btn btn-soft" type="button" onclick="copyMockLink()">Скопировать</button></div>
-              <button class="btn btn-pink" type="button" onclick="showView('example')">Посмотреть как гость</button>
-            </div>
-            <div class="builder-actions">
-              <button class="btn btn-ghost" type="button" onclick="setBuilderStep(3)">Назад</button>
-              <button class="btn btn-primary" type="button" onclick="showToast('Скоро здесь будет публикация карточки 💝')">Опубликовать</button>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <footer class="footer">WishCard · цифровая карточка праздника с приглашением и вишлистом</footer>
+    <footer class="footer">mypovod.ru · Есть повод — собрать праздник в одной ссылке.</footer>
   </main>
 
-  <div class="modal" id="reserveModal" onclick="if(event.target===this)closeReserveModal()">
+  <div class="modal" id="reserveModal" onclick="if(event.target===this)closeModal('reserveModal')">
     <div class="modal-card">
       <h3>Забронировать подарок</h3>
-      <p id="reserveGiftTitle"></p>
-      <label>Ваше имя<input id="reserveName" placeholder="Например, Мария" /></label>
-      <label style="margin-top:10px">Комментарий необязательно<textarea id="reserveComment" placeholder="Например, куплю на Wildberries"></textarea></label>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" type="button" onclick="closeReserveModal()">Отмена</button>
-        <button class="btn btn-primary" type="button" onclick="confirmReserve()">Подтвердить</button>
+      <p class="muted" id="reserveGiftName"></p>
+      <div class="form-grid" style="grid-template-columns:1fr">
+        <label>Имя<input id="reserveName" placeholder="Например, Мария" /></label>
+        <label>Контакт необязательно<input id="reserveContact" placeholder="Телефон или мессенджер" /></label>
+        <label>Комментарий необязательно<textarea id="reserveComment" placeholder="Например, куплю на Wildberries"></textarea></label>
+      </div>
+      <div class="hero-actions" style="margin-top:14px">
+        <button class="btn btn-soft" type="button" onclick="closeModal('reserveModal')">Отмена</button>
+        <button class="btn btn-primary" type="button" onclick="reserveGift()">Подтвердить</button>
       </div>
     </div>
   </div>
-
   <div class="toast" id="toast"></div>
 
   <script>
-    const FREE_GIFT_LIMIT = 5;
-    const SERVICE_NAME = 'WishCard';
-    let currentView = 'home';
-    let currentFilter = 'all';
-    let pendingGiftId = null;
-    let builderUnlocked = false;
-    let builderGiftCount = 5;
-    let selectedTheme = 'girl';
-    let childPhotoDataUrl = '';
-    const reserved = {};
+    const APP_NAME = 'Повод';
+    const DOMAIN = 'mypovod.ru';
+    const STORAGE = {
+      users: 'povod_users',
+      session: 'povod_session',
+      events: 'povod_events'
+    };
+    let route = '/';
+    let currentUser = null;
+    let currentEventId = null;
+    let editorTab = 'style';
+    let pendingReserve = null;
+    const BASE_PATH = location.pathname.startsWith('/amelia-dr') ? '/amelia-dr' : '';
 
-    const gifts = [
-      { id: 1, name: 'Детская декоративная косметика', category: 'Творчество', price: 1993, description: 'Чемоданчик для игры: тени, помады, блески и аксессуары.', image: 'https://basket-13.wbbasket.ru/vol1975/part197568/197568029/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/197568029/detail.aspx?size=320318581' },
-      { id: 2, name: 'Деревянный набор «Салат»', category: 'Полезное', price: 666, description: 'Набор для игры в кухню: овощи, приборы и соусы.', image: 'https://basket-13.wbbasket.ru/vol2003/part200345/200345516/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/200345516/detail.aspx?size=323925472' },
-      { id: 3, name: 'Набор для лепки', category: 'Творчество', price: 1192, description: 'Чемоданчик-гриль с формочками и аксессуарами.', image: 'https://basket-10.wbbasket.ru/vol1464/part146472/146472439/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/146472439/detail.aspx?size=246541725' },
-      { id: 4, name: 'Сортер-вкладыш Мишки', category: 'Полезное', price: 565, description: 'Деревянный сортер и головоломка для малышей.', image: 'https://basket-12.wbbasket.ru/vol1878/part187830/187830937/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/187830937/detail.aspx?size=307838308' },
-      { id: 5, name: 'Детская гитара', category: 'Игрушки', price: 2845, description: 'Первый музыкальный инструмент для домашних концертов.', image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop', url: 'https://ozon.ru/t/aHRh3Wv' },
-      { id: 6, name: 'Робот-собака', category: 'Игрушки', price: 2240, description: 'Интерактивная игрушка на пульте управления.', image: 'https://basket-15.wbbasket.ru/vol2265/part226513/226513086/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/226513086/detail.aspx?size=358602578' },
-      { id: 7, name: 'Набор для рисования', category: 'Творчество', price: 1295, description: 'Карандаши, фломастеры, краски и всё для творчества.', image: 'https://basket-16.wbbasket.ru/vol6638/part663823/663823067/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/663823067/detail.aspx?size=892366673' },
-      { id: 8, name: 'Деревянная лавка-магазин', category: 'Игрушки', price: 6505, description: 'Большая лавка для игры в магазин и продавца.', image: 'https://basket-16.wbbasket.ru/vol2999/part299909/299909899/images/big/1.webp', url: 'https://www.wildberries.ru/catalog/299909899/detail.aspx?size=455814021' }
+    const sampleGifts = [
+      { id: uid(), title: 'Самокат', description: 'Лёгкий самокат для прогулок во дворе.', url: '#', price: 4200, image: 'https://images.unsplash.com/photo-1567599843819-1b6a9a05b6da?w=600&h=420&fit=crop', category: 'Активное', status: 'available' },
+      { id: uid(), title: 'LEGO', description: 'Набор для спокойной игры и сборки.', url: '#', price: 3100, image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=420&fit=crop', category: 'Игрушки', status: 'reserved', reservedByName: 'Анна', reservedComment: 'Уже заказала' },
+      { id: uid(), title: 'Сертификат на фотосессию', description: 'Тёплая семейная съёмка после праздника.', url: '#', price: 5000, image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=420&fit=crop', category: 'Впечатления', status: 'available' }
     ];
 
-    const filters = [
-      { id: 'all', label: 'Все', test: () => true },
-      { id: 'under1000', label: 'До 1000 ₽', test: gift => gift.price < 1000 },
-      { id: '1000-3000', label: '1000-3000 ₽', test: gift => gift.price >= 1000 && gift.price <= 3000 },
-      { id: '3000plus', label: '3000+ ₽', test: gift => gift.price > 3000 },
-      { id: 'Игрушки', label: 'Игрушки', test: gift => gift.category === 'Игрушки' },
-      { id: 'Творчество', label: 'Творчество', test: gift => gift.category === 'Творчество' },
-      { id: 'Полезное', label: 'Полезное', test: gift => gift.category === 'Полезное' }
-    ];
+    function uid() {
+      return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    }
+    function slugify(text) {
+      return (text || 'event').toLowerCase().trim()
+        .replace(/ё/g, 'e').replace(/й/g, 'i')
+        .replace(/[^a-zа-я0-9]+/gi, '-').replace(/^-+|-+$/g, '') || `event-${uid()}`;
+    }
+    function money(value) {
+      return Number(value || 0).toLocaleString('ru-RU') + ' ₽';
+    }
+    function getJSON(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+      catch { return fallback; }
+    }
+    function setJSON(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+    function users() { return getJSON(STORAGE.users, []); }
+    function events() { return getJSON(STORAGE.events, []); }
+    function saveEvents(list) { setJSON(STORAGE.events, list); }
+    function sessionEmail() { return localStorage.getItem(STORAGE.session); }
+    function setSession(email) { email ? localStorage.setItem(STORAGE.session, email) : localStorage.removeItem(STORAGE.session); }
+    function me() {
+      const email = sessionEmail();
+      return users().find(user => user.email === email) || null;
+    }
+    function toast(text) {
+      const node = document.getElementById('toast');
+      node.textContent = text;
+      node.classList.add('active');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => node.classList.remove('active'), 2400);
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function navigate(path) {
+      history.pushState({}, '', `${BASE_PATH}${path}`);
+      render();
+    }
+    function appPath() {
+      const redirected = new URLSearchParams(location.search).get('path');
+      if (redirected) return redirected.split('?')[0] || '/';
+      const raw = location.pathname.replace(BASE_PATH, '') || '/';
+      return raw === '/index.html' ? '/' : raw;
+    }
+    function publicUrl(event) {
+      return `${location.origin}${BASE_PATH}/p/${event.slug}`;
+    }
+    function yandexMapUrl(event) {
+      const q = encodeURIComponent([event.placeName, event.address].filter(Boolean).join(', '));
+      return event.mapUrl || `https://yandex.ru/maps/?text=${q}`;
+    }
+    function seed() {
+      if (events().length) return;
+      const demo = {
+        id: uid(),
+        userId: 'demo',
+        title: 'День рождения Мели',
+        slug: 'meli-birthday',
+        type: 'Детский день рождения',
+        theme: 'warm',
+        date: '2026-06-14',
+        time: '15:00',
+        placeName: 'Центральный парк',
+        address: 'Москва, Крымский Вал, 9',
+        description: 'Будем рады разделить этот день с близкими людьми.',
+        wishes: 'Главное — ваше присутствие. Вишлист помогает не повторяться с подарками.',
+        coverImage: '',
+        status: 'published',
+        gifts: sampleGifts,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      saveEvents([demo]);
+    }
 
-    function formatPrice(value) {
-      return `${value.toLocaleString('ru-RU')} ₽`;
+    function render() {
+      seed();
+      currentUser = me();
+      route = appPath();
+      renderTopbar();
+      document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      if (route === '/') return renderHome();
+      if (route === '/login') return renderAuth('login');
+      if (route === '/register') return renderAuth('register');
+      if (route === '/dashboard') return guard(renderDashboard);
+      if (route === '/dashboard/events/new') return guard(() => renderEditor(createDraft()));
+      const edit = route.match(/^\/dashboard\/events\/([^/]+)\/edit$/);
+      if (edit) return guard(() => renderEditor(findEvent(edit[1])));
+      const gifts = route.match(/^\/dashboard\/events\/([^/]+)\/gifts$/);
+      if (gifts) return guard(() => renderEditor(findEvent(gifts[1]), 'gifts'));
+      const preview = route.match(/^\/dashboard\/events\/([^/]+)\/preview$/);
+      if (preview) return guard(() => renderPublic(findEvent(preview[1]), true));
+      const pub = route.match(/^\/p\/([^/]+)$/);
+      if (pub) return renderPublic(events().find(event => event.slug === pub[1]));
+      renderHome();
     }
-    function showView(view) {
-      currentView = view;
-      document.querySelectorAll('.view').forEach(node => node.classList.toggle('active', node.id === `${view}View`));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    function showToast(text) {
-      const toast = document.getElementById('toast');
-      toast.textContent = text;
-      toast.classList.add('active');
-      clearTimeout(showToast.timer);
-      showToast.timer = setTimeout(() => toast.classList.remove('active'), 2400);
-    }
-    function selectTheme(theme) {
-      selectedTheme = theme;
-      document.body.classList.toggle('theme-boy', theme === 'boy');
-      document.querySelectorAll('.theme-card').forEach(card => {
-        card.classList.toggle('active', card.dataset.themeCard === theme);
-      });
-      if (theme === 'boy') {
-        document.querySelector('.brand-mark').textContent = '🚀';
-        document.getElementById('photoPreview').textContent = childPhotoDataUrl ? '' : '🚀';
-        document.getElementById('childName').value = 'Миша';
-        document.getElementById('inviteText').value = 'Приглашаем вас на праздник в честь дня рождения Миши. Будем рады провести этот день рядом с близкими людьми.';
-      } else {
-        document.querySelector('.brand-mark').textContent = '💝';
-        document.getElementById('photoPreview').textContent = childPhotoDataUrl ? '' : '👧';
-        document.getElementById('childName').value = 'Амелия';
-        document.getElementById('inviteText').value = 'Приглашаем вас на праздник в честь дня рождения Амелии. Будем рады провести этот день рядом с близкими людьми.';
+    function guard(next) {
+      if (!currentUser) {
+        navigate('/login');
+        return;
       }
+      next();
     }
-    function cropImageToSquare(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = () => {
-          const image = new Image();
-          image.onerror = reject;
-          image.onload = () => {
-            const size = Math.min(image.width, image.height);
-            const sourceX = Math.round((image.width - size) / 2);
-            const sourceY = Math.round((image.height - size) / 2);
-            const canvas = document.createElement('canvas');
-            canvas.width = 720;
-            canvas.height = 720;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(image, sourceX, sourceY, size, size, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL('image/jpeg', 0.9));
-          };
-          image.src = reader.result;
-        };
-        reader.readAsDataURL(file);
-      });
+    function findEvent(id) {
+      return events().find(event => event.id === id);
     }
-    function applyChildPhoto(dataUrl) {
-      childPhotoDataUrl = dataUrl;
-      const targets = [document.getElementById('photoPreview'), ...document.querySelectorAll('.child-avatar')];
-      targets.forEach(target => {
-        target.classList.add('has-photo');
-        target.style.backgroundImage = `url("${dataUrl}")`;
-        target.textContent = '';
-      });
+    function createDraft() {
+      const event = {
+        id: uid(),
+        userId: currentUser.email,
+        title: 'Новый повод',
+        slug: `povod-${uid()}`,
+        type: 'Детский день рождения',
+        theme: 'warm',
+        date: '',
+        time: '',
+        placeName: '',
+        address: '',
+        mapUrl: '',
+        description: '',
+        wishes: '',
+        coverImage: '',
+        status: 'draft',
+        gifts: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      saveEvents([event, ...events()]);
+      history.replaceState({}, '', `${BASE_PATH}/dashboard/events/${event.id}/edit`);
+      return event;
     }
-    async function handleChildPhoto(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-      try {
-        const dataUrl = await cropImageToSquare(file);
-        applyChildPhoto(dataUrl);
-        showToast('Фото добавлено и красиво обрезано');
-      } catch (error) {
-        console.error(error);
-        showToast('Не удалось загрузить фото. Попробуйте другой файл.');
-      }
+    function renderTopbar() {
+      document.getElementById('topActions').innerHTML = currentUser ? `
+        <button class="btn btn-soft" data-route="/dashboard">Мои поводы</button>
+        <button class="btn btn-primary" onclick="logout()">Выйти</button>
+      ` : `
+        <button class="btn btn-soft" data-route="/login">Войти</button>
+        <button class="btn btn-primary" data-route="/register">Создать карточку</button>
+      `;
     }
-    function yandexMapsUrl(place) {
-      const query = encodeURIComponent((place || '').trim() || 'Центральный парк Горького, Москва');
-      return `https://yandex.ru/maps/?text=${query}`;
-    }
-    function syncPlaceMapLink() {
-      const place = document.getElementById('eventPlace').value;
-      const href = yandexMapsUrl(place);
-      document.getElementById('yandexPlaceLink').href = href;
-      document.getElementById('exampleMapLink').href = href;
-    }
-    function renderHomePreview() {
-    }
-    function renderFilters() {
-      document.getElementById('filters').innerHTML = filters.map(filter =>
-        `<button class="filter-btn ${currentFilter === filter.id ? 'active' : ''}" type="button" onclick="setFilter('${filter.id}')">${filter.label}</button>`
-      ).join('');
-    }
-    function setFilter(filterId) {
-      currentFilter = filterId;
-      renderFilters();
-      renderGifts();
-    }
-    function renderGifts() {
-      const filter = filters.find(item => item.id === currentFilter) || filters[0];
-      const visible = gifts.filter(filter.test);
-      document.getElementById('giftGrid').innerHTML = visible.map(gift => {
-        const isReserved = Boolean(reserved[gift.id]);
-        return `
-          <article class="card gift-card ${isReserved ? 'reserved' : ''}">
-            <div class="gift-image">
-              <span class="status">${isReserved ? '💝 Уже выбрали' : '🟢 Свободен'}</span>
-              <img src="${gift.image}" alt="${gift.name}" loading="lazy">
+    function renderHome() {
+      const view = document.getElementById('homeView');
+      view.classList.add('active');
+      view.innerHTML = `
+        <section class="hero">
+          <div>
+            <div class="eyebrow">Есть повод — собрать праздник в одной ссылке.</div>
+            <h1>Одна ссылка, чтобы гости всё поняли</h1>
+            <p class="lead">Дата, место, пожелания и подарки — в одной аккуратной карточке. Гости быстро понимают, куда прийти, что подарить и какие подарки уже заняты.</p>
+            <div class="hero-actions">
+              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать карточку</button>
+              <button class="btn btn-soft" data-route="/p/meli-birthday">Посмотреть пример</button>
             </div>
-            <div class="gift-body">
-              <h4>${gift.name}</h4>
-              <p>${gift.description}</p>
-              <div class="gift-meta"><span class="price">${formatPrice(gift.price)}</span><span class="tag">${gift.category}</span></div>
-              <div class="gift-actions">
-                <a class="btn btn-ghost" href="${gift.url}" target="_blank" rel="noopener">Где купить</a>
-                <button class="btn ${isReserved ? 'disabled' : 'btn-soft'}" type="button" onclick="openReserve(${gift.id})">${isReserved ? 'Уже выбрали' : 'Забронировать'}</button>
+            <p class="microcopy">Без сложной регистрации и без обещаний “праздника под ключ” — только понятная карточка, которая убирает хаос для гостей и организатора.</p>
+          </div>
+          <div class="mockup">
+            <div class="mock-card">
+              <div class="cover"><span>Адрес на карте</span></div>
+              <h3>День рождения Мели</h3>
+              <p class="muted">14 июня, 15:00 · Центральный парк</p>
+              <div class="badge-row"><span class="badge">Подарок забронирован</span><span class="badge">Без дублей</span></div>
+              <div class="mini-row"><span class="mini-icon">i</span><div><b>Пожелания</b><div class="muted">Главное — ваше присутствие. Вишлист помогает не повторяться.</div></div></div>
+              <div class="gift-list">
+                <div class="gift-chip"><div><b>Самокат</b><span class="status">свободен</span></div><span>${money(4200)}</span></div>
+                <div class="gift-chip"><div><b>LEGO</b><span class="status reserved">забронирован</span></div><span>${money(3100)}</span></div>
+                <div class="gift-chip"><div><b>Сертификат на фотосессию</b><span class="status">свободен</span></div><span>${money(5000)}</span></div>
               </div>
             </div>
-          </article>
-        `;
-      }).join('');
+          </div>
+        </section>
+        <section>
+          <div class="section-title"><h2>Не организует праздник за вас. Просто убирает хаос.</h2><p>Повод помогает собрать всё важное в одном месте: детали праздника, пожелания, подарки и бронь. А гостям — быстро понять, куда прийти и что подарить.</p></div>
+          <div class="grid cols-5">
+            ${[
+              ['Карточка события','Дата, время, место, карта и детали, которые обычно теряются в переписке.'],
+              ['Подарки без дублей','Гости видят, что свободно, а что уже выбрали другие.'],
+              ['Мягкая подача','Не “требование подарков”, а заботливая подсказка для гостей.'],
+              ['Одна ссылка для всех','Отправили в чат — и гости сами всё нашли.'],
+              ['Без лишних вопросов','Меньше сообщений “а куда?”, “во сколько?”, “что подарить?”.']
+            ].map((item, i) => `<div class="card info-card"><div class="icon">${i + 1}</div><h3>${item[0]}</h3><p>${item[1]}</p></div>`).join('')}
+          </div>
+        </section>
+        <section>
+          <div class="section-title"><h2>Как это работает</h2></div>
+          <div class="steps-line">
+            <div class="card step-card"><div class="step-num">1</div><h3>Создаёте повод</h3><p class="muted">Выбираете стиль, добавляете дату, место и детали.</p></div>
+            <div class="card step-card"><div class="step-num">2</div><h3>Добавляете подарки</h3><p class="muted">Ссылки, картинки, цены, комментарии и статус бронирования.</p></div>
+            <div class="card step-card"><div class="step-num">3</div><h3>Отправляете гостям</h3><p class="muted">Гости открывают ссылку, выбирают подарок и не задают 20 одинаковых вопросов.</p></div>
+          </div>
+        </section>
+        <section>
+          <div class="section-title"><h2>Для каких поводов</h2><p>Первая версия особенно удобна для дней рождения, но Повод не ограничивается детскими праздниками.</p></div>
+          <div class="occasion-grid">${['Детский день рождения','Взрослый день рождения','Свадьба','Новоселье','Baby shower','Девичник','Новый год','Семейный праздник'].map(x => `<span class="occasion-chip">${x}</span>`).join('')}</div>
+        </section>
+      `;
     }
-    function openReserve(id) {
-      if (reserved[id]) return;
-      const gift = gifts.find(item => item.id === id);
-      pendingGiftId = id;
-      document.getElementById('reserveGiftTitle').textContent = gift.name;
+    function renderAuth(mode) {
+      const view = document.getElementById('authView');
+      view.classList.add('active');
+      view.innerHTML = `
+        <div class="card auth-card">
+          <h2>${mode === 'login' ? 'Войти' : 'Создать аккаунт'}</h2>
+          <p class="muted">${mode === 'login' ? 'Авторизация нужна только организатору. Гости открывают карточку без входа.' : 'Аккаунт нужен, чтобы возвращаться к своим поводам и редактировать карточки.'}</p>
+          <div class="form-grid" style="grid-template-columns:1fr;margin-top:18px">
+            ${mode === 'register' ? '<label>Имя<input id="authName" placeholder="Например, Полина"></label>' : ''}
+            <label>Email<input id="authEmail" type="email" placeholder="you@example.com"></label>
+            <label>Пароль<input id="authPassword" type="password" placeholder="Минимум 4 символа"></label>
+          </div>
+          <div class="hero-actions" style="margin-top:18px">
+            <button class="btn btn-primary" onclick="${mode === 'login' ? 'login()' : 'register()'}">${mode === 'login' ? 'Войти' : 'Зарегистрироваться'}</button>
+            <button class="btn btn-soft" data-route="${mode === 'login' ? '/register' : '/login'}">${mode === 'login' ? 'Создать аккаунт' : 'Уже есть аккаунт'}</button>
+          </div>
+        </div>
+      `;
+    }
+    function register() {
+      const name = document.getElementById('authName').value.trim();
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const password = document.getElementById('authPassword').value;
+      if (!email || password.length < 4) return toast('Введите email и пароль от 4 символов');
+      const list = users();
+      if (list.some(user => user.email === email)) return toast('Такой email уже зарегистрирован');
+      list.push({ id: uid(), email, password, name, createdAt: new Date().toISOString() });
+      setJSON(STORAGE.users, list);
+      setSession(email);
+      navigate('/dashboard');
+    }
+    function login() {
+      const email = document.getElementById('authEmail').value.trim().toLowerCase();
+      const password = document.getElementById('authPassword').value;
+      const user = users().find(item => item.email === email && item.password === password);
+      if (!user) return toast('Не нашли аккаунт с таким email и паролем');
+      setSession(email);
+      navigate('/dashboard');
+    }
+    function logout() {
+      setSession(null);
+      navigate('/');
+    }
+    function renderDashboard() {
+      const view = document.getElementById('dashboardView');
+      const own = events().filter(event => event.userId === currentUser.email || event.userId === 'demo');
+      view.classList.add('active');
+      view.innerHTML = `
+        <div class="page-head">
+          <div><h2>Мои поводы</h2><p>Черновики, опубликованные карточки и быстрые действия организатора.</p></div>
+          <button class="btn btn-accent" data-route="/dashboard/events/new">Создать новый повод</button>
+        </div>
+        <div class="dashboard-grid">
+          ${own.map(event => {
+            const reservedCount = event.gifts.filter(g => g.status === 'reserved').length;
+            return `<article class="card event-item">
+              <div class="event-preview">${event.type.split(' ')[0]}</div>
+              <div>
+                <span class="status-pill">${event.status === 'published' ? 'опубликована' : 'черновик'}</span>
+                <h3>${event.title}</h3>
+                <p class="muted">${event.date || 'Дата не указана'} · ${event.type}</p>
+                <p class="muted">${reservedCount} из ${event.gifts.length} подарков выбрали</p>
+                <div class="event-actions">
+                  <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/edit">Редактировать</button>
+                  <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/gifts">Подарки</button>
+                  <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/preview">Посмотреть как гость</button>
+                  <button class="btn btn-primary btn-small" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку</button>
+                </div>
+              </div>
+            </article>`;
+          }).join('')}
+        </div>
+      `;
+    }
+    function renderEditor(event, tab = 'details') {
+      if (!event) return navigate('/dashboard');
+      currentEventId = event.id;
+      editorTab = tab;
+      const view = document.getElementById('editorView');
+      view.classList.add('active');
+      view.innerHTML = `
+        <div class="page-head">
+          <div><h2>${event.title === 'Новый повод' ? 'Создать карточку праздника' : 'Редактировать карточку'}</h2><p>Заполните детали события, добавьте подарки и получите ссылку для гостей.</p></div>
+          <button class="btn btn-soft" data-route="/dashboard">В кабинет</button>
+        </div>
+        <div class="editor-layout">
+          <section class="card editor-card">
+            <div class="tabs">
+              ${['style:Вид карточки','details:Детали','gifts:Подарки','publish:Ссылка'].map(item => {
+                const [id, label] = item.split(':');
+                return `<button class="btn btn-soft tab ${editorTab === id ? 'active' : ''}" onclick="renderEditor(findEvent('${event.id}'),'${id}')">${label}</button>`;
+              }).join('')}
+            </div>
+            <div id="editorBody">${editorBody(event)}</div>
+          </section>
+          <aside class="card guest-side">${eventSummary(event)}</aside>
+        </div>
+      `;
+    }
+    function editorBody(event) {
+      if (editorTab === 'style') return `
+        <h3>Выберите настроение карточки</h3><p class="muted">Позже его можно будет изменить.</p>
+        <div class="theme-grid">${['Нежный','Яркий','Минимал','Детский','Праздничный','Элегантный'].map(theme => `<button class="theme-option ${event.theme === theme ? 'active' : ''}" onclick="updateEvent('${event.id}', { theme: '${theme}' })"><b>${theme}</b><br><span class="muted">Подойдёт для разных поводов</span></button>`).join('')}</div>`;
+      if (editorTab === 'details') return `
+        <div class="form-grid">
+          <label>Название события<input id="eventTitle" value="${event.title}"></label>
+          <label>Тип события<select id="eventType">${['Детский день рождения','День рождения','Свадьба','Новоселье','Baby shower','Девичник','Новый год','Другое'].map(x => `<option ${event.type === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+          <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
+          <label>Время<input id="eventTime" type="time" value="${event.time || ''}"></label>
+          <label>Место<input id="eventPlace" value="${event.placeName || ''}"></label>
+          <label>Адрес<input id="eventAddress" value="${event.address || ''}"></label>
+          <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Можно оставить пустым — создадим ссылку на поиск"></label>
+          <label class="full">Описание<textarea id="eventDescription">${event.description || ''}</textarea></label>
+          <label class="full">Пожелания для гостей<textarea id="eventWishes">${event.wishes || ''}</textarea></label>
+          <label class="full">Обложка / картинка карточки<input id="eventCover" type="file" accept="image/*"></label>
+        </div>
+        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}')">Сохранить детали</button><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Проверить карту</a></div>`;
+      if (editorTab === 'gifts') return `
+        <div class="hero-actions"><button class="btn btn-accent" onclick="addGift('${event.id}')">Добавить подарок</button></div>
+        <div class="gift-editor">${event.gifts.map(gift => `<div class="gift-row"><img src="${gift.image || ''}" alt=""><div><b>${gift.title}</b><div class="muted">${money(gift.price)} · ${gift.status === 'reserved' ? 'Подарок уже выбрали' : 'Подарок свободен'}</div><div class="muted">${gift.reservedByName ? 'Выбрал(а): ' + gift.reservedByName : ''}</div></div><div class="hero-actions"><button class="btn btn-soft btn-small" onclick="toggleGift('${event.id}','${gift.id}')">${gift.status === 'reserved' ? 'Снять бронь' : 'Забронировать'}</button><button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button></div></div>`).join('')}</div>`;
+      return `
+        <h3>Ссылка для гостей</h3><p class="muted">Публичная карточка открывается без авторизации.</p>
+        <div class="link-box"><code>${publicUrl(event)}</code><button class="btn btn-primary" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку для гостей</button></div>
+        <div class="hero-actions"><button class="btn btn-accent" onclick="publishEvent('${event.id}')">Опубликовать карточку</button><button class="btn btn-soft" onclick="unpublishEvent('${event.id}')">Снять с публикации</button><button class="btn btn-soft" data-route="/p/${event.slug}">Открыть публично</button></div>`;
+    }
+    function eventSummary(event) {
+      return `<div class="guest-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<span class="brand-mark">✦</span>'}</div><h2>${event.title}</h2><p>${event.date || 'Дата не указана'} ${event.time || ''}</p><p>${event.placeName || 'Место не указано'}</p><p>${event.wishes || 'Пожелания появятся здесь.'}</p>`;
+    }
+    function saveDetails(id) {
+      const file = document.getElementById('eventCover').files[0];
+      const patch = {
+        title: document.getElementById('eventTitle').value,
+        slug: slugify(document.getElementById('eventTitle').value),
+        type: document.getElementById('eventType').value,
+        date: document.getElementById('eventDate').value,
+        time: document.getElementById('eventTime').value,
+        placeName: document.getElementById('eventPlace').value,
+        address: document.getElementById('eventAddress').value,
+        mapUrl: document.getElementById('eventMap').value,
+        description: document.getElementById('eventDescription').value,
+        wishes: document.getElementById('eventWishes').value
+      };
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => updateEvent(id, { ...patch, coverImage: reader.result }, 'Детали и обложка сохранены');
+        reader.readAsDataURL(file);
+      } else updateEvent(id, patch, 'Детали сохранены');
+    }
+    function updateEvent(id, patch, message = 'Сохранено') {
+      saveEvents(events().map(event => event.id === id ? { ...event, ...patch, updatedAt: new Date().toISOString() } : event));
+      toast(message);
+      renderEditor(findEvent(id), editorTab);
+    }
+    function addGift(eventId) {
+      const event = findEvent(eventId);
+      const gift = { id: uid(), title: 'Новый подарок', description: 'Описание подарка', url: '#', price: 1000, image: '', category: 'Другое', status: 'available' };
+      updateEvent(eventId, { gifts: [gift, ...event.gifts] }, 'Подарок добавлен');
+    }
+    function deleteGift(eventId, giftId) {
+      const event = findEvent(eventId);
+      updateEvent(eventId, { gifts: event.gifts.filter(gift => gift.id !== giftId) }, 'Подарок удалён');
+    }
+    function toggleGift(eventId, giftId) {
+      const event = findEvent(eventId);
+      updateEvent(eventId, { gifts: event.gifts.map(gift => gift.id === giftId ? { ...gift, status: gift.status === 'reserved' ? 'available' : 'reserved', reservedByName: gift.status === 'reserved' ? '' : 'Организатор' } : gift) }, 'Статус подарка обновлён');
+    }
+    function publishEvent(id) { updateEvent(id, { status: 'published' }, 'Карточка опубликована'); }
+    function unpublishEvent(id) { updateEvent(id, { status: 'draft' }, 'Карточка снята с публикации'); }
+    function renderPublic(event, preview = false) {
+      const view = document.getElementById('publicView');
+      view.classList.add('active');
+      if (!event) {
+        view.innerHTML = '<div class="card panel"><h2>Карточка не найдена</h2><p class="muted">Возможно, ссылка устарела.</p></div>';
+        return;
+      }
+      view.innerHTML = `
+        <div class="page-head"><div><h2>${preview ? 'Предпросмотр' : event.title}</h2><p>${preview ? 'Так карточку увидит гость.' : 'Откройте детали праздника и вишлист подарков.'}</p></div>${preview ? '<button class="btn btn-soft" data-route="/dashboard">В кабинет</button>' : '<button class="btn btn-accent" data-route="/">Создать свою карточку</button>'}</div>
+        <div class="guest-layout">
+          <aside class="card guest-side">
+            ${eventSummary(event)}
+            <div class="hero-actions"><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Открыть карту</a></div>
+            <p><b>Приглашение</b><br>${event.description || ''}</p>
+            <p><b>Пожелания</b><br>${event.wishes || ''}</p>
+          </aside>
+          <section>
+            <div class="card wishlist-intro"><h3>Вишлист подарков</h3><p>Выберите свободный подарок и нажмите «Забронировать подарок», чтобы другие гости видели, что он уже занят.</p></div>
+            <div class="guest-gifts">${event.gifts.map(giftCard).join('')}</div>
+            <div class="footer">Создано в Поводе · <button class="btn btn-soft btn-small" data-route="/">Создать свою карточку</button></div>
+          </section>
+        </div>`;
+    }
+    function giftCard(gift) {
+      const reserved = gift.status === 'reserved';
+      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Подарок уже выбрали' : 'Подарок свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : ''}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions"><a class="btn btn-soft" href="${gift.url || '#'}" target="_blank" rel="noopener">Где купить</a><button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Уже выбрали' : 'Забронировать'}</button></div></div></article>`;
+    }
+    function openReserve(giftId) {
+      pendingReserve = { event: events().find(event => event.gifts.some(gift => gift.id === giftId)), giftId };
+      const gift = pendingReserve.event.gifts.find(item => item.id === giftId);
+      document.getElementById('reserveGiftName').textContent = gift.title;
       document.getElementById('reserveName').value = '';
+      document.getElementById('reserveContact').value = '';
       document.getElementById('reserveComment').value = '';
       document.getElementById('reserveModal').classList.add('active');
     }
-    function closeReserveModal() {
-      document.getElementById('reserveModal').classList.remove('active');
-      pendingGiftId = null;
+    function reserveGift() {
+      if (!pendingReserve) return;
+      const name = document.getElementById('reserveName').value.trim() || 'Гость';
+      const contact = document.getElementById('reserveContact').value.trim();
+      const comment = document.getElementById('reserveComment').value.trim();
+      saveEvents(events().map(event => event.id === pendingReserve.event.id ? { ...event, gifts: event.gifts.map(gift => gift.id === pendingReserve.giftId ? { ...gift, status: 'reserved', reservedByName: name, reservedByContact: contact, reservedComment: comment, reservedAt: new Date().toISOString() } : gift) } : event));
+      closeModal('reserveModal');
+      toast('Подарок забронирован');
+      renderPublic(events().find(event => event.id === pendingReserve.event.id));
+      pendingReserve = null;
     }
-    function confirmReserve() {
-      if (!pendingGiftId) return;
-      reserved[pendingGiftId] = {
-        name: document.getElementById('reserveName').value.trim() || 'Гость',
-        comment: document.getElementById('reserveComment').value.trim()
-      };
-      closeReserveModal();
-      renderGifts();
-      showToast('Готово! Подарок забронирован 💝');
+    async function copyText(text) {
+      try { await navigator.clipboard.writeText(text); toast('Ссылка скопирована'); }
+      catch { toast(text); }
     }
-    function setBuilderStep(step) {
-      document.querySelectorAll('.step-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.step === String(step)));
-      document.querySelectorAll('.builder-step').forEach(panel => panel.classList.toggle('active', panel.dataset.stepPanel === String(step)));
-    }
-    function renderBuilderGifts() {
-      document.getElementById('builderGiftList').innerHTML = gifts.slice(0, builderGiftCount).map(gift => `
-        <div class="edit-gift">
-          <img src="${gift.image}" alt="${gift.name}" loading="lazy">
-          <div><b>${gift.name}</b><small>${formatPrice(gift.price)} · ${gift.category}</small></div>
-          <button class="btn btn-ghost" type="button" onclick="showToast('Редактирование появится в следующей версии')">Изменить</button>
-        </div>
-      `).join('');
-    }
-    function tryAddBuilderGift() {
-      if (!builderUnlocked && builderGiftCount >= FREE_GIFT_LIMIT) {
-        document.getElementById('paywallNote').classList.add('active');
-        return;
-      }
-      builderGiftCount = Math.min(builderGiftCount + 1, gifts.length);
-      renderBuilderGifts();
-    }
-    function unlockBuilder() {
-      builderUnlocked = true;
-      document.getElementById('paywallNote').classList.remove('active');
-      showToast('Тестовый доступ активирован');
-    }
-    async function copyMockLink() {
-      const link = 'https://wishcard.app/amelia-birthday';
-      try {
-        await navigator.clipboard.writeText(link);
-        showToast('Ссылка скопирована');
-      } catch {
-        showToast(link);
-      }
-    }
-    document.querySelectorAll('.step-btn').forEach(btn => btn.addEventListener('click', () => setBuilderStep(btn.dataset.step)));
-    document.getElementById('childPhoto').addEventListener('change', handleChildPhoto);
-    document.getElementById('eventPlace').addEventListener('input', syncPlaceMapLink);
-    document.addEventListener('keydown', event => {
-      if (event.key === 'Escape') closeReserveModal();
-      if (event.key === 'Enter' && document.getElementById('reserveModal').classList.contains('active')) confirmReserve();
+    document.addEventListener('click', event => {
+      const target = event.target.closest('[data-route]');
+      if (!target) return;
+      event.preventDefault();
+      navigate(target.dataset.route);
     });
-
-    renderHomePreview();
-    renderFilters();
-    renderGifts();
-    renderBuilderGifts();
-    syncPlaceMapLink();
+    window.addEventListener('popstate', render);
+    render();
   </script>
 </body>
 </html>
