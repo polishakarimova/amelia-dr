@@ -424,6 +424,29 @@
     .cover-copy h3 { font-size: 20px; margin-bottom: 6px; }
     .cover-copy p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
     .cover-copy input { max-width: 100%; min-width: 0; padding: 10px; border-radius: 14px; font-size: 13px; }
+    .template-box {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.58);
+      border: 1px solid var(--line);
+    }
+    .template-box h4 {
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+    .template-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .template-options .btn {
+      min-height: 36px;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
     .gift-editor { display: grid; gap: 10px; }
     .gift-row {
       display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center;
@@ -624,6 +647,18 @@
       { id: uid(), title: 'LEGO', description: 'Набор для спокойной игры и сборки.', url: '#', price: 3100, image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=420&fit=crop', category: 'Игрушки', status: 'reserved', reservedByName: 'Анна', reservedComment: 'Уже заказала' },
       { id: uid(), title: 'Сертификат на фотосессию', description: 'Тёплая семейная съёмка после праздника.', url: '#', price: 5000, image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=420&fit=crop', category: 'Впечатления', status: 'available' }
     ];
+    const TEXT_TEMPLATES = {
+      description: [
+        { label: 'Тёплое приглашение', text: 'Будем очень рады разделить с вами наш праздник. Приходите провести этот день рядом с нами — будет тепло, весело и по-семейному.' },
+        { label: 'Коротко и понятно', text: 'Приглашаем вас на праздник! Дата, время и место — ниже. Очень ждём и будем рады видеть вас среди гостей.' },
+        { label: 'Нежный вариант', text: 'У нас скоро особенный день, и нам хочется провести его рядом с близкими людьми. Будем счастливы, если вы сможете прийти.' }
+      ],
+      wishes: [
+        { label: 'По погоде', text: 'Праздник будет проходить на улице, поэтому, пожалуйста, одевайтесь по погоде. Лучше выбрать удобную одежду и обувь.' },
+        { label: 'Удобная одежда', text: 'Будет активный формат праздника, поэтому лучше выбрать одежду, в которой удобно двигаться, играть и гулять.' },
+        { label: 'Дресс-код', text: 'Если хочется поддержать настроение праздника, можно добавить в образ ковбойские элементы: шляпу, платок, джинсу или что-то в этом стиле.' }
+      ]
+    };
 
     function uid() {
       return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -963,6 +998,9 @@
         </div>
       `;
     }
+    function templateButtons(group, targetId) {
+      return `<div class="template-box"><h4>Можно начать с шаблона</h4><div class="template-options">${TEXT_TEMPLATES[group].map((item, index) => `<button class="btn btn-soft" type="button" onclick="applyTextTemplate('${group}', ${index}, '${targetId}')">${item.label}</button>`).join('')}</div></div>`;
+    }
     function editorBody(event) {
       if (editorTab === 'style') return `
         <h3>Выберите настроение карточки</h3><p class="muted">Позже его можно будет изменить.</p>
@@ -985,7 +1023,9 @@
           <label>Адрес<input id="eventAddress" value="${event.address || ''}"></label>
           <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Можно оставить пустым — создадим ссылку на поиск"></label>
           <label class="full">Описание<textarea id="eventDescription">${event.description || ''}</textarea></label>
+          ${templateButtons('description', 'eventDescription')}
           <label class="full">Пожелания для гостей<textarea id="eventWishes">${event.wishes || ''}</textarea></label>
+          ${templateButtons('wishes', 'eventWishes')}
         </div>
         <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}')">Сохранить детали</button><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Проверить карту</a></div>`;
       if (editorTab === 'gifts') return `
@@ -1013,6 +1053,14 @@
         wishes: document.getElementById('eventWishes').value
       };
       updateEvent(id, patch, 'Детали сохранены');
+    }
+    function applyTextTemplate(group, index, targetId) {
+      const target = document.getElementById(targetId);
+      const template = TEXT_TEMPLATES[group]?.[index]?.text;
+      if (!target || !template) return;
+      target.value = template;
+      target.focus();
+      toast('Шаблон добавлен, можно отредактировать');
     }
     function openCoverCrop(file) {
       if (!file) return;
