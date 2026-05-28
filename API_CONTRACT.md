@@ -11,9 +11,13 @@
 - `email`
 - `passwordHash`
 - `name`
+- `authProvider`: `telegram` или `email`
+- `telegramId`
+- `telegramUsername`
 - `createdAt`
 
-Организатор входит в кабинет по email и паролю. Гость открывает публичную карточку и бронирует подарок без регистрации.
+Основной сценарий для организатора — сохранение и вход через Telegram-бота. Email и пароль остаются запасным способом.
+Гость открывает публичную карточку и бронирует подарок без регистрации.
 
 ### Event
 
@@ -57,10 +61,14 @@
 
 ### Auth
 
+- `POST /api/auth/telegram/start`
+- `POST /api/auth/telegram/callback`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
+
+Telegram-токен бота нельзя хранить на фронте. Эти routes должны жить на backend и создавать сессию организатора после подтверждения Telegram-пользователя.
 
 ### Events
 
@@ -91,6 +99,7 @@
 ## Production TODO
 
 - Подключить базу данных и заменить `localStorage` на API.
+- Подключить настоящего Telegram-бота как основной вход и канал уведомлений.
 - Хранить пароль только как `passwordHash`, не в открытом виде.
 - Добавить серверную проверку владельца события для `/dashboard`.
 - Добавить storage для обложек и картинок подарков.

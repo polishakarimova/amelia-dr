@@ -313,6 +313,40 @@
     .page-head h2 { font-size: clamp(34px, 5vw, 58px); line-height: 1; margin-bottom: 10px; }
     .page-head p { color: var(--muted); line-height: 1.6; max-width: 640px; }
     .auth-card, .panel { max-width: 520px; margin: 26px auto; padding: 24px; }
+    .auth-primary {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, rgba(143,199,232,.22), rgba(255,255,255,.78));
+      border: 1px solid rgba(143,199,232,.32);
+    }
+    .auth-primary h3 { font-size: 19px; margin-bottom: 6px; }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
+    }
+    .auth-secondary {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,.54);
+      border: 1px solid var(--line);
+    }
+    .auth-secondary summary {
+      cursor: pointer;
+      font-weight: 850;
+      color: var(--ink);
+    }
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 750; }
     label.full { grid-column: 1 / -1; }
@@ -505,6 +539,9 @@
       const email = sessionEmail();
       return users().find(user => user.email === email) || null;
     }
+    function displayUserName(user) {
+      return user?.name || user?.telegramUsername || user?.email || 'Организатор';
+    }
     function toast(text) {
       const node = document.getElementById('toast');
       node.textContent = text;
@@ -678,21 +715,61 @@
     function renderAuth(mode) {
       const view = document.getElementById('authView');
       view.classList.add('active');
+      const isLogin = mode === 'login';
       view.innerHTML = `
         <div class="card auth-card">
-          <h2>${mode === 'login' ? 'Войти' : 'Создать аккаунт'}</h2>
-          <p class="muted">${mode === 'login' ? 'Авторизация нужна только организатору. Гости открывают карточку без входа.' : 'Аккаунт нужен, чтобы возвращаться к своим поводам и редактировать карточки.'}</p>
-          <div class="form-grid" style="grid-template-columns:1fr;margin-top:18px">
-            ${mode === 'register' ? '<label>Имя<input id="authName" placeholder="Например, Полина"></label>' : ''}
-            <label>Email<input id="authEmail" type="email" placeholder="you@example.com"></label>
-            <label>Пароль<input id="authPassword" type="password" placeholder="Минимум 4 символа"></label>
+          <h2>${isLogin ? 'Войти в Повод' : 'Создать карточку'}</h2>
+          <p class="muted">${isLogin ? 'Организатор входит, чтобы вернуться к своим поводам. Гостям регистрация не нужна.' : 'Самый быстрый способ сохранить карточку и потом её редактировать — через Telegram.'}</p>
+          <div class="auth-primary">
+            <h3>Через Telegram</h3>
+            <p class="muted">Бот сохранит ваши карточки, пришлёт ссылку для гостей и позже сможет уведомлять о новых бронях подарков.</p>
+            <div class="form-grid" style="grid-template-columns:1fr;margin-top:14px">
+              <label>Имя или username в Telegram<input id="telegramName" placeholder="Например, Полина или @polina"></label>
+            </div>
+            <div class="hero-actions" style="margin-top:14px">
+              <button class="btn btn-accent" onclick="telegramAuth()">${isLogin ? 'Продолжить через Telegram' : 'Сохранить через Telegram'}</button>
+            </div>
+            <p class="muted" style="font-size:12px">В этой демо-версии бот имитируется локально. Для продакшена нужен backend и настоящий Telegram Bot API.</p>
           </div>
-          <div class="hero-actions" style="margin-top:18px">
-            <button class="btn btn-primary" onclick="${mode === 'login' ? 'login()' : 'register()'}">${mode === 'login' ? 'Войти' : 'Зарегистрироваться'}</button>
-            <button class="btn btn-soft" data-route="${mode === 'login' ? '/register' : '/login'}">${mode === 'login' ? 'Создать аккаунт' : 'Уже есть аккаунт'}</button>
-          </div>
+          <div class="auth-divider">или</div>
+          <details class="auth-secondary">
+            <summary>${isLogin ? 'Войти другим способом' : 'Другой способ регистрации'}</summary>
+            <div class="form-grid" style="grid-template-columns:1fr;margin-top:14px">
+              ${!isLogin ? '<label>Имя<input id="authName" placeholder="Например, Полина"></label>' : ''}
+              <label>Email<input id="authEmail" type="email" placeholder="you@example.com"></label>
+              <label>Пароль<input id="authPassword" type="password" placeholder="Минимум 4 символа"></label>
+            </div>
+            <div class="hero-actions" style="margin-top:14px">
+              <button class="btn btn-primary" onclick="${isLogin ? 'login()' : 'register()'}">${isLogin ? 'Войти по email' : 'Зарегистрироваться по email'}</button>
+              <button class="btn btn-soft" data-route="${isLogin ? '/register' : '/login'}">${isLogin ? 'Создать аккаунт' : 'Уже есть аккаунт'}</button>
+            </div>
+          </details>
         </div>
       `;
+    }
+    function telegramAuth() {
+      const rawName = document.getElementById('telegramName').value.trim();
+      const username = rawName.replace(/^@/, '').trim();
+      if (!username) return toast('Введите имя или username в Telegram');
+      const telegramId = `tg_${slugify(username)}`;
+      const email = `telegram:${telegramId}`;
+      const list = users();
+      const existing = list.find(user => user.email === email);
+      if (!existing) {
+        list.push({
+          id: uid(),
+          email,
+          name: rawName.startsWith('@') ? rawName : username,
+          telegramId,
+          telegramUsername: rawName.startsWith('@') ? rawName : '',
+          authProvider: 'telegram',
+          createdAt: new Date().toISOString()
+        });
+        setJSON(STORAGE.users, list);
+      }
+      setSession(email);
+      toast('Карточки сохранены через Telegram');
+      navigate('/dashboard');
     }
     function register() {
       const name = document.getElementById('authName').value.trim();
@@ -724,7 +801,7 @@
       view.classList.add('active');
       view.innerHTML = `
         <div class="page-head">
-          <div><h2>Мои поводы</h2><p>Черновики, опубликованные карточки и быстрые действия организатора.</p></div>
+          <div><h2>Мои поводы</h2><p>${displayUserName(currentUser)}, здесь хранятся черновики, опубликованные карточки и быстрые действия организатора.</p></div>
           <button class="btn btn-accent" data-route="/dashboard/events/new">Создать новый повод</button>
         </div>
         <div class="dashboard-grid">
