@@ -1032,7 +1032,7 @@
       if (editorTab === 'gifts') return `
         <div class="hero-actions"><button class="btn btn-accent" onclick="openGiftForm('${event.id}')">Добавить подарок</button><button class="btn btn-primary" onclick="renderEditor(findEvent('${event.id}'), 'publish')">Продолжить</button></div>
         ${giftFormOpen ? giftForm(event.id) : ''}
-        <div class="gift-editor">${event.gifts.length ? event.gifts.map(gift => `<div class="gift-row"><img src="${gift.image || ''}" alt=""><div><b>${gift.title}</b><div class="muted">${money(gift.price)} · ${gift.category || 'Подарок'}</div><div class="field-hint">${gift.url ? 'Ссылка добавлена' : 'Ссылка пока не добавлена'}</div></div><div class="hero-actions"><button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button></div></div>`).join('') : '<div class="template-box"><h4>Подарков пока нет</h4><span class="field-hint">Нажмите “Добавить подарок”: можно вставить ссылку на Ozon/Wildberries, а затем поправить название, цену и картинку.</span></div>'}</div>`;
+        <div class="gift-editor">${event.gifts.length ? event.gifts.map(gift => `<div class="gift-row"><img src="${gift.image || ''}" alt=""><div><b>${gift.title}</b><div class="muted">${money(gift.price)}</div><div class="field-hint">${gift.url ? 'Ссылка добавлена' : 'Ссылка пока не добавлена'}</div></div><div class="hero-actions"><button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button></div></div>`).join('') : '<div class="template-box"><h4>Подарков пока нет</h4><span class="field-hint">Нажмите “Добавить подарок”: можно вставить ссылку на Ozon/Wildberries, а затем поправить название, цену и картинку.</span></div>'}</div>`;
       return `
         <h3>Так карточку увидят гости</h3><p class="muted">Проверьте детали, подарки и статусы перед отправкой ссылки.</p>
         <div class="guest-layout" style="margin:16px 0">${guestPreviewMarkup(event)}</div>
@@ -1047,7 +1047,6 @@
         <div class="form-grid">
           <label>Название подарка<input id="giftTitle" placeholder="Например, самокат"></label>
           <label>Цена<input id="giftPrice" type="number" min="0" placeholder="Например, 3500"></label>
-          <label>Категория<input id="giftCategory" placeholder="Игрушки, творчество, полезное"></label>
           <label>Картинка<input id="giftImage" placeholder="Ссылка на изображение"></label>
           <label class="full">Описание<textarea id="giftDescription" placeholder="Коротко: размер, цвет, важные детали"></textarea></label>
         </div>
@@ -1190,12 +1189,10 @@
       if (!url) return;
       if (lower.includes('ozon')) {
         document.getElementById('giftTitle').value ||= 'Подарок с Ozon';
-        document.getElementById('giftCategory').value ||= 'Подарок';
         document.getElementById('giftDescription').value ||= 'Данные подтянутся автоматически после подключения backend-парсера.';
       }
       if (lower.includes('wildberries') || lower.includes('wb.ru')) {
         document.getElementById('giftTitle').value ||= 'Подарок с Wildberries';
-        document.getElementById('giftCategory').value ||= 'Подарок';
         document.getElementById('giftDescription').value ||= 'Данные подтянутся автоматически после подключения backend-парсера.';
       }
     }
@@ -1210,7 +1207,7 @@
         url: document.getElementById('giftUrl').value.trim(),
         price: Number(document.getElementById('giftPrice').value || 0),
         image: document.getElementById('giftImage').value.trim(),
-        category: document.getElementById('giftCategory').value.trim() || 'Подарок',
+        category: 'Подарок',
         status: 'available'
       };
       giftFormOpen = false;
