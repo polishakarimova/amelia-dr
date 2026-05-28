@@ -203,7 +203,6 @@
     .section-title h2 { font-size: clamp(30px, 4vw, 48px); line-height: 1.04; margin-bottom: 10px; text-wrap: balance; }
     .section-title p { color: var(--muted); line-height: 1.65; text-wrap: pretty; }
     .grid { display: grid; gap: 14px; }
-    .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .card {
       min-width: 0;
@@ -352,7 +351,6 @@
       grid-template-columns: repeat(4, 1fr);
       gap: 8px;
     }
-    .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 14px; }
     .tab { flex: 0 0 auto; }
     .tab.active { background: var(--ink); color: #fff; }
     .tab.done { background: rgba(255,255,255,.8); color: var(--coral-dark); }
@@ -537,7 +535,7 @@
     @media (max-width: 940px) {
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
       .guest-side { position: static; }
-      .grid.cols-3, .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
+      .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
       .shell { padding-left: 14px; padding-right: 14px; }
@@ -949,7 +947,7 @@
           ${own.map(event => {
             const reservedCount = event.gifts.filter(g => g.status === 'reserved').length;
             return `<article class="card event-item">
-              <div class="event-preview">${event.type.split(' ')[0]}</div>
+              <div class="event-preview">${event.type ? event.type.split(' ')[0] : 'Повод'}</div>
               <div>
                 <span class="status-pill">${event.status === 'published' ? 'опубликована' : 'черновик'}</span>
                 <h3>${event.title || 'Без названия'}</h3>
@@ -976,7 +974,7 @@
       view.classList.add('active');
       view.innerHTML = `
         <div class="page-head">
-          <div><h2>${event.title === 'Новый повод' ? 'Создать карточку праздника' : 'Редактировать карточку'}</h2><p>Заполните детали события, добавьте подарки и получите ссылку для гостей.</p></div>
+          <div><h2>${event.title ? 'Редактировать карточку' : 'Создать карточку праздника'}</h2><p>Заполните детали события, добавьте подарки и получите ссылку для гостей.</p></div>
           <button class="btn btn-soft" data-route="/dashboard">В кабинет</button>
         </div>
         <div class="editor-layout">
