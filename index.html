@@ -41,6 +41,27 @@
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
+    body.theme-blue {
+      --coral: #5aa6e8;
+      --coral-dark: #2367a7;
+      --lavender: #8fc7e8;
+      --sand: #e8f4ff;
+      background:
+        radial-gradient(circle at 9% 10%, rgba(90,166,232,.22), transparent 28%),
+        radial-gradient(circle at 84% 7%, rgba(143,199,232,.25), transparent 26%),
+        radial-gradient(circle at 76% 74%, rgba(185,168,255,.16), transparent 30%),
+        linear-gradient(180deg, #f7fbff 0%, #eef7ff 45%, #fff 100%);
+    }
+    body.theme-neutral {
+      --coral: #8b7a66;
+      --coral-dark: #5b4e42;
+      --lavender: #d0c8bd;
+      --sand: #f0ebe5;
+      background:
+        radial-gradient(circle at 9% 10%, rgba(139,122,102,.16), transparent 28%),
+        radial-gradient(circle at 84% 7%, rgba(143,199,232,.14), transparent 26%),
+        linear-gradient(180deg, #fbfaf8 0%, #f3eee8 45%, #fff 100%);
+    }
     button, input, textarea, select { font: inherit; }
     button { cursor: pointer; }
     a { color: inherit; }
@@ -568,6 +589,7 @@
       </div>
       <div class="hero-actions" style="margin-top:14px">
         <button class="btn btn-soft" type="button" onclick="closeModal('reserveModal')">Отмена</button>
+        <button class="btn btn-soft" type="button" onclick="reserveGift(true)">Анонимно</button>
         <button class="btn btn-primary" type="button" onclick="reserveGift()">Подтвердить</button>
       </div>
     </div>
@@ -721,6 +743,7 @@
       seed();
       currentUser = me();
       route = appPath();
+      applyPageTheme();
       renderTopbar();
       document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
       if (route === '/') return renderHome();
@@ -737,6 +760,11 @@
       const pub = route.match(/^\/p\/([^/]+)$/);
       if (pub) return renderPublic(events().find(event => event.slug === pub[1]));
       renderHome();
+    }
+    function applyPageTheme(event = null) {
+      const theme = event?.theme || 'pink';
+      document.body.classList.toggle('theme-blue', theme === 'blue');
+      document.body.classList.toggle('theme-neutral', theme === 'neutral');
     }
     function guard(next) {
       if (!currentUser) {
@@ -783,6 +811,7 @@
       `;
     }
     function renderHome() {
+      applyPageTheme();
       const view = document.getElementById('homeView');
       view.classList.add('active');
       view.innerHTML = `
@@ -940,6 +969,7 @@
     }
     function renderEditor(event, tab = 'details') {
       if (!event) return navigate('/dashboard');
+      applyPageTheme(event);
       currentEventId = event.id;
       editorTab = tab;
       const view = document.getElementById('editorView');
@@ -989,8 +1019,7 @@
               <span class="field-hint">Если файл не выбран, карточка останется с мягкой декоративной обложкой.</span>
             </div>
           </div>
-          <label>Название события<input id="eventTitle" value="${event.title || ''}" placeholder="Например, День рождения Тимофея"></label>
-          <label>Тип повода<input value="${event.type || 'Выберите на первом шаге'}" disabled></label>
+          <label class="full">Название события<input id="eventTitle" value="${event.title || ''}" placeholder="Например, День рождения Тимофея"></label>
           <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
           <label>Время<input id="eventTime" type="time" value="${event.time || ''}"></label>
           <label>Место проведения<input id="eventPlace" value="${event.placeName || ''}"></label>
@@ -1203,6 +1232,7 @@
         view.innerHTML = '<div class="card panel"><h2>Карточка не найдена</h2><p class="muted">Возможно, ссылка устарела.</p></div>';
         return;
       }
+      applyPageTheme(event);
       view.innerHTML = `
         <div class="page-head"><div><h2>${preview ? 'Предпросмотр' : event.title}</h2><p>${preview ? 'Так карточку увидит гость.' : 'Откройте детали праздника и вишлист подарков.'}</p></div>${preview ? '<button class="btn btn-soft" data-route="/dashboard">В кабинет</button>' : '<button class="btn btn-accent" data-route="/">Создать свою карточку</button>'}</div>
         <div class="guest-layout">
@@ -1232,11 +1262,11 @@
       document.getElementById('reserveComment').value = '';
       document.getElementById('reserveModal').classList.add('active');
     }
-    function reserveGift() {
+    function reserveGift(anonymous = false) {
       if (!pendingReserve) return;
-      const name = document.getElementById('reserveName').value.trim() || 'Гость';
-      const contact = document.getElementById('reserveContact').value.trim();
-      const comment = document.getElementById('reserveComment').value.trim();
+      const name = anonymous ? 'Анонимно' : (document.getElementById('reserveName').value.trim() || 'Гость');
+      const contact = anonymous ? '' : document.getElementById('reserveContact').value.trim();
+      const comment = anonymous ? '' : document.getElementById('reserveComment').value.trim();
       saveEvents(events().map(event => event.id === pendingReserve.event.id ? { ...event, gifts: event.gifts.map(gift => gift.id === pendingReserve.giftId ? { ...gift, status: 'reserved', reservedByName: name, reservedByContact: contact, reservedComment: comment, reservedAt: new Date().toISOString() } : gift) } : event));
       closeModal('reserveModal');
       toast('Подарок забронирован');
