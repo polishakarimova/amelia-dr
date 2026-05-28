@@ -6,7 +6,7 @@
   <title>Повод — карточка праздника в одной ссылке</title>
   <meta name="description" content="Есть повод — собрать праздник в одной ссылке. Дата, место, пожелания и подарки в аккуратной карточке для гостей." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
@@ -31,7 +31,7 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--ink);
       background:
         radial-gradient(circle at 9% 10%, rgba(230,111,92,.20), transparent 28%),
@@ -51,16 +51,19 @@
     }
     .topbar {
       position: sticky;
-      top: 0;
+      top: calc(10px + env(safe-area-inset-top));
       z-index: 20;
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 14px;
-      padding: calc(10px + env(safe-area-inset-top)) 0 12px;
-      margin-top: calc(-10px - env(safe-area-inset-top));
-      background: linear-gradient(180deg, rgba(251,246,239,.95), rgba(251,246,239,.68));
-      backdrop-filter: blur(18px);
+      padding: 8px;
+      margin: 0 0 20px;
+      border: 1px solid rgba(255,255,255,.76);
+      border-radius: 28px;
+      background: rgba(255,255,255,.62);
+      box-shadow: 0 18px 54px rgba(53,39,31,.08);
+      backdrop-filter: blur(22px);
     }
     .brand {
       display: inline-flex;
@@ -69,10 +72,11 @@
       border: 0;
       background: transparent;
       color: var(--ink);
-      font-weight: 800;
+      font-weight: 780;
       font-size: 18px;
-      letter-spacing: -.03em;
+      letter-spacing: -.015em;
       text-decoration: none;
+      padding: 4px 8px 4px 4px;
     }
     .brand-mark {
       width: 36px;
@@ -98,7 +102,7 @@
       border-radius: 999px;
       border: 0;
       padding: 11px 17px;
-      font-weight: 750;
+      font-weight: 780;
       text-decoration: none;
       transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
       white-space: nowrap;
@@ -152,11 +156,11 @@
       font-size: 13px;
       font-weight: 800;
     }
-    h1, h2, h3, h4 { margin: 0; letter-spacing: -.045em; }
+    h1, h2, h3, h4 { margin: 0; letter-spacing: -.025em; font-weight: 800; }
     h1 {
       max-width: 760px;
-      font-size: clamp(42px, 6vw, 76px);
-      line-height: .98;
+      font-size: clamp(40px, 5.4vw, 68px);
+      line-height: 1.03;
       margin-bottom: 20px;
       text-wrap: balance;
     }
@@ -310,7 +314,7 @@
       gap: 16px;
       padding: 36px 0 20px;
     }
-    .page-head h2 { font-size: clamp(34px, 5vw, 58px); line-height: 1; margin-bottom: 10px; }
+    .page-head h2 { font-size: clamp(34px, 4.2vw, 52px); line-height: 1.05; margin-bottom: 10px; }
     .page-head p { color: var(--muted); line-height: 1.6; max-width: 640px; }
     .auth-card, .panel { max-width: 520px; margin: 26px auto; padding: 24px; }
     .auth-primary {
@@ -379,8 +383,8 @@
       background: #fff; border: 1px solid var(--line);
       color: var(--muted); font-size: 12px; font-weight: 800;
     }
-    .editor-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
-    .editor-card { padding: 22px; }
+    .editor-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
+    .editor-card { padding: 22px; max-width: 850px; }
     .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 14px; }
     .tab { flex: 0 0 auto; }
     .tab.active { background: var(--ink); color: #fff; }
@@ -390,6 +394,34 @@
       background: rgba(255,255,255,.72); text-align: left;
     }
     .theme-option.active { border-color: rgba(230,111,92,.45); box-shadow: 0 14px 32px rgba(230,111,92,.12); }
+    .cover-upload {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 16px;
+      align-items: center;
+      padding: 14px;
+      border: 1px dashed rgba(230,111,92,.38);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(255,241,236,.72), rgba(255,255,255,.72));
+    }
+    .cover-preview {
+      height: 140px;
+      border-radius: 20px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(230,111,92,.25), transparent 34%),
+        radial-gradient(circle at 78% 16%, rgba(143,199,232,.28), transparent 34%),
+        linear-gradient(135deg, #fff2e8, #efeaff);
+      color: var(--coral-dark);
+      font-weight: 850;
+    }
+    .cover-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cover-copy h3 { font-size: 20px; margin-bottom: 6px; }
+    .cover-copy p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+    .cover-copy input { padding: 10px; border-radius: 14px; }
     .gift-editor { display: grid; gap: 10px; }
     .gift-row {
       display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center;
@@ -443,12 +475,16 @@
     }
     @media (max-width: 560px) {
       .shell { padding-left: 14px; padding-right: 14px; }
+      .topbar { border-radius: 22px; }
+      .top-actions { gap: 6px; }
+      .top-actions .btn { padding-left: 12px; padding-right: 12px; }
       .top-actions .btn-soft { display: none; }
       .hero { padding-top: 30px; }
       .hero-actions .btn, .page-head .btn { width: 100%; }
       .page-head { display: block; }
       .page-head .btn { margin-top: 14px; }
       .form-grid, .theme-grid { grid-template-columns: 1fr; }
+      .cover-upload { grid-template-columns: 1fr; }
       .event-item, .gift-row { grid-template-columns: 1fr; }
       .event-preview, .gift-row img { width: 100%; height: 120px; }
       .gift-actions { grid-template-columns: 1fr; }
@@ -847,7 +883,6 @@
             </div>
             <div id="editorBody">${editorBody(event)}</div>
           </section>
-          <aside class="card guest-side">${eventSummary(event)}</aside>
         </div>
       `;
     }
@@ -857,6 +892,14 @@
         <div class="theme-grid">${['Нежный','Яркий','Минимал','Детский','Праздничный','Элегантный'].map(theme => `<button class="theme-option ${event.theme === theme ? 'active' : ''}" onclick="updateEvent('${event.id}', { theme: '${theme}' })"><b>${theme}</b><br><span class="muted">Подойдёт для разных поводов</span></button>`).join('')}</div>`;
       if (editorTab === 'details') return `
         <div class="form-grid">
+          <div class="cover-upload">
+            <div class="cover-preview">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : 'Фото'}</div>
+            <div class="cover-copy">
+              <h3>Фото для карточки</h3>
+              <p>Добавьте фото ребёнка или обложку события. Мы покажем её аккуратно в верхней части публичной карточки.</p>
+              <input id="eventCover" type="file" accept="image/*">
+            </div>
+          </div>
           <label>Название события<input id="eventTitle" value="${event.title}"></label>
           <label>Тип события<select id="eventType">${['Детский день рождения','День рождения','Свадьба','Новоселье','Baby shower','Девичник','Новый год','Другое'].map(x => `<option ${event.type === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
           <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
@@ -866,7 +909,6 @@
           <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Можно оставить пустым — создадим ссылку на поиск"></label>
           <label class="full">Описание<textarea id="eventDescription">${event.description || ''}</textarea></label>
           <label class="full">Пожелания для гостей<textarea id="eventWishes">${event.wishes || ''}</textarea></label>
-          <label class="full">Обложка / картинка карточки<input id="eventCover" type="file" accept="image/*"></label>
         </div>
         <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}')">Сохранить детали</button><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Проверить карту</a></div>`;
       if (editorTab === 'gifts') return `
