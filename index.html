@@ -386,9 +386,44 @@
     }
     .editor-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
     .editor-card { padding: 22px; max-width: 850px; }
+    .step-progress {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.58);
+      border: 1px solid var(--line);
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .progress-track {
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(37,35,33,.08);
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(135deg, var(--coral), #e8a05d);
+      transition: width .24s ease;
+    }
+    .step-dots {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
     .tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 14px; }
     .tab { flex: 0 0 auto; }
     .tab.active { background: var(--ink); color: #fff; }
+    .tab.done { background: rgba(255,255,255,.8); color: var(--coral-dark); }
     .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .theme-option {
       padding: 15px; border-radius: 20px; border: 1px solid var(--line);
@@ -424,6 +459,14 @@
     .cover-copy h3 { font-size: 20px; margin-bottom: 6px; }
     .cover-copy p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
     .cover-copy input { max-width: 100%; min-width: 0; padding: 10px; border-radius: 14px; font-size: 13px; }
+    .field-hint {
+      display: block;
+      color: rgba(112,106,100,.68);
+      font-size: 12px;
+      font-style: italic;
+      font-weight: 500;
+      line-height: 1.45;
+    }
     .template-box {
       grid-column: 1 / -1;
       display: grid;
@@ -564,6 +607,8 @@
       .hero-actions .btn, .page-head .btn { width: 100%; }
       .page-head { display: block; }
       .page-head .btn { margin-top: 14px; }
+      .step-dots { grid-template-columns: 1fr 1fr; }
+      .progress-meta { display: grid; }
       .form-grid, .theme-grid { grid-template-columns: 1fr; }
       .cover-upload { grid-template-columns: 1fr; }
       .event-item, .gift-row { grid-template-columns: 1fr; }
@@ -659,6 +704,12 @@
         { label: 'Дресс-код', text: 'Если хочется поддержать настроение праздника, можно добавить в образ ковбойские элементы: шляпу, платок, джинсу или что-то в этом стиле.' }
       ]
     };
+    const BUILDER_STEPS = [
+      { id: 'style', label: 'Вид карточки' },
+      { id: 'details', label: 'Детали' },
+      { id: 'gifts', label: 'Подарки' },
+      { id: 'publish', label: 'Ссылка' }
+    ];
 
     function uid() {
       return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -749,7 +800,7 @@
       if (route === '/login') return renderAuth('login');
       if (route === '/register') return renderAuth('register');
       if (route === '/dashboard') return guard(renderDashboard);
-      if (route === '/dashboard/events/new') return guard(() => renderEditor(createDraft()));
+      if (route === '/dashboard/events/new') return guard(() => renderEditor(createDraft(), 'style'));
       const edit = route.match(/^\/dashboard\/events\/([^/]+)\/edit$/);
       if (edit) return guard(() => renderEditor(findEvent(edit[1])));
       const gifts = route.match(/^\/dashboard\/events\/([^/]+)\/gifts$/);
@@ -963,7 +1014,7 @@
                 <p class="muted">${event.date || 'Дата не указана'} · ${event.type}</p>
                 <p class="muted">${reservedCount} из ${event.gifts.length} подарков выбрали</p>
                 <div class="event-actions">
-                  <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/edit">Редактировать</button>
+              <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/edit">Редактировать</button>
                   <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/gifts">Подарки</button>
                   <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/preview">Посмотреть как гость</button>
                   <button class="btn btn-primary btn-small" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку</button>
@@ -987,16 +1038,25 @@
         </div>
         <div class="editor-layout">
           <section class="card editor-card">
-            <div class="tabs">
-              ${['style:Вид карточки','details:Детали','gifts:Подарки','publish:Ссылка'].map(item => {
-                const [id, label] = item.split(':');
-                return `<button class="btn btn-soft tab ${editorTab === id ? 'active' : ''}" onclick="renderEditor(findEvent('${event.id}'),'${id}')">${label}</button>`;
-              }).join('')}
-            </div>
+            ${renderStepProgress(event)}
             <div id="editorBody">${editorBody(event)}</div>
           </section>
         </div>
       `;
+    }
+    function renderStepProgress(event) {
+      const index = BUILDER_STEPS.findIndex(step => step.id === editorTab);
+      const current = Math.max(index, 0);
+      const left = BUILDER_STEPS.length - current - 1;
+      const note = left === 0 ? 'Финишный шаг: осталось опубликовать и скопировать ссылку.' : left === 1 ? 'Остался один шаг до ссылки для гостей.' : `Ещё ${left} шага — и карточка будет готова.`;
+      return `
+        <div class="step-progress">
+          <div class="progress-meta"><span>Шаг ${current + 1} из ${BUILDER_STEPS.length}: ${BUILDER_STEPS[current].label}</span><span>${note}</span></div>
+          <div class="progress-track"><div class="progress-fill" style="width:${((current + 1) / BUILDER_STEPS.length) * 100}%"></div></div>
+          <div class="step-dots">
+            ${BUILDER_STEPS.map((step, stepIndex) => `<button class="btn btn-soft tab ${editorTab === step.id ? 'active' : stepIndex < current ? 'done' : ''}" onclick="renderEditor(findEvent('${event.id}'),'${step.id}')">${stepIndex < current ? '✓ ' : ''}${step.label}</button>`).join('')}
+          </div>
+        </div>`;
     }
     function templateButtons(group, targetId) {
       return `<div class="template-box"><h4>Можно начать с шаблона</h4><div class="template-options">${TEXT_TEMPLATES[group].map((item, index) => `<button class="btn btn-soft" type="button" onclick="applyTextTemplate('${group}', ${index}, '${targetId}')">${item.label}</button>`).join('')}</div></div>`;
@@ -1004,7 +1064,7 @@
     function editorBody(event) {
       if (editorTab === 'style') return `
         <h3>Выберите настроение карточки</h3><p class="muted">Позже его можно будет изменить.</p>
-        <div class="theme-grid">${['Нежный','Яркий','Минимал','Детский','Праздничный','Элегантный'].map(theme => `<button class="theme-option ${event.theme === theme ? 'active' : ''}" onclick="updateEvent('${event.id}', { theme: '${theme}' })"><b>${theme}</b><br><span class="muted">Подойдёт для разных поводов</span></button>`).join('')}</div>`;
+        <div class="theme-grid">${['Нежный','Яркий','Минимал','Детский','Праздничный','Элегантный'].map(theme => `<button class="theme-option ${event.theme === theme ? 'active' : ''}" onclick="setThemeAndContinue('${event.id}', '${theme}')"><b>${theme}</b><br><span class="field-hint">Подойдёт для разных поводов</span></button>`).join('')}</div>`;
       if (editorTab === 'details') return `
         <div class="form-grid">
           <div class="cover-upload">
@@ -1013,6 +1073,7 @@
               <h3>Фото для карточки</h3>
               <p>Добавьте фото ребёнка или обложку события. Мы покажем её аккуратно в верхней части публичной карточки.</p>
               <input id="eventCover" type="file" accept="image/*" onchange="openCoverCrop(this.files[0])">
+              <span class="field-hint">Если файл не выбран, карточка останется с мягкой декоративной обложкой.</span>
             </div>
           </div>
           <label>Название события<input id="eventTitle" value="${event.title}"></label>
@@ -1021,16 +1082,16 @@
           <label>Время<input id="eventTime" type="time" value="${event.time || ''}"></label>
           <label>Место проведения<input id="eventPlace" value="${event.placeName || ''}"></label>
           <label>Адрес<input id="eventAddress" value="${event.address || ''}"></label>
-          <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Ссылка на Яндекс.Карты или 2ГИС"></label>
+          <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Ссылка на Яндекс.Карты или 2ГИС"><span class="field-hint">Лучше вставить ссылку именно на Яндекс.Карты или 2ГИС, чтобы гости сразу открыли маршрут.</span></label>
           <label class="full">Описание<textarea id="eventDescription">${event.description || ''}</textarea></label>
           ${templateButtons('description', 'eventDescription')}
           <label class="full">Пожелания для гостей<textarea id="eventWishes">${event.wishes || ''}</textarea></label>
           ${templateButtons('wishes', 'eventWishes')}
         </div>
-        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}')">Сохранить детали</button></div>`;
+        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}', 'gifts')">Сохранить и продолжить</button><button class="btn btn-soft" onclick="saveDetails('${event.id}')">Сохранить</button></div>`;
       if (editorTab === 'gifts') return `
-        <div class="hero-actions"><button class="btn btn-accent" onclick="addGift('${event.id}')">Добавить подарок</button></div>
-        <div class="gift-editor">${event.gifts.map(gift => `<div class="gift-row"><img src="${gift.image || ''}" alt=""><div><b>${gift.title}</b><div class="muted">${money(gift.price)} · ${gift.status === 'reserved' ? 'Подарок уже выбрали' : 'Подарок свободен'}</div><div class="muted">${gift.reservedByName ? 'Выбрал(а): ' + gift.reservedByName : ''}</div></div><div class="hero-actions"><button class="btn btn-soft btn-small" onclick="toggleGift('${event.id}','${gift.id}')">${gift.status === 'reserved' ? 'Снять бронь' : 'Забронировать'}</button><button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button></div></div>`).join('')}</div>`;
+        <div class="hero-actions"><button class="btn btn-accent" onclick="addGift('${event.id}')">Добавить подарок</button><button class="btn btn-primary" onclick="renderEditor(findEvent('${event.id}'), 'publish')">Продолжить к ссылке</button></div>
+        <div class="gift-editor">${event.gifts.length ? event.gifts.map(gift => `<div class="gift-row"><img src="${gift.image || ''}" alt=""><div><b>${gift.title}</b><div class="muted">${money(gift.price)} · ${gift.status === 'reserved' ? 'Подарок уже выбрали' : 'Подарок свободен'}</div><div class="muted">${gift.reservedByName ? 'Выбрал(а): ' + gift.reservedByName : ''}</div></div><div class="hero-actions"><button class="btn btn-soft btn-small" onclick="toggleGift('${event.id}','${gift.id}')">${gift.status === 'reserved' ? 'Снять бронь' : 'Забронировать'}</button><button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button></div></div>`).join('') : '<div class="template-box"><h4>Подарков пока нет</h4><span class="field-hint">Можно добавить идеи сейчас или вернуться к подаркам позже.</span></div>'}</div>`;
       return `
         <h3>Ссылка для гостей</h3><p class="muted">Публичная карточка открывается без авторизации.</p>
         <div class="link-box"><code>${publicUrl(event)}</code><button class="btn btn-primary" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку для гостей</button></div>
@@ -1039,7 +1100,7 @@
     function eventSummary(event) {
       return `<div class="guest-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<span class="brand-mark">✦</span>'}</div><h2>${event.title}</h2><p>${event.date || 'Дата не указана'} ${event.time || ''}</p><p>${event.placeName || 'Место не указано'}</p><p>${event.wishes || 'Пожелания появятся здесь.'}</p>`;
     }
-    function saveDetails(id) {
+    function saveDetails(id, nextTab) {
       const patch = {
         title: document.getElementById('eventTitle').value,
         slug: slugify(document.getElementById('eventTitle').value),
@@ -1052,7 +1113,10 @@
         description: document.getElementById('eventDescription').value,
         wishes: document.getElementById('eventWishes').value
       };
-      updateEvent(id, patch, 'Детали сохранены');
+      updateEvent(id, patch, nextTab ? 'Детали сохранены, идём дальше' : 'Детали сохранены', nextTab);
+    }
+    function setThemeAndContinue(id, theme) {
+      updateEvent(id, { theme }, 'Настроение выбрано', 'details');
     }
     function applyTextTemplate(group, index, targetId) {
       const target = document.getElementById(targetId);
@@ -1148,10 +1212,10 @@
       closeCoverCrop();
       toast('Фото для карточки сохранено');
     }
-    function updateEvent(id, patch, message = 'Сохранено') {
+    function updateEvent(id, patch, message = 'Сохранено', nextTab = editorTab) {
       saveEvents(events().map(event => event.id === id ? { ...event, ...patch, updatedAt: new Date().toISOString() } : event));
       toast(message);
-      renderEditor(findEvent(id), editorTab);
+      renderEditor(findEvent(id), nextTab);
     }
     function addGift(eventId) {
       const event = findEvent(eventId);
