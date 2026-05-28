@@ -274,6 +274,7 @@
     .grid.cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     .grid.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
     .card {
+      min-width: 0;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: var(--radius-lg);
@@ -419,9 +420,10 @@
       font-weight: 850;
     }
     .cover-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cover-copy { min-width: 0; }
     .cover-copy h3 { font-size: 20px; margin-bottom: 6px; }
     .cover-copy p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
-    .cover-copy input { padding: 10px; border-radius: 14px; }
+    .cover-copy input { max-width: 100%; min-width: 0; padding: 10px; border-radius: 14px; font-size: 13px; }
     .gift-editor { display: grid; gap: 10px; }
     .gift-row {
       display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center;
@@ -457,7 +459,63 @@
     }
     .modal.active { display: flex; }
     .modal-card { width: min(460px, 100%); padding: 24px; background: #fff; border-radius: 28px; box-shadow: 0 30px 90px rgba(37,35,33,.25); }
+    .modal-card.wide { width: min(760px, 100%); }
     .modal-card h3 { font-size: 24px; margin-bottom: 10px; }
+    .crop-stage {
+      position: relative;
+      height: min(56vw, 430px);
+      min-height: 280px;
+      margin: 18px 0 14px;
+      border-radius: 26px;
+      overflow: hidden;
+      background: #171514;
+      touch-action: none;
+      user-select: none;
+    }
+    .crop-stage img {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: auto;
+      height: auto;
+      max-width: none;
+      transform-origin: center;
+      will-change: transform;
+      pointer-events: none;
+    }
+    .crop-frame {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(88%, 560px);
+      aspect-ratio: 12 / 7;
+      transform: translate(-50%, -50%);
+      border: 2px solid rgba(255,255,255,.96);
+      border-radius: 24px;
+      box-shadow: 0 0 0 999px rgba(0,0,0,.48), inset 0 0 0 1px rgba(255,255,255,.45);
+      pointer-events: none;
+    }
+    .crop-frame::after {
+      content: "";
+      position: absolute;
+      inset: 33.333% 0;
+      border-top: 1px solid rgba(255,255,255,.38);
+      border-bottom: 1px solid rgba(255,255,255,.38);
+    }
+    .crop-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0 33.333%;
+      border-left: 1px solid rgba(255,255,255,.38);
+      border-right: 1px solid rgba(255,255,255,.38);
+    }
+    .crop-tools {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .crop-tools input[type="range"] { padding: 0; accent-color: var(--coral); }
     .toast {
       position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 140;
       width: min(92vw, 420px); transform: translate(-50%, 120px); opacity: 0;
@@ -525,6 +583,24 @@
       </div>
     </div>
   </div>
+  <div class="modal" id="coverCropModal" onclick="if(event.target===this)closeCoverCrop()">
+    <div class="modal-card wide">
+      <h3>Настроить фото</h3>
+      <p class="muted">Подвиньте фото и выберите масштаб. Светлая рамка показывает, что попадёт в обложку карточки.</p>
+      <div class="crop-stage" id="cropStage">
+        <img id="cropImage" alt="">
+        <div class="crop-frame" id="cropFrame"></div>
+      </div>
+      <div class="crop-tools">
+        <label>Масштаб<input id="cropScale" type="range" min="1" max="3" step="0.01" value="1"></label>
+        <button class="btn btn-soft" type="button" onclick="chooseAnotherCover()">Выбрать другое фото</button>
+      </div>
+      <div class="hero-actions" style="margin-top:14px">
+        <button class="btn btn-soft" type="button" onclick="closeCoverCrop()">Отмена</button>
+        <button class="btn btn-primary" type="button" onclick="saveCroppedCover()">Сохранить кадр</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 
   <script>
@@ -540,6 +616,7 @@
     let currentEventId = null;
     let editorTab = 'style';
     let pendingReserve = null;
+    let coverCrop = null;
     const BASE_PATH = location.pathname.startsWith('/amelia-dr') ? '/amelia-dr' : '';
 
     const sampleGifts = [
@@ -897,7 +974,7 @@
             <div class="cover-copy">
               <h3>Фото для карточки</h3>
               <p>Добавьте фото ребёнка или обложку события. Мы покажем её аккуратно в верхней части публичной карточки.</p>
-              <input id="eventCover" type="file" accept="image/*">
+              <input id="eventCover" type="file" accept="image/*" onchange="openCoverCrop(this.files[0])">
             </div>
           </div>
           <label>Название события<input id="eventTitle" value="${event.title}"></label>
@@ -923,7 +1000,6 @@
       return `<div class="guest-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<span class="brand-mark">✦</span>'}</div><h2>${event.title}</h2><p>${event.date || 'Дата не указана'} ${event.time || ''}</p><p>${event.placeName || 'Место не указано'}</p><p>${event.wishes || 'Пожелания появятся здесь.'}</p>`;
     }
     function saveDetails(id) {
-      const file = document.getElementById('eventCover').files[0];
       const patch = {
         title: document.getElementById('eventTitle').value,
         slug: slugify(document.getElementById('eventTitle').value),
@@ -936,11 +1012,93 @@
         description: document.getElementById('eventDescription').value,
         wishes: document.getElementById('eventWishes').value
       };
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => updateEvent(id, { ...patch, coverImage: reader.result }, 'Детали и обложка сохранены');
-        reader.readAsDataURL(file);
-      } else updateEvent(id, patch, 'Детали сохранены');
+      updateEvent(id, patch, 'Детали сохранены');
+    }
+    function openCoverCrop(file) {
+      if (!file) return;
+      if (!file.type.startsWith('image/')) return toast('Выберите файл с изображением');
+      const reader = new FileReader();
+      reader.onload = () => {
+        const image = new Image();
+        image.onload = () => {
+          coverCrop = { image, baseScale: 1, scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+          const imgNode = document.getElementById('cropImage');
+          imgNode.src = reader.result;
+          document.getElementById('cropScale').value = '1';
+          document.getElementById('coverCropModal').classList.add('active');
+          requestAnimationFrame(resetCoverCrop);
+        };
+        image.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    function resetCoverCrop() {
+      if (!coverCrop) return;
+      const stage = document.getElementById('cropStage').getBoundingClientRect();
+      const frame = document.getElementById('cropFrame').getBoundingClientRect();
+      coverCrop.baseScale = Math.max(frame.width / coverCrop.image.width, frame.height / coverCrop.image.height);
+      coverCrop.scale = 1;
+      coverCrop.x = 0;
+      coverCrop.y = 0;
+      applyCoverCrop();
+    }
+    function applyCoverCrop() {
+      if (!coverCrop) return;
+      constrainCoverCrop();
+      const imgNode = document.getElementById('cropImage');
+      const scale = coverCrop.baseScale * coverCrop.scale;
+      imgNode.style.width = `${coverCrop.image.width}px`;
+      imgNode.style.height = `${coverCrop.image.height}px`;
+      imgNode.style.transform = `translate(calc(-50% + ${coverCrop.x}px), calc(-50% + ${coverCrop.y}px)) scale(${scale})`;
+    }
+    function constrainCoverCrop() {
+      if (!coverCrop) return;
+      const stage = document.getElementById('cropStage').getBoundingClientRect();
+      const frame = document.getElementById('cropFrame').getBoundingClientRect();
+      const scale = coverCrop.baseScale * coverCrop.scale;
+      const imageWidth = coverCrop.image.width * scale;
+      const imageHeight = coverCrop.image.height * scale;
+      const maxX = Math.max(0, (imageWidth - frame.width) / 2);
+      const maxY = Math.max(0, (imageHeight - frame.height) / 2);
+      const frameCenterOffsetX = frame.left + frame.width / 2 - (stage.left + stage.width / 2);
+      const frameCenterOffsetY = frame.top + frame.height / 2 - (stage.top + stage.height / 2);
+      coverCrop.x = Math.min(maxX + frameCenterOffsetX, Math.max(-maxX + frameCenterOffsetX, coverCrop.x));
+      coverCrop.y = Math.min(maxY + frameCenterOffsetY, Math.max(-maxY + frameCenterOffsetY, coverCrop.y));
+    }
+    function closeCoverCrop() {
+      document.getElementById('coverCropModal').classList.remove('active');
+      const input = document.getElementById('eventCover');
+      if (input) input.value = '';
+      coverCrop = null;
+    }
+    function chooseAnotherCover() {
+      closeCoverCrop();
+      document.getElementById('eventCover')?.click();
+    }
+    function saveCroppedCover() {
+      if (!coverCrop || !currentEventId) return;
+      const stageRect = document.getElementById('cropStage').getBoundingClientRect();
+      const frameRect = document.getElementById('cropFrame').getBoundingClientRect();
+      const outputWidth = 1200;
+      const outputHeight = 700;
+      const canvas = document.createElement('canvas');
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      const ctx = canvas.getContext('2d');
+      const scale = coverCrop.baseScale * coverCrop.scale;
+      const imageLeft = stageRect.left + stageRect.width / 2 + coverCrop.x - coverCrop.image.width * scale / 2;
+      const imageTop = stageRect.top + stageRect.height / 2 + coverCrop.y - coverCrop.image.height * scale / 2;
+      const sx = (frameRect.left - imageLeft) / scale;
+      const sy = (frameRect.top - imageTop) / scale;
+      const sw = frameRect.width / scale;
+      const sh = frameRect.height / scale;
+      ctx.drawImage(coverCrop.image, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      saveEvents(events().map(event => event.id === currentEventId ? { ...event, coverImage: dataUrl, updatedAt: new Date().toISOString() } : event));
+      const preview = document.querySelector('.cover-preview');
+      if (preview) preview.innerHTML = `<img src="${dataUrl}" alt="">`;
+      closeCoverCrop();
+      toast('Фото для карточки сохранено');
     }
     function updateEvent(id, patch, message = 'Сохранено') {
       saveEvents(events().map(event => event.id === id ? { ...event, ...patch, updatedAt: new Date().toISOString() } : event));
@@ -1018,6 +1176,34 @@
       if (!target) return;
       event.preventDefault();
       navigate(target.dataset.route);
+    });
+    document.getElementById('cropScale').addEventListener('input', event => {
+      if (!coverCrop) return;
+      coverCrop.scale = Number(event.target.value);
+      applyCoverCrop();
+    });
+    document.getElementById('cropStage').addEventListener('pointerdown', event => {
+      if (!coverCrop) return;
+      coverCrop.dragging = true;
+      coverCrop.startX = event.clientX;
+      coverCrop.startY = event.clientY;
+      coverCrop.originX = coverCrop.x;
+      coverCrop.originY = coverCrop.y;
+      event.currentTarget.setPointerCapture(event.pointerId);
+    });
+    document.getElementById('cropStage').addEventListener('pointermove', event => {
+      if (!coverCrop?.dragging) return;
+      coverCrop.x = coverCrop.originX + event.clientX - coverCrop.startX;
+      coverCrop.y = coverCrop.originY + event.clientY - coverCrop.startY;
+      applyCoverCrop();
+    });
+    document.getElementById('cropStage').addEventListener('pointerup', event => {
+      if (!coverCrop) return;
+      coverCrop.dragging = false;
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    });
+    document.getElementById('cropStage').addEventListener('pointercancel', () => {
+      if (coverCrop) coverCrop.dragging = false;
     });
     window.addEventListener('popstate', render);
     render();
