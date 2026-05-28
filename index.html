@@ -1019,15 +1019,15 @@
           <label>Тип события<select id="eventType">${['Детский день рождения','День рождения','Свадьба','Новоселье','Baby shower','Девичник','Новый год','Другое'].map(x => `<option ${event.type === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
           <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
           <label>Время<input id="eventTime" type="time" value="${event.time || ''}"></label>
-          <label>Место<input id="eventPlace" value="${event.placeName || ''}"></label>
+          <label>Место проведения<input id="eventPlace" value="${event.placeName || ''}"></label>
           <label>Адрес<input id="eventAddress" value="${event.address || ''}"></label>
-          <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Можно оставить пустым — создадим ссылку на поиск"></label>
+          <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Ссылка на Яндекс.Карты или 2ГИС"></label>
           <label class="full">Описание<textarea id="eventDescription">${event.description || ''}</textarea></label>
           ${templateButtons('description', 'eventDescription')}
           <label class="full">Пожелания для гостей<textarea id="eventWishes">${event.wishes || ''}</textarea></label>
           ${templateButtons('wishes', 'eventWishes')}
         </div>
-        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}')">Сохранить детали</button><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Проверить карту</a></div>`;
+        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}')">Сохранить детали</button></div>`;
       if (editorTab === 'gifts') return `
         <div class="hero-actions"><button class="btn btn-accent" onclick="addGift('${event.id}')">Добавить подарок</button></div>
         <div class="gift-editor">${event.gifts.map(gift => `<div class="gift-row"><img src="${gift.image || ''}" alt=""><div><b>${gift.title}</b><div class="muted">${money(gift.price)} · ${gift.status === 'reserved' ? 'Подарок уже выбрали' : 'Подарок свободен'}</div><div class="muted">${gift.reservedByName ? 'Выбрал(а): ' + gift.reservedByName : ''}</div></div><div class="hero-actions"><button class="btn btn-soft btn-small" onclick="toggleGift('${event.id}','${gift.id}')">${gift.status === 'reserved' ? 'Снять бронь' : 'Забронировать'}</button><button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button></div></div>`).join('')}</div>`;
