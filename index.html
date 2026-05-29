@@ -629,7 +629,7 @@
     .btn-soft { background: rgba(255,255,255,.76); }
     h1, h2, h3, h4 { letter-spacing: 0; }
     h1 { font-size: clamp(38px, 5.1vw, 72px); line-height: 1.02; }
-    .hero { grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); gap: 38px; max-width: 1120px; padding: 56px 0 46px; }
+    .hero { grid-template-columns: 1fr; gap: 34px; max-width: 860px; padding: 56px 0 46px; }
     .lead { font-size: clamp(16px, 1.7vw, 19px); }
     .microcopy { max-width: 640px; color: var(--muted); font-size: 14px; }
     .section-title h2 { font-size: clamp(32px, 4vw, 52px); }
@@ -653,10 +653,8 @@
     textarea { min-height: 128px; }
     input::placeholder, textarea::placeholder { color: var(--muted-light); }
     input:focus, textarea:focus, select:focus { border-color: rgba(235,115,87,.48); box-shadow: 0 0 0 4px rgba(235,115,87,.10); }
-    .editor-layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; align-items: start; }
+    .editor-layout { grid-template-columns: minmax(0, 1fr); gap: 22px; align-items: start; }
     .editor-card { max-width: 980px; padding: 24px; }
-    .builder-preview { position: sticky; top: calc(96px + env(safe-area-inset-top)); padding: 16px; }
-    .builder-preview h3 { font-size: 18px; margin-bottom: 12px; }
     .step-progress { gap: 11px; padding: 14px 14px 16px; }
     .progress-track { height: 5px; }
     .tab { min-height: 38px; padding: 8px 11px; font-size: 13px; }
@@ -765,37 +763,6 @@
     .gift-img { display: grid; place-items: center; background: linear-gradient(135deg, var(--peach), var(--lavender)); color: var(--primary-hover); font-weight: 900; overflow: hidden; }
     .gift-img .status { position: absolute; top: 12px; left: 12px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 8px 20px rgba(50,40,35,.08); }
     .tag { background: var(--primary-soft); }
-    .hero-mockup {
-      position: relative;
-      align-self: center;
-      padding: 14px;
-      border-radius: 34px;
-      background: rgba(255,255,255,.58);
-      border: 1px solid rgba(255,255,255,.86);
-      box-shadow: var(--shadow-soft);
-      backdrop-filter: blur(18px);
-    }
-    .mockup-card {
-      overflow: hidden;
-      border-radius: 28px;
-      background: #fffaf7;
-      border: 1px solid var(--line);
-    }
-    .mockup-cover {
-      min-height: 148px;
-      padding: 14px;
-      display: flex;
-      align-items: flex-end;
-      background:
-        radial-gradient(circle at 22% 18%, rgba(255,255,255,.88), transparent 20%),
-        linear-gradient(135deg, var(--peach), var(--lavender));
-    }
-    .mockup-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .mockup-cover span { padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.82); font-size: 12px; font-weight: 800; color: var(--primary-hover); }
-    .mockup-body { padding: 16px; }
-    .mockup-body h3 { font-size: 24px; line-height: 1.08; margin-bottom: 10px; }
-    .mockup-gift { display: grid; grid-template-columns: 38px 1fr auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid var(--line); border-radius: 17px; background: rgba(255,255,255,.72); margin-top: 8px; }
-    .mockup-dot { width: 38px; height: 38px; border-radius: 14px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-hover); font-weight: 900; }
     .badge-success { background: var(--success-soft); color: var(--success); }
     .badge-muted { background: rgba(40,35,31,.08); color: var(--muted); }
     .share-panel {
@@ -819,18 +786,18 @@
     .page-head,
     .editor-layout,
     .hero {
-      width: min(100%, 1120px);
+      width: min(100%, 980px);
       margin-left: auto;
       margin-right: auto;
     }
     .topbar { margin-bottom: 28px; }
     .page-head { padding: 34px 0 20px; }
     .editor-card { width: 100%; max-width: none; }
-    .hero { max-width: 1120px; }
+    .hero { max-width: 860px; }
     .page-head h2 { font-size: clamp(32px, 4.2vw, 56px); }
     @media (max-width: 940px) {
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
-      .guest-side, .builder-preview { position: static; }
+      .guest-side { position: static; }
       .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
       .grid.cols-5 .info-card, .grid.cols-5 .info-card:nth-child(1), .grid.cols-5 .info-card:nth-child(2) { grid-column: auto; }
       .guest-layout { width: min(100%, 680px); margin-left: auto; margin-right: auto; }
@@ -1131,24 +1098,6 @@
             </div>
             <p class="microcopy">Для дней рождения, baby shower, свадеб, новоселий и семейных праздников.</p>
           </div>
-          <aside class="hero-mockup" aria-label="Пример карточки праздника">
-            <div class="mockup-card">
-              <div class="mockup-cover"><span>Карточка для гостей</span></div>
-              <div class="mockup-body">
-                <h3>День рождения Мели</h3>
-                <div class="event-chips">
-                  <span class="tag">14 июня, 15:00</span>
-                  <span class="tag">Центральный парк</span>
-                </div>
-                <p class="muted">Дата, место, пожелания и подарки собраны в одной ссылке.</p>
-                ${[
-                  ['С', 'Самокат', 'Свободен', 'badge-success'],
-                  ['L', 'LEGO', 'Забронирован', 'badge-muted'],
-                  ['Ф', 'Фотосессия', 'Свободен', 'badge-success']
-                ].map(item => `<div class="mockup-gift"><span class="mockup-dot">${item[0]}</span><b>${item[1]}</b><span class="tag ${item[3]}">${item[2]}</span></div>`).join('')}
-              </div>
-            </div>
-          </aside>
         </section>
         <section>
           <div class="section-title"><h2>Не организует праздник за вас. Просто убирает хаос.</h2><p>Повод помогает собрать всё важное в одном месте: детали праздника, пожелания, подарки и бронь. А гостям — быстро понять, куда прийти и что подарить.</p></div>
@@ -1310,10 +1259,6 @@
             ${renderStepProgress(event)}
             <div id="editorBody">${editorBody(event)}</div>
           </section>
-          <aside class="card builder-preview">
-            <h3>Как увидят гости</h3>
-            ${editorLivePreview(event)}
-          </aside>
         </div>
       `;
     }
@@ -1424,22 +1369,6 @@
           <button class="btn btn-danger btn-small" onclick="deleteGift('${event.id}','${gift.id}')">Удалить</button>
         </div>
       </article>`;
-    }
-    function editorLivePreview(event) {
-      const visibleGifts = event.gifts.slice(0, 3);
-      return `<div class="mockup-card">
-        <div class="mockup-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<span>Декоративная обложка</span>'}</div>
-        <div class="mockup-body">
-          <h3>${event.title || 'Название повода'}</h3>
-          <div class="event-chips">
-            <span class="tag">${event.date || 'Дата не указана'} ${event.time || ''}</span>
-            <span class="tag">${event.placeName || 'Место не указано'}</span>
-          </div>
-          <p class="muted">${event.description || 'Текст приглашения появится здесь.'}</p>
-          ${visibleGifts.length ? visibleGifts.map(gift => `<div class="mockup-gift"><span class="mockup-dot">${gift.title.slice(0, 1).toUpperCase()}</span><b>${gift.title}</b><span class="tag ${gift.status === 'reserved' ? 'badge-muted' : 'badge-success'}">${gift.status === 'reserved' ? 'Забронирован' : 'Свободен'}</span></div>`).join('') : '<div class="empty-state"><h3>Подарков пока нет</h3><p class="muted">Добавьте идеи на шаге “Подарки”.</p></div>'}
-          <button class="btn btn-soft" data-route="/dashboard/events/${event.id}/preview">Посмотреть полностью</button>
-        </div>
-      </div>`;
     }
     function sharePanel(event) {
       const url = publicUrl(event);
