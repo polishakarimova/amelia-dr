@@ -729,6 +729,19 @@
     .gift-img { display: grid; place-items: center; background: linear-gradient(135deg, var(--peach), var(--lavender)); color: var(--primary-hover); font-weight: 900; overflow: hidden; }
     .gift-img .status { position: absolute; top: 12px; left: 12px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 8px 20px rgba(50,40,35,.08); }
     .tag { background: var(--primary-soft); }
+    .topbar,
+    .page-head,
+    .editor-layout,
+    .hero {
+      width: min(100%, 980px);
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .topbar { margin-bottom: 28px; }
+    .page-head { padding: 34px 0 20px; }
+    .editor-card { width: 100%; max-width: none; }
+    .hero { max-width: 980px; }
+    .page-head h2 { font-size: clamp(32px, 4.2vw, 56px); }
     @media (max-width: 940px) {
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
       .guest-side { position: static; }
