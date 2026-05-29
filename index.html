@@ -621,7 +621,7 @@
     .btn-soft { background: rgba(255,255,255,.76); }
     h1, h2, h3, h4 { letter-spacing: 0; }
     h1 { font-size: clamp(38px, 5.1vw, 72px); line-height: 1.02; }
-    .hero { grid-template-columns: minmax(0, 1fr) minmax(360px, 480px); gap: 48px; max-width: none; padding: 56px 0 46px; }
+    .hero { grid-template-columns: 1fr; gap: 34px; max-width: 860px; padding: 56px 0 46px; }
     .lead { font-size: clamp(16px, 1.7vw, 19px); }
     .microcopy { max-width: 640px; color: var(--muted); font-size: 14px; }
     .section-title h2 { font-size: clamp(32px, 4vw, 52px); }
@@ -706,26 +706,10 @@
     .gift-img { display: grid; place-items: center; background: linear-gradient(135deg, var(--peach), var(--lavender)); color: var(--primary-hover); font-weight: 900; overflow: hidden; }
     .gift-img .status { position: absolute; top: 12px; left: 12px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 8px 20px rgba(50,40,35,.08); }
     .tag { background: var(--primary-soft); }
-    .hero-preview { position: relative; min-height: 560px; display: grid; place-items: center; }
-    .preview-phone { width: min(390px, 100%); padding: 14px; border-radius: 38px; background: rgba(255,255,255,.68); border: 1px solid rgba(255,255,255,.9); box-shadow: 0 30px 90px rgba(50,40,35,.14); backdrop-filter: blur(18px); }
-    .preview-screen { overflow: hidden; border-radius: 30px; background: #fffaf7; border: 1px solid var(--line); }
-    .preview-cover { height: 156px; padding: 16px; background: radial-gradient(circle at 22% 18%, rgba(255,255,255,.88), transparent 20%), linear-gradient(135deg, var(--peach), var(--lavender)); display: flex; align-items: end; }
-    .preview-cover span { padding: 8px 10px; border-radius: 999px; background: rgba(255,255,255,.82); font-size: 12px; font-weight: 800; color: var(--primary-hover); }
-    .preview-content { padding: 18px; }
-    .preview-title { font-size: 24px; line-height: 1.08; margin-bottom: 10px; }
-    .preview-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 16px; }
-    .preview-gift { display: grid; grid-template-columns: 42px 1fr auto; gap: 10px; align-items: center; padding: 10px; border-radius: 18px; background: rgba(255,255,255,.72); border: 1px solid var(--line); margin-top: 8px; }
-    .preview-gift-dot { width: 42px; height: 42px; border-radius: 14px; background: var(--primary-soft); display: grid; place-items: center; color: var(--primary-hover); font-weight: 900; }
-    .floating-badge { position: absolute; display: inline-flex; align-items: center; gap: 6px; padding: 10px 12px; border-radius: 999px; background: rgba(255,255,255,.84); border: 1px solid var(--line); box-shadow: 0 14px 34px rgba(50,40,35,.10); font-size: 12px; font-weight: 800; }
-    .floating-badge.one { top: 62px; left: 0; }
-    .floating-badge.two { right: 8px; top: 156px; }
-    .floating-badge.three { left: 36px; bottom: 72px; }
     @media (max-width: 940px) {
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
       .guest-side, .live-preview { position: static; }
       .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
-      .hero-preview { min-height: auto; }
-      .floating-badge { display: none; }
     }
     @media (max-width: 560px) {
       .shell { padding-left: 14px; padding-right: 14px; }
@@ -746,8 +730,6 @@
       .event-item, .gift-admin-card, .link-box { grid-template-columns: 1fr; }
       .event-preview, .gift-thumb { width: 100%; height: 140px; }
       .gift-actions { grid-template-columns: 1fr; }
-      .preview-phone { border-radius: 30px; padding: 10px; }
-      .preview-screen { border-radius: 24px; }
     }
   </style>
 </head>
@@ -1019,29 +1001,6 @@
               <button class="btn btn-soft" data-route="/p/meli-birthday">Посмотреть пример</button>
             </div>
             <p class="microcopy">Для дней рождения, baby shower, свадеб, новоселий и семейных праздников.</p>
-          </div>
-          <div class="hero-preview" aria-label="Пример публичной карточки">
-            <span class="floating-badge one">Адрес на карте</span>
-            <span class="floating-badge two">Подарок забронирован</span>
-            <span class="floating-badge three">Без дублей</span>
-            <div class="preview-phone">
-              <div class="preview-screen">
-                <div class="preview-cover"><span>Повод для гостей</span></div>
-                <div class="preview-content">
-                  <h2 class="preview-title">День рождения Мели</h2>
-                  <div class="preview-meta">
-                    <span class="tag">14 июня, 15:00</span>
-                    <span class="tag">Центральный парк</span>
-                  </div>
-                  <p class="muted">Пожелания, место и подарки собраны в одной аккуратной карточке.</p>
-                  ${[
-                    ['С', 'Самокат', 'свободен'],
-                    ['L', 'LEGO', 'забронирован'],
-                    ['Ф', 'Сертификат на фотосессию', 'свободен']
-                  ].map(item => `<div class="preview-gift"><div class="preview-gift-dot">${item[0]}</div><div><b>${item[1]}</b><div class="field-hint">${item[2]}</div></div><button class="btn btn-primary btn-small" ${item[2] === 'забронирован' ? 'disabled' : ''}>Забронировать</button></div>`).join('')}
-                </div>
-              </div>
-            </div>
           </div>
         </section>
         <section>
