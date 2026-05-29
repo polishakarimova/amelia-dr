@@ -795,6 +795,154 @@
     .editor-card { width: 100%; max-width: none; }
     .hero { max-width: 860px; }
     .page-head h2 { font-size: clamp(32px, 4.2vw, 56px); }
+    .hero {
+      position: relative;
+      text-align: center;
+    }
+    .hero .lead,
+    .hero .microcopy,
+    .hero h1 {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-actions { justify-content: center; }
+    .product-strip {
+      width: min(100%, 860px);
+      margin: -18px auto 40px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .product-pill {
+      min-height: 96px;
+      padding: 14px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.64);
+      border: 1px solid rgba(40,35,31,.09);
+      box-shadow: 0 12px 34px rgba(50,40,35,.06);
+      display: grid;
+      align-content: center;
+      gap: 7px;
+    }
+    .product-pill b { font-size: 15px; }
+    .product-pill span { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    #editorView .page-head,
+    #editorView .editor-layout {
+      width: min(100%, 480px);
+    }
+    #editorView .page-head {
+      padding-top: 20px;
+      display: grid;
+      gap: 12px;
+      text-align: left;
+    }
+    #editorView .page-head h2 {
+      font-size: clamp(30px, 8vw, 38px);
+      line-height: 1.05;
+    }
+    #editorView .editor-card {
+      padding: 18px;
+      border-radius: 34px;
+      background: rgba(255,255,255,.78);
+      box-shadow: 0 24px 70px rgba(50,40,35,.12);
+    }
+    #editorView .form-grid { grid-template-columns: 1fr; }
+    #editorView .form-section {
+      border-radius: 28px;
+      padding: 16px;
+      background: rgba(255,255,255,.62);
+    }
+    .step-progress {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+    }
+    .step-dots {
+      display: flex;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .step-dots::-webkit-scrollbar { display: none; }
+    .tab {
+      min-width: max-content;
+      padding-left: 14px;
+      padding-right: 14px;
+    }
+    .theme-grid {
+      grid-template-columns: 1fr;
+    }
+    .theme-option {
+      min-height: 160px;
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+    .theme-sample { margin-bottom: 0; min-height: 108px; align-content: center; }
+    .cover-upload {
+      grid-template-columns: 1fr;
+      padding: 12px;
+      border-radius: 26px;
+    }
+    .cover-preview { height: 180px; border-radius: 24px; }
+    .gift-form,
+    .gift-admin-card,
+    .share-panel {
+      border-radius: 28px;
+      background: rgba(255,255,255,.72);
+    }
+    .gift-admin-card {
+      grid-template-columns: 96px 1fr;
+    }
+    .gift-admin-card .hero-actions {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      margin-bottom: 0;
+    }
+    #publicView .page-head,
+    #publicView .guest-layout {
+      width: min(100%, 430px);
+    }
+    #publicView .page-head {
+      display: block;
+      text-align: center;
+      padding-top: 18px;
+    }
+    #publicView .page-head h2 {
+      font-size: clamp(30px, 9vw, 40px);
+    }
+    #publicView .guest-layout {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    #publicView .guest-side {
+      position: static;
+      border-radius: 34px;
+      padding: 16px;
+      background: rgba(255,255,255,.82);
+    }
+    .guest-cover {
+      min-height: 210px;
+      border-radius: 28px;
+    }
+    .guest-gifts { grid-template-columns: 1fr; }
+    .gift-card { border-radius: 28px; }
+    .gift-img { height: 190px; }
+    .dashboard-grid {
+      width: min(100%, 860px);
+      margin: 0 auto;
+      grid-template-columns: 1fr;
+    }
+    .event-item {
+      border-radius: 30px;
+      grid-template-columns: 118px 1fr;
+      background: rgba(255,255,255,.74);
+    }
+    @media (max-width: 720px) {
+      .product-strip { grid-template-columns: 1fr 1fr; }
+      .product-pill { min-height: 86px; }
+    }
     @media (max-width: 940px) {
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
       .guest-side { position: static; }
@@ -821,6 +969,9 @@
       .event-item, .gift-admin-card, .link-box { grid-template-columns: 1fr; }
       .event-preview, .gift-thumb { width: 100%; height: 140px; }
       .gift-actions { grid-template-columns: 1fr; }
+      .product-strip { margin-top: -8px; }
+      .theme-option { grid-template-columns: 1fr; }
+      .event-item { grid-template-columns: 1fr; }
       .guest-side { padding: 14px; border-radius: 24px; }
       .guest-cover { min-height: 148px; border-radius: 22px; }
       .guest-side h2 { font-size: 28px; }
@@ -1099,6 +1250,12 @@
             <p class="microcopy">Для дней рождения, baby shower, свадеб, новоселий и семейных праздников.</p>
           </div>
         </section>
+        <section class="product-strip" aria-label="Что будет в карточке">
+          <div class="product-pill"><b>Дата и место</b><span>Гости не ищут детали в чате</span></div>
+          <div class="product-pill"><b>Карта</b><span>Ссылка на маршрут сразу под рукой</span></div>
+          <div class="product-pill"><b>Подарки</b><span>Идеи, цены и ссылки в одном списке</span></div>
+          <div class="product-pill"><b>Бронь</b><span>Видно, что уже выбрали другие</span></div>
+        </section>
         <section>
           <div class="section-title"><h2>Не организует праздник за вас. Просто убирает хаос.</h2><p>Повод помогает собрать всё важное в одном месте: детали праздника, пожелания, подарки и бронь. А гостям — быстро понять, куда прийти и что подарить.</p></div>
           <div class="grid cols-5">
@@ -1108,7 +1265,7 @@
               ['Не неловкий вишлист','Это выглядит как заботливая подсказка, а не требование подарков.', 'var(--mint)'],
               ['Гостям проще выбрать','Можно добавить ссылки, цены, фото и комментарии.', 'var(--cream)'],
               ['Красиво отправить в чат','Ссылка выглядит как аккуратное приглашение, а не список в сообщении.', 'var(--primary-soft)']
-            ].map((item, i) => `<div class="card info-card" style="--accent:${item[2]}"><div class="icon">${i + 1}</div><h3>${item[0]}</h3><p>${item[1]}</p></div>`).join('')}
+            ].map((item, i) => `<div class="card info-card" style="--accent:${item[2]}"><div class="icon">${['•','✓','♡','↗','→'][i]}</div><h3>${item[0]}</h3><p>${item[1]}</p></div>`).join('')}
           </div>
         </section>
         <section>
