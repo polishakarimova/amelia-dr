@@ -642,16 +642,39 @@
     textarea { min-height: 128px; }
     input::placeholder, textarea::placeholder { color: var(--muted-light); }
     input:focus, textarea:focus, select:focus { border-color: rgba(235,115,87,.48); box-shadow: 0 0 0 4px rgba(235,115,87,.10); }
-    .editor-layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 22px; }
-    .editor-card { max-width: none; padding: 24px; }
-    .live-preview { position: sticky; top: calc(94px + env(safe-area-inset-top)); padding: 16px; }
-    .live-preview h3 { font-size: 18px; margin-bottom: 12px; }
+    .editor-layout { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+    .editor-card { max-width: 980px; padding: 24px; }
     .step-progress { gap: 11px; padding: 14px 14px 16px; }
     .progress-track { height: 5px; }
     .tab { min-height: 38px; padding: 8px 11px; font-size: 13px; }
     .tab.active { background: var(--primary); color: #fff; border-color: transparent; }
-    .theme-option { position: relative; min-height: 168px; padding: 18px; border-radius: 24px; }
-    .theme-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 16px; background: var(--primary-soft); color: var(--primary-hover); font-weight: 900; margin-bottom: 14px; }
+    .theme-option { position: relative; min-height: 206px; padding: 18px; border-radius: 24px; overflow: hidden; }
+    .theme-option::after {
+      content: "";
+      position: absolute;
+      inset: auto -18px -28px auto;
+      width: 118px;
+      height: 118px;
+      border-radius: 999px;
+      background: var(--theme-glow, var(--peach));
+      opacity: .6;
+    }
+    .theme-sample {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding: 12px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--theme-a, var(--peach)), var(--theme-b, var(--lavender)));
+      border: 1px solid rgba(255,255,255,.74);
+    }
+    .theme-sample-top { display: flex; gap: 6px; }
+    .theme-sample-dot { width: 18px; height: 18px; border-radius: 999px; background: rgba(255,255,255,.82); }
+    .theme-sample-line { height: 8px; border-radius: 999px; background: rgba(255,255,255,.74); }
+    .theme-sample-line.short { width: 58%; }
+    .theme-option b, .theme-option .field-hint { position: relative; z-index: 1; }
     .form-section {
       grid-column: 1 / -1;
       display: grid;
@@ -708,7 +731,7 @@
     .tag { background: var(--primary-soft); }
     @media (max-width: 940px) {
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
-      .guest-side, .live-preview { position: static; }
+      .guest-side { position: static; }
       .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
     }
     @media (max-width: 560px) {
@@ -831,9 +854,9 @@
       { id: 'publish', label: 'Ссылка' }
     ];
     const OCCASION_TYPES = [
-      { type: 'День рождения девочки', theme: 'pink', icon: 'Л', label: 'День рождения девочки', hint: 'Мягкая светлая тема для детского дня рождения.' },
-      { type: 'День рождения мальчика', theme: 'blue', icon: 'Р', label: 'День рождения мальчика', hint: 'Голубая тема с более свежим и активным настроением.' },
-      { type: 'Взрослый день рождения', theme: 'neutral', icon: 'В', label: 'Взрослый день рождения', hint: 'Спокойная взрослая карточка без детского визуала.' }
+      { type: 'День рождения девочки', theme: 'pink', label: 'День рождения девочки', hint: 'Мягкая светлая тема для детского дня рождения.', colors: ['#FFE3D3', '#E8DDFF', '#FFE1D6'] },
+      { type: 'День рождения мальчика', theme: 'blue', label: 'День рождения мальчика', hint: 'Голубая тема с более свежим и активным настроением.', colors: ['#D9ECFF', '#E6F0FF', '#E1F0FF'] },
+      { type: 'Взрослый день рождения', theme: 'neutral', label: 'Взрослый день рождения', hint: 'Спокойная взрослая карточка без детского визуала.', colors: ['#EFE8DE', '#E7E1D9', '#F0EBE5'] }
     ];
 
     function uid() {
@@ -1163,15 +1186,6 @@
             ${renderStepProgress(event)}
             <div id="editorBody">${editorBody(event)}</div>
           </section>
-          <aside class="card live-preview">
-            <h3>Живой preview</h3>
-            ${eventSummary(event, true)}
-            <div class="event-chips">
-              <span class="tag">${event.gifts.length} подарков</span>
-              <span class="tag">${event.gifts.filter(gift => gift.status === 'reserved').length} забронировано</span>
-            </div>
-            <button class="btn btn-soft" data-route="/dashboard/events/${event.id}/preview">Посмотреть карточку</button>
-          </aside>
         </div>
       `;
     }
@@ -1195,7 +1209,8 @@
     function editorBody(event) {
       if (editorTab === 'style') return `
         <h3>Какой повод?</h3><p class="muted">Выберите тип повода. От этого зависит оформление карточки.</p>
-        <div class="theme-grid">${OCCASION_TYPES.map(item => `<button class="theme-option ${event.type === item.type ? 'active' : ''}" onclick="setOccasionAndContinue('${event.id}', '${item.type}', '${item.theme}')"><span class="theme-icon">${item.icon}</span><b>${item.label}</b><span class="field-hint">${item.hint}</span></button>`).join('')}</div>`;
+        <div class="theme-grid">${OCCASION_TYPES.map(item => `<button class="theme-option ${event.type === item.type ? 'active' : ''}" style="--theme-a:${item.colors[0]};--theme-b:${item.colors[1]};--theme-glow:${item.colors[2]}" onclick="setOccasion('${event.id}', '${item.type}', '${item.theme}')"><span class="theme-sample"><span class="theme-sample-top"><span class="theme-sample-dot"></span><span class="theme-sample-dot"></span></span><span class="theme-sample-line"></span><span class="theme-sample-line short"></span></span><b>${item.label}</b><span class="field-hint">${item.hint}</span></button>`).join('')}</div>
+        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="continueFromOccasion('${event.id}')" ${event.type ? '' : 'disabled'}>Продолжить</button><span class="field-hint">${event.type ? 'Можно продолжить к деталям.' : 'Сначала выберите тип повода.'}</span></div>`;
       if (editorTab === 'details') return `
         <div class="form-grid">
           <section class="form-section">
@@ -1304,8 +1319,13 @@
       };
       updateEvent(id, patch, nextTab ? 'Детали сохранены, идём дальше' : 'Детали сохранены', nextTab);
     }
-    function setOccasionAndContinue(id, type, theme) {
-      updateEvent(id, { type, theme }, 'Тип повода выбран', 'details');
+    function setOccasion(id, type, theme) {
+      updateEvent(id, { type, theme }, 'Тип повода выбран', 'style');
+    }
+    function continueFromOccasion(id) {
+      const event = findEvent(id);
+      if (!event?.type) return toast('Сначала выберите тип повода');
+      renderEditor(event, 'details');
     }
     function applyTextTemplate(group, index, targetId) {
       const target = document.getElementById(targetId);
