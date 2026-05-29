@@ -167,7 +167,7 @@
       color: var(--muted);
       border: 1px solid transparent;
     }
-    .btn-small { min-height: 34px; padding: 8px 12px; font-size: 13px; }
+    .btn-small { min-height: 44px; padding: 8px 12px; font-size: 13px; }
     .btn-danger { color: #9b2f26; background: #fff1ee; border: 1px solid rgba(230,111,92,.25); }
     .view { display: none; animation: enter .24s ease both; }
     .view.active { display: block; }
@@ -601,6 +601,7 @@
       backdrop-filter: blur(24px) saturate(140%);
     }
     .brand { font-size: 19px; font-weight: 800; letter-spacing: 0; }
+    .brand { min-height: 44px; }
     .brand-mark { background: linear-gradient(145deg, #fff, var(--primary-soft)); border-color: rgba(235,115,87,.24); box-shadow: 0 10px 28px rgba(235,115,87,.16); }
     .btn {
       min-height: 44px;
@@ -723,9 +724,32 @@
       border: 1px dashed rgba(40,35,31,.16);
       background: rgba(255,255,255,.6);
     }
+    .public-notice, .all-reserved {
+      padding: 13px 14px;
+      border-radius: 18px;
+      background: var(--primary-soft);
+      color: var(--primary-hover);
+      font-weight: 760;
+      line-height: 1.45;
+    }
+    .public-notice { margin: 0 auto 16px; width: min(100%, 980px); }
+    .all-reserved { margin-top: 12px; }
     .event-preview { height: 108px; overflow: hidden; }
     .event-preview img { width: 100%; height: 100%; object-fit: cover; }
     .guest-side h2 { font-size: 30px; line-height: 1.08; }
+    .cover-placeholder {
+      display: grid;
+      place-items: center;
+      gap: 8px;
+      color: var(--primary-hover);
+      text-align: center;
+      font-weight: 800;
+    }
+    .cover-placeholder small {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
     .gift-img { display: grid; place-items: center; background: linear-gradient(135deg, var(--peach), var(--lavender)); color: var(--primary-hover); font-weight: 900; overflow: hidden; }
     .gift-img .status { position: absolute; top: 12px; left: 12px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 8px 20px rgba(50,40,35,.08); }
     .tag { background: var(--primary-soft); }
@@ -746,6 +770,7 @@
       .hero, .editor-layout, .guest-layout { grid-template-columns: 1fr; }
       .guest-side { position: static; }
       .grid.cols-5, .steps-line, .dashboard-grid, .guest-gifts { grid-template-columns: 1fr; }
+      .guest-layout { width: min(100%, 680px); margin-left: auto; margin-right: auto; }
     }
     @media (max-width: 560px) {
       .shell { padding-left: 14px; padding-right: 14px; }
@@ -766,6 +791,11 @@
       .event-item, .gift-admin-card, .link-box { grid-template-columns: 1fr; }
       .event-preview, .gift-thumb { width: 100%; height: 140px; }
       .gift-actions { grid-template-columns: 1fr; }
+      .guest-side { padding: 14px; border-radius: 24px; }
+      .guest-cover { min-height: 148px; border-radius: 22px; }
+      .guest-side h2 { font-size: 28px; }
+      .wishlist-intro { padding: 16px; }
+      .gift-img { height: 164px; }
     }
   </style>
 </head>
@@ -1312,11 +1342,18 @@
         </div>
       </article>`;
     }
+    function giftsIntro(event) {
+      const allReserved = event.gifts.length > 0 && event.gifts.every(gift => gift.status === 'reserved');
+      return `<div class="card wishlist-intro"><h3>Подарки</h3><p>Выберите свободный подарок и нажмите «Забронировать подарок», чтобы другие гости видели, что он уже занят.</p>${allReserved ? '<div class="all-reserved">Все подарки уже забронированы. Можно выбрать что-то на своё усмотрение или просто прийти на праздник.</div>' : ''}</div>`;
+    }
+    function giftsGrid(event) {
+      return event.gifts.length ? event.gifts.map(giftCard).join('') : '<div class="empty-state"><h3>Подарков пока нет</h3><p class="muted">Организатор скоро добавит идеи.</p></div>';
+    }
     function guestPreviewMarkup(event) {
-      return `<aside class="card guest-side" style="position:static">${eventSummary(event)}<div class="hero-actions"><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Открыть карту</a></div><p><b>Приглашение</b><br>${event.description || ''}</p><p><b>Пожелания</b><br>${event.wishes || ''}</p></aside><section><div class="card wishlist-intro"><h3>Подарки</h3><p>Гости смогут забронировать свободный подарок, чтобы не было дублей.</p></div><div class="guest-gifts">${event.gifts.map(giftCard).join('')}</div></section>`;
+      return `<aside class="card guest-side" style="position:static">${eventSummary(event)}<div class="hero-actions"><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Открыть карту</a></div><p><b>Приглашение</b><br>${event.description || 'Текст приглашения появится здесь.'}</p><p><b>Пожелания</b><br>${event.wishes || 'Пожелания появятся здесь.'}</p></aside><section>${giftsIntro(event)}<div class="guest-gifts">${giftsGrid(event)}</div></section>`;
     }
     function eventSummary(event) {
-      return `<div class="guest-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<span class="brand-mark">✦</span>'}</div><h2>${event.title || 'Название повода'}</h2><div class="event-chips"><span class="tag">${event.date || 'Дата не указана'} ${event.time || ''}</span><span class="tag">${event.placeName || 'Место не указано'}</span></div><p>${event.wishes || 'Пожелания появятся здесь.'}</p>`;
+      return `<div class="guest-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<div class="cover-placeholder"><span class="brand-mark">✦</span><small>Фото не загружено</small></div>'}</div><h2>${event.title || 'Название повода'}</h2><div class="event-chips"><span class="tag">${event.date || 'Дата не указана'} ${event.time || ''}</span><span class="tag">${event.placeName || 'Место не указано'}</span></div><p>${event.wishes || 'Пожелания появятся здесь.'}</p>`;
     }
     function saveDetails(id, nextTab) {
       const patch = {
@@ -1508,18 +1545,22 @@
         return;
       }
       applyPageTheme(event);
+      const unpublishedNotice = event.status !== 'published' && !preview
+        ? '<div class="public-notice">Карточка пока не опубликована. Гости увидят её после публикации организатором.</div>'
+        : '';
       view.innerHTML = `
+        ${unpublishedNotice}
         <div class="page-head"><div><h2>${preview ? 'Предпросмотр' : event.title}</h2><p>${preview ? 'Так карточку увидит гость.' : 'Откройте детали праздника и вишлист подарков.'}</p></div>${preview ? '<button class="btn btn-soft" data-route="/dashboard">В кабинет</button>' : '<button class="btn btn-accent" data-route="/">Создать свою карточку</button>'}</div>
         <div class="guest-layout">
           <aside class="card guest-side">
             ${eventSummary(event)}
             <div class="hero-actions"><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Открыть карту</a></div>
-            <p><b>Приглашение</b><br>${event.description || ''}</p>
-            <p><b>Пожелания</b><br>${event.wishes || ''}</p>
+            <p><b>Приглашение</b><br>${event.description || 'Текст приглашения появится здесь.'}</p>
+            <p><b>Пожелания</b><br>${event.wishes || 'Пожелания появятся здесь.'}</p>
           </aside>
           <section>
-            <div class="card wishlist-intro"><h3>Подарки</h3><p>Выберите свободный подарок и нажмите «Забронировать подарок», чтобы другие гости видели, что он уже занят.</p></div>
-            <div class="guest-gifts">${event.gifts.length ? event.gifts.map(giftCard).join('') : '<div class="empty-state"><h3>Подарков пока нет</h3><p class="muted">Организатор скоро добавит идеи.</p></div>'}</div>
+            ${giftsIntro(event)}
+            <div class="guest-gifts">${giftsGrid(event)}</div>
             <div class="footer">Создано в Поводе · <button class="btn btn-soft btn-small" data-route="/">Создать свою карточку</button></div>
           </section>
         </div>`;
