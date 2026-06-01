@@ -1142,6 +1142,8 @@
     };
     let route = '/';
     let currentUser = null;
+    let eventsCache = [];
+    let publicEventCache = {};
     let currentEventId = null;
     let editorTab = 'style';
     let pendingReserve = null;
@@ -1200,9 +1202,72 @@
     function setJSON(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
     }
+    async function apiRequest(path, options = {}) {
+      const init = {
+        method: options.method || 'GET',
+        credentials: 'include',
+        headers: { ...(options.headers || {}) }
+      };
+      if (options.body !== undefined) {
+        init.headers['content-type'] = 'application/json';
+        init.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+      }
+      const response = await fetch(path, init);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = new Error(data.error || `request_failed_${response.status}`);
+        error.status = response.status;
+        error.data = data;
+        throw error;
+      }
+      return data;
+    }
+    async function loadServerSession() {
+      try {
+        const data = await apiRequest('/api/auth/me');
+        currentUser = data.user || null;
+        if (!currentUser) {
+          setSession(null);
+          eventsCache = [];
+          return null;
+        }
+        syncServerUser(currentUser);
+        await loadServerEvents();
+        return currentUser;
+      } catch {
+        currentUser = me();
+        eventsCache = getJSON(STORAGE.events, []);
+        return currentUser;
+      }
+    }
+    async function loadServerEvents() {
+      const data = await apiRequest('/api/events');
+      eventsCache = data.events || [];
+      setJSON(STORAGE.events, eventsCache);
+      return eventsCache;
+    }
+    function upsertEventCache(event) {
+      if (!event) return;
+      const index = eventsCache.findIndex(item => item.id === event.id);
+      if (index >= 0) eventsCache[index] = event;
+      else eventsCache.unshift(event);
+      setJSON(STORAGE.events, eventsCache);
+    }
+    async function loadPublicEvent(slug) {
+      try {
+        const data = await apiRequest(`/api/public/events/${encodeURIComponent(slug)}`);
+        publicEventCache[slug] = data.event;
+        return data.event;
+      } catch {
+        return publicEventCache[slug] || getJSON(STORAGE.events, []).find(event => event.slug === slug);
+      }
+    }
+    function eventByGiftId(giftId) {
+      return [...eventsCache, ...Object.values(publicEventCache), ...getJSON(STORAGE.events, [])]
+        .find(event => event?.gifts?.some(gift => gift.id === giftId));
+    }
     function users() { return getJSON(STORAGE.users, []); }
-    function events() { return getJSON(STORAGE.events, []); }
-    function saveEvents(list) { setJSON(STORAGE.events, list); }
+    function events() { return currentUser ? eventsCache : getJSON(STORAGE.events, []); }
     function sessionEmail() { return localStorage.getItem(STORAGE.session); }
     function setSession(email) { email ? localStorage.setItem(STORAGE.session, email) : localStorage.removeItem(STORAGE.session); }
     function me() {
@@ -1217,6 +1282,7 @@
     }
     function syncServerUser(user) {
       if (!user?.email) return;
+      currentUser = user;
       const list = users();
       const index = list.findIndex(item => item.email === user.email || item.id === user.id);
       const nextUser = {
@@ -1259,7 +1325,7 @@
       return event.mapUrl || `https://yandex.ru/maps/?text=${q}`;
     }
     function seed() {
-      if (events().length) return;
+      if (currentUser || getJSON(STORAGE.events, []).length) return;
       const demo = {
         id: uid(),
         userId: 'demo',
@@ -1279,21 +1345,21 @@
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
-      saveEvents([demo]);
+      setJSON(STORAGE.events, [demo]);
     }
 
-    function render() {
+    async function render() {
       seed();
-      currentUser = me();
       route = appPath();
       applyPageTheme();
-      renderTopbar();
       document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+      await loadServerSession();
+      renderTopbar();
       if (route === '/') return renderHome();
       if (route === '/login') return renderAuth('login');
       if (route === '/register') return renderAuth('register');
       if (route === '/dashboard') return guard(renderDashboard);
-      if (route === '/dashboard/events/new') return guard(() => renderEditor(createDraft(), 'style'));
+      if (route === '/dashboard/events/new') return guard(async () => renderEditor(await createDraft(), 'style'));
       const edit = route.match(/^\/dashboard\/events\/([^/]+)\/edit$/);
       if (edit) return guard(() => renderEditor(findEvent(edit[1])));
       const gifts = route.match(/^\/dashboard\/events\/([^/]+)\/gifts$/);
@@ -1301,7 +1367,7 @@
       const preview = route.match(/^\/dashboard\/events\/([^/]+)\/preview$/);
       if (preview) return guard(() => renderPublic(findEvent(preview[1]), true));
       const pub = route.match(/^\/p\/([^/]+)$/);
-      if (pub) return renderPublic(events().find(event => event.slug === pub[1]));
+      if (pub) return renderPublic(await loadPublicEvent(pub[1]));
       renderHome();
     }
     function applyPageTheme(event = null) {
@@ -1309,22 +1375,19 @@
       document.body.classList.toggle('theme-blue', theme === 'blue');
       document.body.classList.toggle('theme-neutral', theme === 'neutral');
     }
-    function guard(next) {
+    async function guard(next) {
       if (!currentUser) {
         navigate('/login');
         return;
       }
-      next();
+      await next();
     }
     function findEvent(id) {
       return events().find(event => event.id === id);
     }
-    function createDraft() {
-      const event = {
-        id: uid(),
-        userId: currentUser.email,
+    async function createDraft() {
+      const draft = {
         title: '',
-        slug: `povod-${uid()}`,
         type: '',
         theme: 'pink',
         date: '',
@@ -1334,13 +1397,11 @@
         mapUrl: '',
         description: '',
         wishes: '',
-        coverImage: '',
-        status: 'draft',
-        gifts: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        coverImage: ''
       };
-      saveEvents([event, ...events()]);
+      const data = await apiRequest('/api/events', { method: 'POST', body: draft });
+      const event = data.event;
+      upsertEventCache(event);
       history.replaceState({}, '', `${BASE_PATH}/dashboard/events/${event.id}/edit`);
       return event;
     }
@@ -1457,6 +1518,7 @@
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'telegram_auth_failed');
         syncServerUser(data.user);
+        await loadServerEvents();
         telegramAuthDone = true;
         toast('Вошли через Telegram');
         navigate('/dashboard');
@@ -1477,33 +1539,44 @@
       } catch {}
       toast('Бот ещё не настроен. Проверьте TELEGRAM_BOT_TOKEN.');
     }
-    function register() {
+    async function register() {
       const name = document.getElementById('authName').value.trim();
       const email = document.getElementById('authEmail').value.trim().toLowerCase();
       const password = document.getElementById('authPassword').value;
-      if (!email || password.length < 4) return toast('Введите email и пароль от 4 символов');
-      const list = users();
-      if (list.some(user => user.email === email)) return toast('Такой email уже зарегистрирован');
-      list.push({ id: uid(), email, password, name, createdAt: new Date().toISOString() });
-      setJSON(STORAGE.users, list);
-      setSession(email);
-      navigate('/dashboard');
+      if (!email || password.length < 4) { toast('Введите email и пароль от 4 символов'); return; }
+      try {
+        const data = await apiRequest('/api/auth/register', { method: 'POST', body: { name, email, password } });
+        syncServerUser(data.user);
+        await loadServerEvents();
+        navigate('/dashboard');
+      } catch (error) {
+        toast(error.status === 409 ? 'Такой email уже существует' : 'Не получилось создать аккаунт');
+      }
+      return;
     }
-    function login() {
+    async function login() {
       const email = document.getElementById('authEmail').value.trim().toLowerCase();
       const password = document.getElementById('authPassword').value;
-      const user = users().find(item => item.email === email && item.password === password);
-      if (!user) return toast('Не нашли аккаунт с таким email и паролем');
-      setSession(email);
-      navigate('/dashboard');
+      try {
+        const data = await apiRequest('/api/auth/login', { method: 'POST', body: { email, password } });
+        syncServerUser(data.user);
+        await loadServerEvents();
+        navigate('/dashboard');
+      } catch {
+        toast('Не нашли аккаунт с таким email и паролем');
+      }
+      return;
     }
-    function logout() {
+    async function logout() {
+      try { await apiRequest('/api/auth/logout', { method: 'POST', body: {} }); } catch {}
+      currentUser = null;
+      eventsCache = [];
       setSession(null);
       navigate('/');
     }
     function renderDashboard() {
       const view = document.getElementById('dashboardView');
-      const own = events().filter(event => event.userId === currentUser.email);
+      const own = events();
       view.classList.add('active');
       view.innerHTML = `
         <div class="page-head">
@@ -1637,7 +1710,6 @@
         <div class="form-grid">
           <label>Название подарка<input id="giftTitle" value="${gift?.title || ''}" placeholder="Например, самокат"></label>
           <label>Цена<input id="giftPrice" type="number" min="0" value="${gift?.price || ''}" placeholder="Например, 3500"></label>
-          <label>Категория<input id="giftCategory" value="${gift?.category || ''}" placeholder="Например, игрушки"></label>
           <label>Картинка<input id="giftImage" value="${gift?.image || ''}" placeholder="Ссылка на изображение"></label>
           <label class="full">Описание<textarea id="giftDescription" placeholder="Коротко: размер, цвет, важные детали">${gift?.description || ''}</textarea></label>
         </div>
@@ -1783,7 +1855,7 @@
       closeCoverCrop();
       document.getElementById('eventCover')?.click();
     }
-    function saveCroppedCover() {
+    async function saveCroppedCover() {
       if (!coverCrop || !currentEventId) return;
       const stageRect = document.getElementById('cropStage').getBoundingClientRect();
       const frameRect = document.getElementById('cropFrame').getBoundingClientRect();
@@ -1802,16 +1874,21 @@
       const sh = frameRect.height / scale;
       ctx.drawImage(coverCrop.image, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-      saveEvents(events().map(event => event.id === currentEventId ? { ...event, coverImage: dataUrl, updatedAt: new Date().toISOString() } : event));
+      await updateEvent(currentEventId, { coverImage: dataUrl }, 'Фото для карточки сохранено', editorTab);
       const preview = document.querySelector('.cover-preview');
       if (preview) preview.innerHTML = `<img src="${dataUrl}" alt="">`;
       closeCoverCrop();
-      toast('Фото для карточки сохранено');
     }
-    function updateEvent(id, patch, message = 'Сохранено', nextTab = editorTab) {
-      saveEvents(events().map(event => event.id === id ? { ...event, ...patch, updatedAt: new Date().toISOString() } : event));
-      toast(message);
-      renderEditor(findEvent(id), nextTab);
+    async function updateEvent(id, patch, message = 'Сохранено', nextTab = editorTab) {
+      try {
+        const data = await apiRequest(`/api/events/${id}`, { method: 'PATCH', body: patch });
+        upsertEventCache(data.event);
+        toast(message);
+        renderEditor(data.event, nextTab);
+      } catch {
+        toast('Не получилось сохранить изменения');
+      }
+      return;
     }
     function openGiftForm(eventId, giftId = null) {
       giftFormOpen = true;
@@ -1836,7 +1913,7 @@
         document.getElementById('giftDescription').value ||= 'Данные подтянутся автоматически после подключения backend-парсера.';
       }
     }
-    function saveGift(eventId) {
+    async function saveGift(eventId) {
       const event = findEvent(eventId);
       const title = document.getElementById('giftTitle').value.trim();
       if (!title) return toast('Добавьте название подарка');
@@ -1847,32 +1924,65 @@
         url: document.getElementById('giftUrl').value.trim(),
         price: Number(document.getElementById('giftPrice').value || 0),
         image: document.getElementById('giftImage').value.trim(),
-        category: document.getElementById('giftCategory').value.trim() || 'Подарок',
+        category: event.gifts.find(item => item.id === editingGiftId)?.category || 'Подарок',
         status: 'available'
       };
-      giftFormOpen = false;
-      if (editingGiftId) {
-        const statusGift = event.gifts.find(item => item.id === editingGiftId);
+      try {
+        const cachedEvent = findEvent(eventId) || event;
+        let nextEvent;
+        if (editingGiftId) {
+          const giftId = editingGiftId;
+          const data = await apiRequest(`/api/gifts/${giftId}`, { method: 'PATCH', body: gift });
+          nextEvent = { ...cachedEvent, gifts: cachedEvent.gifts.map(item => item.id === giftId ? data.gift : item) };
+        } else {
+          const data = await apiRequest(`/api/events/${eventId}/gifts`, { method: 'POST', body: gift });
+          nextEvent = { ...cachedEvent, gifts: [data.gift, ...cachedEvent.gifts] };
+        }
+        giftFormOpen = false;
         editingGiftId = null;
-        updateEvent(eventId, { gifts: event.gifts.map(item => item.id === statusGift.id ? { ...statusGift, ...gift, id: statusGift.id, status: statusGift.status } : item) }, 'Подарок сохранён', 'gifts');
-        return;
+        upsertEventCache(nextEvent);
+        toast('Подарок сохранён');
+        renderEditor(nextEvent, 'gifts');
+      } catch {
+        toast('Не получилось сохранить подарок');
       }
-      updateEvent(eventId, { gifts: [gift, ...event.gifts] }, 'Подарок сохранён', 'gifts');
+      return;
     }
-    function deleteGift(eventId, giftId) {
+    async function deleteGift(eventId, giftId) {
       if (!confirm('Удалить этот подарок из карточки?')) return;
       const event = findEvent(eventId);
-      updateEvent(eventId, { gifts: event.gifts.filter(gift => gift.id !== giftId) }, 'Подарок удалён');
+      try {
+        await apiRequest(`/api/gifts/${giftId}`, { method: 'DELETE' });
+        const nextEvent = { ...event, gifts: event.gifts.filter(gift => gift.id !== giftId) };
+        upsertEventCache(nextEvent);
+        toast('Подарок удалён');
+        renderEditor(nextEvent, 'gifts');
+      } catch {
+        toast('Не получилось удалить подарок');
+      }
+      return;
     }
-    function publishEvent(id) {
-      saveEvents(events().map(event => event.id === id ? { ...event, status: 'published', updatedAt: new Date().toISOString() } : event));
-      toast('Карточка опубликована');
-      render();
+    async function publishEvent(id) {
+      try {
+        const data = await apiRequest(`/api/events/${id}/publish`, { method: 'POST', body: {} });
+        upsertEventCache(data.event);
+        toast('Карточка опубликована');
+        render();
+      } catch {
+        toast('Не получилось опубликовать карточку');
+      }
+      return;
     }
-    function unpublishEvent(id) {
-      saveEvents(events().map(event => event.id === id ? { ...event, status: 'draft', updatedAt: new Date().toISOString() } : event));
-      toast('Карточка снята с публикации');
-      render();
+    async function unpublishEvent(id) {
+      try {
+        const data = await apiRequest(`/api/events/${id}/unpublish`, { method: 'POST', body: {} });
+        upsertEventCache(data.event);
+        toast('Карточка снята с публикации');
+        render();
+      } catch {
+        toast('Не получилось снять карточку с публикации');
+      }
+      return;
     }
     function renderPublic(event, preview = false) {
       const view = document.getElementById('publicView');
@@ -1907,7 +2017,8 @@
       return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Уже забронирован' : 'Подарок свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Уже забронирован' : 'Забронировать'}</button></div></div></article>`;
     }
     function openReserve(giftId) {
-      pendingReserve = { event: events().find(event => event.gifts.some(gift => gift.id === giftId)), giftId };
+      pendingReserve = { event: eventByGiftId(giftId), giftId };
+      if (!pendingReserve.event) return toast('Подарок не найден');
       const gift = pendingReserve.event.gifts.find(item => item.id === giftId);
       document.getElementById('reserveGiftName').textContent = gift.title;
       document.getElementById('reserveName').value = '';
@@ -1915,16 +2026,30 @@
       document.getElementById('reserveComment').value = '';
       document.getElementById('reserveModal').classList.add('active');
     }
-    function reserveGift(anonymous = false) {
+    async function reserveGift(anonymous = false) {
       if (!pendingReserve) return;
       const name = anonymous ? 'Анонимно' : (document.getElementById('reserveName').value.trim() || 'Гость');
       const contact = anonymous ? '' : document.getElementById('reserveContact').value.trim();
       const comment = anonymous ? '' : document.getElementById('reserveComment').value.trim();
-      saveEvents(events().map(event => event.id === pendingReserve.event.id ? { ...event, gifts: event.gifts.map(gift => gift.id === pendingReserve.giftId ? { ...gift, status: 'reserved', reservedByName: name, reservedByContact: contact, reservedComment: comment, reservedAt: new Date().toISOString() } : gift) } : event));
-      closeModal('reserveModal');
-      toast('Подарок забронирован');
-      renderPublic(events().find(event => event.id === pendingReserve.event.id));
-      pendingReserve = null;
+      try {
+        const data = await apiRequest(`/api/public/gifts/${pendingReserve.giftId}/reserve`, {
+          method: 'POST',
+          body: { name, contact, comment }
+        });
+        const nextEvent = {
+          ...pendingReserve.event,
+          gifts: pendingReserve.event.gifts.map(gift => gift.id === pendingReserve.giftId ? data.gift : gift)
+        };
+        publicEventCache[nextEvent.slug] = nextEvent;
+        upsertEventCache(nextEvent);
+        closeModal('reserveModal');
+        toast('Подарок забронирован');
+        renderPublic(nextEvent);
+        pendingReserve = null;
+      } catch (error) {
+        toast(error.status === 409 ? 'Этот подарок уже забронировали' : 'Не получилось забронировать подарок');
+      }
+      return;
     }
     async function copyText(text) {
       try { await navigator.clipboard.writeText(text); toast('Ссылка скопирована'); }
