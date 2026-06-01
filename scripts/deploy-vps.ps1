@@ -45,10 +45,19 @@ if ($keyPath) {
   $sshArgs = @("-i", $keyPath) + $sshArgs
   $scpArgs = @("-i", $keyPath) + $scpArgs
 }
+$sshArgs = $sshArgs + @("-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes")
+$scpArgs = $scpArgs + @("-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes")
+
+function Assert-LastExit($label) {
+  if ($LASTEXITCODE -ne 0) {
+    throw "$label failed with exit code $LASTEXITCODE"
+  }
+}
 
 Write-Host "Deploying Povod to $target for $domain"
 
 ssh @sshArgs $target "mkdir -p /opt/povod"
+Assert-LastExit "ssh mkdir"
 
 function Quote-EnvValue($value) {
   if ($null -eq $value) { $value = "" }
@@ -78,6 +87,7 @@ $appEnvPath = Join-Path $env:TEMP "povod-app.env"
 ) | Set-Content -LiteralPath $appEnvPath -Encoding UTF8
 
 scp @scpArgs $appEnvPath "${target}:/opt/povod/.env"
+Assert-LastExit "scp env"
 Remove-Item -LiteralPath $appEnvPath -Force
 
 $remoteScript = @"
@@ -145,4 +155,5 @@ fi
 "@
 
 $remoteScript | ssh @sshArgs $target "bash -s"
+Assert-LastExit "remote deploy"
 Write-Host "Done. Check: $appUrl"
