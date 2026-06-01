@@ -25,6 +25,7 @@ loadEnvFile();
 const dataDir = process.env.DATA_DIR || join(root, 'data');
 const dbFile = join(dataDir, 'db.json');
 const port = Number(process.env.PORT || 3000);
+const host = process.env.HOST || '127.0.0.1';
 const cookieName = 'povod_session';
 
 const mime = {
@@ -430,6 +431,6 @@ createServer(async (req, res) => {
     console.error(error);
     send(res, 500, { error: 'server_error' });
   }
-}).listen(port, () => {
-  console.log(`Повод server running on http://localhost:${port}`);
+}).listen(port, host, () => {
+  console.log(`Повод server running on http://${host}:${port}`);
 });

@@ -83,6 +83,7 @@ $appEnvPath = Join-Path $env:TEMP "povod-app.env"
   "ADMIN_TELEGRAM_IDS=$adminTelegramIds",
   "DOMAIN=$quotedDomain",
   "PORT=$quotedAppPort",
+  "HOST=""127.0.0.1""",
   "DATA_DIR=""/var/lib/povod"""
 ) | Set-Content -LiteralPath $appEnvPath -Encoding UTF8
 
@@ -118,6 +119,7 @@ WorkingDirectory=/opt/povod
 EnvironmentFile=-/opt/povod/.env
 Environment=NODE_ENV=production
 Environment=PORT=$appPort
+Environment=HOST=127.0.0.1
 Environment=DATA_DIR=/var/lib/povod
 ExecStart=/usr/bin/node /opt/povod/server.mjs
 Restart=always
