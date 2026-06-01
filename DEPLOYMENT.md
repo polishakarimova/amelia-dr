@@ -1,7 +1,6 @@
-# Повод: перенос на домен и сервер
+# Повод: домен, сервер и деплой
 
-Проект теперь можно запускать не только как GitHub Pages, но и как Node-сервер.
-Сервер отдаёт текущий SPA и предоставляет базовые API для кабинета, авторизации, событий, подарков и бронирований.
+Проект запускается как Node-сервер: он отдает текущий SPA-интерфейс и предоставляет API для кабинета, авторизации, событий, подарков, публичной карточки и бронирований.
 
 ## Локальный запуск
 
@@ -9,7 +8,7 @@
 npm start
 ```
 
-По умолчанию сервер откроется на:
+По умолчанию сервер открывается на:
 
 ```text
 http://localhost:3000
@@ -21,14 +20,15 @@ http://localhost:3000
 PORT=8080 npm start
 ```
 
-## Что уже есть на сервере
+## Что уже есть
 
 - статическая отдача `index.html`;
 - fallback для SPA-маршрутов `/dashboard`, `/p/[slug]` и других;
-- файловая база `data/db.json`;
+- файловая база `data/db.json` локально или `/var/lib/povod/db.json` на сервере;
 - cookie-сессии организатора;
-- email/password auth;
-- упрощённый Telegram-auth endpoint для будущего бота;
+- email/password auth как запасной вход;
+- Telegram Bot webhook;
+- Telegram Mini App auth через проверку `initData`;
 - API событий;
 - API подарков;
 - публичное API карточки;
@@ -36,14 +36,16 @@ PORT=8080 npm start
 
 ## API
 
-Сервер реализует контракт из `API_CONTRACT.md`:
+Сервер реализует основные routes из `API_CONTRACT.md`:
 
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
-- `POST /api/auth/telegram/start`
-- `POST /api/auth/telegram/callback`
+- `POST /api/auth/telegram-mini-app`
+- `GET /api/telegram/config`
+- `POST /api/telegram/webhook`
+- `POST /api/telegram/setup-webhook`
 - `GET /api/events`
 - `POST /api/events`
 - `GET /api/events/:id`
@@ -59,66 +61,83 @@ PORT=8080 npm start
 - `GET /api/public/events/:slug`
 - `POST /api/public/gifts/:id/reserve`
 
+## Текущий production
+
+- домен: `mypovod.ru` и `www.mypovod.ru`;
+- приложение на сервере: `/opt/povod`;
+- systemd service: `povod.service`;
+- порт приложения: `127.0.0.1:3100`;
+- reverse proxy: Nginx;
+- SSL: Certbot;
+- данные: `/var/lib/povod/db.json`;
+- env-файл: `/opt/povod/.env`.
+
+Проверка на сервере:
+
+```bash
+systemctl status povod --no-pager
+journalctl -u povod -n 80 --no-pager
+curl -I https://mypovod.ru
+```
+
 ## Деплой на VPS
 
-1. Установить Node.js 20+.
-2. Склонировать репозиторий.
-3. Запустить:
+Минимальный ручной деплой:
 
 ```bash
+cd /opt/povod
+git fetch origin main
+git reset --hard origin/main
 npm install --omit=dev
-PORT=3000 npm start
+npm run check
+systemctl restart povod
+systemctl is-active povod
 ```
 
-4. Поставить процесс под `pm2` или systemd:
+Systemd service должен запускать:
 
 ```bash
-npm install -g pm2
-pm2 start server.mjs --name povod
-pm2 save
+PORT=3100 HOST=127.0.0.1 DATA_DIR=/var/lib/povod npm start
 ```
 
-5. Настроить Nginx:
+Nginx проксирует на:
 
 ```nginx
-server {
-  server_name mypovod.ru www.mypovod.ru;
-
-  location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-}
-```
-
-6. Выпустить SSL:
-
-```bash
-certbot --nginx -d mypovod.ru -d www.mypovod.ru
+proxy_pass http://127.0.0.1:3100;
 ```
 
 ## DNS
 
-Для домена `mypovod.ru` нужно направить:
+Для домена `mypovod.ru` нужны:
 
 - `A` record `@` на IP сервера;
 - `A` record `www` на IP сервера.
 
+## Безопасность сервера
+
+Сейчас SSH настроен на вход по ключу:
+
+- `PasswordAuthentication no`;
+- `PermitRootLogin prohibit-password`;
+- `PubkeyAuthentication yes`.
+
+Также включены `ufw` и `fail2ban`. Это снижает риск перебора пароля ботами, но порт `22` все равно будет видеть попытки сканирования в логах. Для живого продукта важно не отключать `fail2ban` и не возвращать парольный вход.
+
 ## Важный следующий шаг
 
-Сейчас frontend всё ещё хранит рабочие данные в `localStorage`.
-Серверное API уже подготовлено, следующий этап — подключить `index.html` к API:
+Backend уже умеет хранить пользователей, события, подарки и брони. Но frontend все еще частично использует `localStorage` для рабочих данных карточек.
 
-1. заменить `users()`, `events()`, `saveEvents()` на fetch-запросы;
-2. заменить локальный Telegram-login на `/api/auth/telegram/start`;
-3. заменить бронирование подарка на `/api/public/gifts/:id/reserve`;
-4. хранить картинки не в localStorage, а в storage или базе.
+Перед полноценным запуском с пользователями нужно:
 
-## Перед продакшеном
+1. заменить `users()`, `events()`, `saveEvents()` на fetch-запросы к API;
+2. подключить создание/редактирование карточек к `/api/events`;
+3. подключить подарки к `/api/events/:id/gifts` и `/api/gifts/:id`;
+4. подключить публичное бронирование к `/api/public/gifts/:id/reserve`;
+5. хранить обложки и картинки подарков не в `localStorage`, а в storage или базе.
+
+Telegram Mini App auth уже подключен на backend. Если Telegram открывает только чат, а не Mini App, нужно проверить настройки Mini App/Web App в BotFather.
+
+## Перед production
 
 Файловая база подходит для первого теста на VPS, но для настоящего продукта лучше перейти на PostgreSQL:
 

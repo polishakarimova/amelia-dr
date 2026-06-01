@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
-import { createHash, createHmac, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -318,32 +318,6 @@ async function api(req, res, url) {
     } catch (error) {
       return send(res, 401, { error: error.message || 'telegram_auth_failed' });
     }
-  }
-
-  if (path === '/api/auth/telegram/start' || path === '/api/auth/telegram/callback') {
-    if (req.method !== 'POST') return methodNotAllowed(res);
-    const input = await body(req);
-    const username = String(input.username || input.name || '').replace(/^@/, '').trim();
-    if (!username) return send(res, 400, { error: 'telegram_username_required' });
-    const email = `telegram:${slugify(username)}`;
-    let user = db.users.find(item => item.email === email);
-    if (!user) {
-      user = {
-        id: uid(),
-        email,
-        name: username,
-        authProvider: 'telegram',
-        telegramUsername: `@${username}`,
-        telegramId: createHash('sha256').update(username).digest('hex').slice(0, 16),
-        createdAt: now()
-      };
-      db.users.push(user);
-    }
-    const token = uid();
-    db.sessions.push({ token, userId: user.id, createdAt: now() });
-    await writeDb(db);
-    setSessionCookie(res, token);
-    return send(res, 200, { user: publicUser(user) });
   }
 
   if (path === '/api/telegram/config') {
