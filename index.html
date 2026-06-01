@@ -2043,8 +2043,7 @@
             <h3>Авторизация через Telegram</h3>
             <p class="muted">Telegram нужен только для входа без пароля. Саму карточку вы создаёте и редактируете в Поводе.</p>
             <div class="hero-actions" style="margin-top:14px">
-              <button class="btn btn-accent" type="button" onclick="telegramAuth()">Авторизоваться через Telegram</button>
-              <button class="btn btn-soft" type="button" onclick="openTelegramBot()">Открыть Telegram</button>
+              <a class="btn btn-accent" href="https://t.me/mypovod_bot?start=povod" onclick="telegramAuth(event)">Авторизоваться через Telegram</a>
             </div>
             <p class="muted" style="font-size:12px">Если страница открыта из Telegram-бота, вход произойдёт автоматически.</p>
           </div>
@@ -2065,14 +2064,18 @@
       `;
       setTimeout(() => telegramAuth(true), 0);
     }
-    async function telegramAuth(silent = false) {
+    async function telegramAuth(eventOrSilent = false) {
+      const clickEvent = typeof eventOrSilent === 'object' ? eventOrSilent : null;
+      const silent = typeof eventOrSilent === 'boolean' ? eventOrSilent : false;
       if (telegramAuthInProgress || telegramAuthDone) return;
       const webApp = telegramWebApp();
       const initData = webApp?.initData || '';
       if (!initData) {
+        if (clickEvent) return;
         if (!silent) await openTelegramBot();
         return;
       }
+      clickEvent?.preventDefault?.();
       telegramAuthInProgress = true;
       try {
         webApp?.ready?.();
