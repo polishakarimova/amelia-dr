@@ -24,7 +24,9 @@ PORT=8080 npm start
 
 - статическая отдача `index.html`;
 - fallback для SPA-маршрутов `/dashboard`, `/p/[slug]` и других;
-- файловая база `data/db.json` локально или `/var/lib/povod/db.json` на сервере;
+- PostgreSQL при заполненном `DATABASE_URL`;
+- файловая база `data/db.json` локально или `/var/lib/povod/db.json` как fallback без `DATABASE_URL`;
+- файловое хранилище картинок `/uploads/...` в `UPLOADS_DIR` или `/var/lib/povod/uploads`;
 - cookie-сессии организатора;
 - email/password auth как запасной вход;
 - Telegram Bot webhook;
@@ -71,6 +73,8 @@ PORT=8080 npm start
 - SSL: Certbot;
 - данные: `/var/lib/povod/db.json`;
 - env-файл: `/opt/povod/.env`.
+- база: PostgreSQL через `DATABASE_URL`, если переменная заполнена.
+- uploads: `/var/lib/povod/uploads`.
 
 Проверка на сервере:
 
@@ -78,6 +82,7 @@ PORT=8080 npm start
 systemctl status povod --no-pager
 journalctl -u povod -n 80 --no-pager
 curl -I https://mypovod.ru
+npm run check:db
 ```
 
 ## Деплой на VPS
@@ -137,16 +142,20 @@ Frontend уже использует серверное API для основн�
 - публичная карточка гостя: `/api/public/events/:slug`;
 - бронирование подарка гостем: `/api/public/gifts/:id/reserve`.
 
-`localStorage` пока оставлен только как мягкий fallback для старого демо и локального кэша. Перед большим production-трафиком нужно вынести обложки и картинки подарков в нормальный storage, потому что сейчас они могут сохраняться как длинные data URL в файловую базу.
+`localStorage` пока оставлен только как мягкий fallback для старого демо и локального кэша.
+
+Обложки после кадрирования загружаются через `/api/uploads` и сохраняются отдельными файлами, а в карточке хранится только ссылка `/uploads/...`.
 
 Telegram Mini App auth уже подключен на backend. Если Telegram открывает только чат, а не Mini App, нужно проверить настройки Mini App/Web App в BotFather.
 
 ## Перед production
 
-Файловая база подходит для первого теста на VPS, но для настоящего продукта лучше перейти на PostgreSQL:
+Файловая база подходит только для локального fallback. Для production нужен PostgreSQL:
 
 - users;
 - sessions;
 - events;
 - gifts;
 - reservations или поля брони в gifts.
+
+Также для роста нужно будет заменить локальную папку uploads на объектное хранилище S3-compatible, чтобы картинки не зависели от одного VPS-диска.

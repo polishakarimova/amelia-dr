@@ -1874,9 +1874,17 @@
       const sh = frameRect.height / scale;
       ctx.drawImage(coverCrop.image, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-      await updateEvent(currentEventId, { coverImage: dataUrl }, 'Фото для карточки сохранено', editorTab);
+      let imageUrl = dataUrl;
+      try {
+        const upload = await apiRequest('/api/uploads', { method: 'POST', body: { dataUrl } });
+        imageUrl = upload.url;
+      } catch {
+        toast('Не получилось загрузить фото в хранилище');
+        return;
+      }
+      await updateEvent(currentEventId, { coverImage: imageUrl }, 'Фото для карточки сохранено', editorTab);
       const preview = document.querySelector('.cover-preview');
-      if (preview) preview.innerHTML = `<img src="${dataUrl}" alt="">`;
+      if (preview) preview.innerHTML = `<img src="${imageUrl}" alt="">`;
       closeCoverCrop();
     }
     async function updateEvent(id, patch, message = 'Сохранено', nextTab = editorTab) {

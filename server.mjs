@@ -4,6 +4,7 @@ import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { createHmac, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import pg from 'pg';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 
@@ -13,7 +14,8 @@ function loadEnvFile() {
   for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
-    const [key, ...rest] = trimmed.split('=');
+    const [rawKey, ...rest] = trimmed.split('=');
+    const key = rawKey.trim().replace(/^\uFEFF/, '');
     let value = rest.join('=').trim();
     if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
     if (!(key in process.env)) process.env[key] = value;
@@ -24,13 +26,17 @@ loadEnvFile();
 
 const dataDir = process.env.DATA_DIR || join(root, 'data');
 const dbFile = join(dataDir, 'db.json');
+const uploadsDir = process.env.UPLOADS_DIR || join(dataDir, 'uploads');
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || '127.0.0.1';
 const cookieName = 'povod_session';
 const appUrl = (process.env.APP_URL || `http://${host}:${port}`).replace(/\/$/, '');
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 const telegramWebhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET || '';
+const databaseUrl = process.env.DATABASE_URL || '';
 let telegramBotInfo = null;
+let pgPool = null;
+let pgSchemaReady = false;
 
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -40,6 +46,7 @@ const mime = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp',
   '.svg': 'image/svg+xml'
 };
 
@@ -70,6 +77,107 @@ function uniqueSlug(base, db, eventId = '') {
     index += 1;
   }
   return slug;
+}
+
+function createPgPool() {
+  if (!databaseUrl) return null;
+  const parsed = new URL(databaseUrl);
+  const sslMode = parsed.searchParams.get('sslmode');
+  let ssl = false;
+  if (sslMode && sslMode !== 'disable') {
+    ssl = { rejectUnauthorized: false };
+    const caPath = process.env.PGSSLROOTCERT;
+    if (caPath && existsSync(caPath)) {
+      ssl = { ca: readFileSync(caPath, 'utf8'), rejectUnauthorized: true };
+    }
+  }
+  return new pg.Pool({ connectionString: databaseUrl, ssl, max: 5 });
+}
+
+pgPool = createPgPool();
+
+async function ensurePgSchema() {
+  if (!pgPool || pgSchemaReady) return;
+  await pgPool.query(`
+    create table if not exists povod_users (
+      id text primary key,
+      data jsonb not null
+    );
+    create table if not exists povod_sessions (
+      token text primary key,
+      data jsonb not null
+    );
+    create table if not exists povod_events (
+      id text primary key,
+      user_id text not null,
+      slug text not null unique,
+      data jsonb not null
+    );
+    create table if not exists povod_gifts (
+      id text primary key,
+      event_id text not null,
+      data jsonb not null
+    );
+    create index if not exists povod_events_user_id_idx on povod_events (user_id);
+    create index if not exists povod_gifts_event_id_idx on povod_gifts (event_id);
+  `);
+  pgSchemaReady = true;
+  await migrateJsonDbToPostgresIfNeeded();
+}
+
+function normalizeDb(db) {
+  return {
+    users: Array.isArray(db.users) ? db.users : [],
+    sessions: Array.isArray(db.sessions) ? db.sessions : [],
+    events: Array.isArray(db.events) ? db.events : [],
+    gifts: Array.isArray(db.gifts) ? db.gifts : []
+  };
+}
+
+async function replacePgDb(db) {
+  db = normalizeDb(db);
+  const client = await pgPool.connect();
+  try {
+    await client.query('begin');
+    await client.query('delete from povod_gifts');
+    await client.query('delete from povod_events');
+    await client.query('delete from povod_sessions');
+    await client.query('delete from povod_users');
+    for (const user of db.users) {
+      await client.query('insert into povod_users (id, data) values ($1, $2::jsonb)', [user.id, JSON.stringify(user)]);
+    }
+    for (const session of db.sessions) {
+      await client.query('insert into povod_sessions (token, data) values ($1, $2::jsonb)', [session.token, JSON.stringify(session)]);
+    }
+    for (const event of db.events) {
+      await client.query('insert into povod_events (id, user_id, slug, data) values ($1, $2, $3, $4::jsonb)', [event.id, event.userId, event.slug, JSON.stringify(event)]);
+    }
+    for (const gift of db.gifts) {
+      await client.query('insert into povod_gifts (id, event_id, data) values ($1, $2, $3::jsonb)', [gift.id, gift.eventId, JSON.stringify(gift)]);
+    }
+    await client.query('commit');
+  } catch (error) {
+    await client.query('rollback');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+async function migrateJsonDbToPostgresIfNeeded() {
+  if (!existsSync(dbFile)) return;
+  const count = await pgPool.query(`
+    select
+      (select count(*)::int from povod_users) +
+      (select count(*)::int from povod_events) +
+      (select count(*)::int from povod_gifts) as total
+  `);
+  if (Number(count.rows[0]?.total || 0) > 0) return;
+  const jsonDb = normalizeDb(JSON.parse(await readFile(dbFile, 'utf8')));
+  const total = jsonDb.users.length + jsonDb.events.length + jsonDb.gifts.length;
+  if (!total) return;
+  await replacePgDb(jsonDb);
+  console.log(`Migrated ${total} records from JSON db to PostgreSQL`);
 }
 
 function assignAllowed(target, input, fields) {
@@ -182,14 +290,35 @@ async function sendTelegramStart(chatId) {
 }
 
 async function readDb() {
+  if (pgPool) {
+    await ensurePgSchema();
+    const [users, sessions, events, gifts] = await Promise.all([
+      pgPool.query('select data from povod_users order by data->>\'createdAt\' desc'),
+      pgPool.query('select data from povod_sessions order by data->>\'createdAt\' desc'),
+      pgPool.query('select data from povod_events order by data->>\'createdAt\' desc'),
+      pgPool.query('select data from povod_gifts order by data->>\'createdAt\' desc')
+    ]);
+    return {
+      users: users.rows.map(row => row.data),
+      sessions: sessions.rows.map(row => row.data),
+      events: events.rows.map(row => row.data),
+      gifts: gifts.rows.map(row => row.data)
+    };
+  }
   try {
-    return JSON.parse(await readFile(dbFile, 'utf8'));
+    return normalizeDb(JSON.parse(await readFile(dbFile, 'utf8')));
   } catch {
     return { users: [], sessions: [], events: [], gifts: [] };
   }
 }
 
 async function writeDb(db) {
+  db = normalizeDb(db);
+  if (pgPool) {
+    await ensurePgSchema();
+    await replacePgDb(db);
+    return;
+  }
   await mkdir(dataDir, { recursive: true });
   await writeFile(dbFile, JSON.stringify(db, null, 2));
 }
@@ -212,6 +341,26 @@ async function body(req) {
   for await (const chunk of req) chunks.push(chunk);
   const raw = Buffer.concat(chunks).toString('utf8');
   return raw ? JSON.parse(raw) : {};
+}
+
+async function saveDataUrlImage(dataUrl) {
+  const match = String(dataUrl || '').match(/^data:image\/(png|jpe?g|webp);base64,([a-z0-9+/=]+)$/i);
+  if (!match) {
+    const error = new Error('invalid_image');
+    error.status = 400;
+    throw error;
+  }
+  const ext = match[1].toLowerCase().replace('jpeg', 'jpg');
+  const buffer = Buffer.from(match[2], 'base64');
+  if (!buffer.length || buffer.length > 6 * 1024 * 1024) {
+    const error = new Error('image_too_large');
+    error.status = 413;
+    throw error;
+  }
+  await mkdir(uploadsDir, { recursive: true });
+  const filename = `${new Date().toISOString().slice(0, 10)}-${uid()}.${ext}`;
+  await writeFile(join(uploadsDir, filename), buffer);
+  return `/uploads/${filename}`;
 }
 
 function send(res, status, data, headers = {}) {
@@ -374,6 +523,19 @@ async function api(req, res, url) {
     }
   }
 
+  if (path === '/api/uploads') {
+    const user = requireUser(req, res, db);
+    if (!user) return;
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    try {
+      const input = await body(req);
+      const url = await saveDataUrlImage(input.dataUrl);
+      return send(res, 201, { url });
+    } catch (error) {
+      return send(res, error.status || 500, { error: error.message || 'upload_failed' });
+    }
+  }
+
   if (path === '/api/events') {
     const user = requireUser(req, res, db);
     if (!user) return;
@@ -511,6 +673,29 @@ async function api(req, res, url) {
   const reserveMatch = path.match(/^\/api\/public\/gifts\/([^/]+)\/reserve$/);
   if (reserveMatch) {
     if (req.method !== 'POST') return methodNotAllowed(res);
+    if (pgPool) {
+      await ensurePgSchema();
+      const input = await body(req);
+      const row = await pgPool.query('select data from povod_gifts where id = $1', [reserveMatch[1]]);
+      const gift = row.rows[0]?.data;
+      if (!gift) return send(res, 404, { error: 'gift_not_found' });
+      if (gift.status === 'reserved') return send(res, 409, { error: 'gift_already_reserved' });
+      const reservedGift = {
+        ...gift,
+        status: 'reserved',
+        reservedByName: String(input.name || 'Гость'),
+        reservedByContact: String(input.contact || ''),
+        reservedComment: String(input.comment || ''),
+        reservedAt: now(),
+        updatedAt: now()
+      };
+      const updated = await pgPool.query(
+        "update povod_gifts set data = $2::jsonb where id = $1 and coalesce(data->>'status', 'available') <> 'reserved' returning data",
+        [gift.id, JSON.stringify(reservedGift)]
+      );
+      if (!updated.rowCount) return send(res, 409, { error: 'gift_already_reserved' });
+      return send(res, 200, { gift: updated.rows[0].data });
+    }
     const gift = db.gifts.find(item => item.id === reserveMatch[1]);
     if (!gift) return send(res, 404, { error: 'gift_not_found' });
     if (gift.status === 'reserved') return send(res, 409, { error: 'gift_already_reserved' });
@@ -532,6 +717,24 @@ async function api(req, res, url) {
 
 async function staticFile(req, res, url) {
   let pathname = decodeURIComponent(url.pathname);
+  if (pathname.startsWith('/uploads/')) {
+    const normalizedUpload = normalize(pathname.replace(/^\/uploads\//, '')).replace(/^[/\\]+/, '').replace(/^(\.\.[/\\])+/, '');
+    const uploadPath = join(uploadsDir, normalizedUpload);
+    try {
+      const info = await stat(uploadPath);
+      if (!info.isFile()) return send(res, 404, { error: 'upload_not_found' });
+      const stream = createReadStream(uploadPath);
+      stream.on('error', error => {
+        console.error(error);
+        if (!res.headersSent) send(res, 500, { error: 'upload_file_error' });
+      });
+      res.writeHead(200, { 'content-type': mime[extname(uploadPath)] || 'application/octet-stream' });
+      stream.pipe(res);
+      return;
+    } catch {
+      return send(res, 404, { error: 'upload_not_found' });
+    }
+  }
   if (pathname === '/') pathname = 'index.html';
   const normalized = normalize(pathname).replace(/^[/\\]+/, '').replace(/^(\.\.[/\\])+/, '');
   const filePath = join(root, normalized);
