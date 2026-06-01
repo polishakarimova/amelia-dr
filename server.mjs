@@ -270,14 +270,24 @@ function upsertTelegramUser(db, telegramUser) {
 
 async function telegramApi(method, payload = {}) {
   if (!telegramBotToken) throw new Error('telegram_bot_token_missing');
-  const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/${method}`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || data.ok === false) throw new Error(`telegram_${method}_failed`);
-  return data.result;
+  let lastError = null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/${method}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(15000)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.ok === false) throw new Error(data.description || `telegram_${method}_failed`);
+      return data.result;
+    } catch (error) {
+      lastError = error;
+      if (attempt < 3) await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+    }
+  }
+  throw lastError || new Error(`telegram_${method}_failed`);
 }
 
 async function getTelegramBotInfo() {
@@ -302,24 +312,55 @@ async function sendTelegramLoginConfirmed(chatId, token = '') {
   const returnUrl = token ? `${appUrl}/login?telegramLoginToken=${encodeURIComponent(token)}` : `${appUrl}/login`;
   await telegramApi('sendMessage', {
     chat_id: chatId,
-    text: 'Готово, вход подтверждён. Вернитесь на сайт Повода — карточки откроются автоматически.',
+    text: 'Готово, вы авторизованы в Поводе. Вернитесь в приложение — кабинет откроется автоматически.',
     reply_markup: {
       inline_keyboard: [[
-        { text: 'Вернуться в Повод', web_app: { url: returnUrl } }
+        { text: 'Вернуться в приложение', web_app: { url: returnUrl } }
       ]]
     }
   });
 }
 
-async function sendTelegramLoginRequest(chatId, token) {
+function telegramLoginConsentMarkup(token, loginToken = {}) {
+  const consents = loginToken.consents || {};
+  const personalData = Boolean(consents.personalData);
+  const terms = Boolean(consents.terms);
+  return {
+    inline_keyboard: [
+      [{ text: `${personalData ? '✅' : '☐'} Согласие на обработку данных`, callback_data: `consent_pd_${token}` }],
+      [{ text: `${terms ? '✅' : '☐'} Согласие с условиями сервиса`, callback_data: `consent_terms_${token}` }],
+      [{ text: personalData && terms ? 'Авторизоваться' : 'Авторизоваться после согласий', callback_data: `confirm_login_${token}` }]
+    ]
+  };
+}
+
+function telegramLoginConsentText() {
+  return [
+    'Авторизация в Поводе',
+    '',
+    'Чтобы войти в кабинет организатора, подтвердите два согласия:',
+    '',
+    '1. Согласие на обработку персональных данных: мы используем ваш Telegram-профиль для входа и связи с вашим кабинетом.',
+    '2. Согласие с условиями сервиса и политикой конфиденциальности.',
+    '',
+    'После двух отметок нажмите «Авторизоваться».'
+  ].join('\n');
+}
+
+async function updateTelegramLoginRequest(chatId, messageId, token, loginToken) {
+  await telegramApi('editMessageText', {
+    chat_id: chatId,
+    message_id: messageId,
+    text: telegramLoginConsentText(),
+    reply_markup: telegramLoginConsentMarkup(token, loginToken)
+  });
+}
+
+async function sendTelegramLoginRequest(chatId, token, loginToken = {}) {
   await telegramApi('sendMessage', {
     chat_id: chatId,
-    text: 'Подтвердите вход в Повод. Нажимая кнопку ниже, вы разрешаете использовать ваш Telegram-профиль для входа в кабинет организатора.',
-    reply_markup: {
-      inline_keyboard: [[
-        { text: 'Подтвердить вход', callback_data: `confirm_login_${token}` }
-      ]]
-    }
+    text: telegramLoginConsentText(),
+    reply_markup: telegramLoginConsentMarkup(token, loginToken)
   });
 }
 
@@ -577,10 +618,11 @@ async function api(req, res, url) {
     const update = await body(req);
     const callback = update.callback_query;
     if (callback) {
-      const callbackMatch = String(callback.data || '').match(/^confirm_login_([a-f0-9]{40})$/i);
+      const callbackMatch = String(callback.data || '').match(/^(consent_pd|consent_terms|confirm_login)_([a-f0-9]{40})$/i);
       const callbackChatId = callback.message?.chat?.id || callback.from?.id;
       if (callbackMatch && callbackChatId) {
-        const token = callbackMatch[1];
+        const action = callbackMatch[1];
+        const token = callbackMatch[2];
         const loginToken = db.loginTokens.find(item => item.token === token);
         if (!loginToken || loginToken.usedAt || new Date(loginToken.expiresAt).getTime() <= Date.now()) {
           db.loginTokens = db.loginTokens.filter(item => item.token !== token);
@@ -595,6 +637,35 @@ async function api(req, res, url) {
           }).catch(error => console.error(error));
           return send(res, 200, { ok: true });
         }
+        if (action === 'consent_pd' || action === 'consent_terms') {
+          const markedAt = now();
+          loginToken.consents = {
+            ...(loginToken.consents || {}),
+            personalData: action === 'consent_pd' ? true : Boolean(loginToken.consents?.personalData),
+            terms: action === 'consent_terms' ? true : Boolean(loginToken.consents?.terms),
+            personalDataAt: action === 'consent_pd' ? markedAt : loginToken.consents?.personalDataAt || '',
+            termsAt: action === 'consent_terms' ? markedAt : loginToken.consents?.termsAt || '',
+            updatedAt: markedAt
+          };
+          await writeDb(db);
+          await telegramApi('answerCallbackQuery', {
+            callback_query_id: callback.id,
+            text: loginToken.consents.personalData && loginToken.consents.terms
+              ? 'Готово, теперь нажмите «Авторизоваться»'
+              : 'Согласие отмечено'
+          }).catch(error => console.error(error));
+          if (callback.message?.message_id) {
+            await updateTelegramLoginRequest(callbackChatId, callback.message.message_id, token, loginToken).catch(error => console.error(error));
+          }
+          return send(res, 200, { ok: true });
+        }
+        if (!loginToken.consents?.personalData || !loginToken.consents?.terms) {
+          await telegramApi('answerCallbackQuery', {
+            callback_query_id: callback.id,
+            text: 'Сначала отметьте оба согласия'
+          }).catch(error => console.error(error));
+          return send(res, 200, { ok: true });
+        }
         if (!callback.from?.id) {
           await telegramApi('answerCallbackQuery', {
             callback_query_id: callback.id,
@@ -606,6 +677,8 @@ async function api(req, res, url) {
         Object.assign(loginToken, {
           userId: user.id,
           telegramChatId: String(callbackChatId),
+          consentPersonalDataAt: loginToken.consents?.personalDataAt || loginToken.consents?.updatedAt || now(),
+          consentTermsAt: loginToken.consents?.termsAt || loginToken.consents?.updatedAt || now(),
           confirmedAt: now()
         });
         await writeDb(db);
@@ -634,7 +707,7 @@ async function api(req, res, url) {
           }).catch(error => console.error(error));
           return send(res, 200, { ok: true });
         }
-        await sendTelegramLoginRequest(chatId, token).catch(error => console.error(error));
+        await sendTelegramLoginRequest(chatId, token, loginToken).catch(error => console.error(error));
         return send(res, 200, { ok: true });
       }
       await sendTelegramStart(chatId).catch(error => console.error(error));
