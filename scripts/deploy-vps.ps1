@@ -29,12 +29,14 @@ $sshPort = $envMap["SSH_PORT"]
 $domain = $envMap["DOMAIN"]
 $appUrl = $envMap["APP_URL"]
 $keyPath = $envMap["SSH_PRIVATE_KEY_PATH"]
+$appPort = $envMap["APP_PORT"]
 
 if (!$serverIp) { throw "SERVER_IP is empty in $EnvFile" }
 if (!$sshUser) { $sshUser = "root" }
 if (!$sshPort) { $sshPort = "22" }
 if (!$domain) { $domain = "mypovod.ru" }
 if (!$appUrl) { $appUrl = "https://$domain" }
+if (!$appPort) { $appPort = "3100" }
 
 $target = "$sshUser@$serverIp"
 $sshArgs = @("-p", $sshPort, "-o", "StrictHostKeyChecking=accept-new")
@@ -47,7 +49,36 @@ if ($keyPath) {
 Write-Host "Deploying Povod to $target for $domain"
 
 ssh @sshArgs $target "mkdir -p /opt/povod"
-scp @scpArgs $EnvFile "${target}:/opt/povod/.env"
+
+function Quote-EnvValue($value) {
+  if ($null -eq $value) { $value = "" }
+  return '"' + (($value -replace '\\', '\\') -replace '"', '\"') + '"'
+}
+
+$databaseUrl = Quote-EnvValue $envMap["DATABASE_URL"]
+$pgSslRootCert = Quote-EnvValue $envMap["PGSSLROOTCERT"]
+$telegramBotToken = Quote-EnvValue $envMap["TELEGRAM_BOT_TOKEN"]
+$telegramWebhookSecret = Quote-EnvValue $envMap["TELEGRAM_WEBHOOK_SECRET"]
+$quotedAppUrl = Quote-EnvValue $appUrl
+$adminTelegramIds = Quote-EnvValue $envMap["ADMIN_TELEGRAM_IDS"]
+$quotedDomain = Quote-EnvValue $domain
+$quotedAppPort = Quote-EnvValue $appPort
+
+$appEnvPath = Join-Path $env:TEMP "povod-app.env"
+@(
+  "DATABASE_URL=$databaseUrl",
+  "PGSSLROOTCERT=$pgSslRootCert",
+  "TELEGRAM_BOT_TOKEN=$telegramBotToken",
+  "TELEGRAM_WEBHOOK_SECRET=$telegramWebhookSecret",
+  "APP_URL=$quotedAppUrl",
+  "ADMIN_TELEGRAM_IDS=$adminTelegramIds",
+  "DOMAIN=$quotedDomain",
+  "PORT=$quotedAppPort",
+  "DATA_DIR=""/var/lib/povod"""
+) | Set-Content -LiteralPath $appEnvPath -Encoding UTF8
+
+scp @scpArgs $appEnvPath "${target}:/opt/povod/.env"
+Remove-Item -LiteralPath $appEnvPath -Force
 
 $remoteScript = @"
 set -e
@@ -56,7 +87,6 @@ if ! command -v node >/dev/null 2>&1; then
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   apt-get install -y nodejs
 fi
-if ! command -v pm2 >/dev/null 2>&1; then npm install -g pm2; fi
 if [ ! -d /opt/povod/.git ]; then
   rm -rf /opt/povod/*
   git clone https://github.com/polishakarimova/amelia-dr.git /opt/povod
@@ -66,15 +96,37 @@ git fetch origin main
 git reset --hard origin/main
 npm install --omit=dev
 npm run check
-pm2 start server.mjs --name povod --update-env || pm2 restart povod --update-env
-pm2 save
+mkdir -p /var/lib/povod
+cat >/etc/systemd/system/povod.service <<'SERVICE'
+[Unit]
+Description=Povod app
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/povod
+EnvironmentFile=-/opt/povod/.env
+Environment=NODE_ENV=production
+Environment=PORT=$appPort
+Environment=DATA_DIR=/var/lib/povod
+ExecStart=/usr/bin/node /opt/povod/server.mjs
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+systemctl daemon-reload
+systemctl enable povod
+systemctl restart povod
 if command -v nginx >/dev/null 2>&1; then
 cat >/etc/nginx/sites-available/povod <<'NGINX'
 server {
   server_name mypovod.ru www.mypovod.ru;
 
   location / {
-    proxy_pass http://127.0.0.1:3000;
+    proxy_pass http://127.0.0.1:$appPort;
     proxy_http_version 1.1;
     proxy_set_header Host `$host;
     proxy_set_header X-Real-IP `$remote_addr;
@@ -88,10 +140,9 @@ nginx -t
 systemctl reload nginx
 fi
 if command -v certbot >/dev/null 2>&1; then
-  certbot --nginx -d mypovod.ru -d www.mypovod.ru --non-interactive --agree-tos -m admin@$domain || true
+  certbot --nginx -d mypovod.ru -d www.mypovod.ru --non-interactive --agree-tos -m admin@$domain --redirect || true
 fi
 "@
 
-ssh @sshArgs $target $remoteScript
+$remoteScript | ssh @sshArgs $target "bash -s"
 Write-Host "Done. Check: $appUrl"
-

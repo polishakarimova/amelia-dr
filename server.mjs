@@ -1,11 +1,27 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
-import { createReadStream } from 'node:fs';
+import { createReadStream, existsSync, readFileSync } from 'node:fs';
 import { createHash, randomBytes, pbkdf2Sync } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
+
+function loadEnvFile() {
+  const envPath = join(root, '.env');
+  if (!existsSync(envPath)) return;
+  for (const line of readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#') || !trimmed.includes('=')) continue;
+    const [key, ...rest] = trimmed.split('=');
+    let value = rest.join('=').trim();
+    if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+    if (!(key in process.env)) process.env[key] = value;
+  }
+}
+
+loadEnvFile();
+
 const dataDir = process.env.DATA_DIR || join(root, 'data');
 const dbFile = join(dataDir, 'db.json');
 const port = Number(process.env.PORT || 3000);
