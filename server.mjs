@@ -476,7 +476,7 @@ async function api(req, res, url) {
       return send(res, 200, {
         appUrl,
         botUsername: bot?.username || '',
-        botLink: bot?.username ? `https://t.me/${bot.username}?startapp=povod` : '',
+        botLink: bot?.username ? `https://t.me/${bot.username}?start=povod` : '',
         hasBot: Boolean(bot?.username)
       });
     } catch {

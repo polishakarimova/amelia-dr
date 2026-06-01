@@ -2038,19 +2038,19 @@
       view.innerHTML = `
         <div class="card auth-card">
           <h2>${isLogin ? 'Войти в Повод' : 'Создать карточку'}</h2>
-          <p class="muted">${isLogin ? 'Организатор входит, чтобы вернуться к своим поводам. Гостям регистрация не нужна.' : 'Самый быстрый способ сохранить карточку и потом её редактировать — через Telegram.'}</p>
+          <p class="muted">${isLogin ? 'Войдите, чтобы вернуться к своим поводам. Гостям регистрация не нужна.' : 'Чтобы создать и потом редактировать карточку, сначала авторизуйтесь в Поводе.'}</p>
           <div class="auth-primary">
-            <h3>Через Telegram</h3>
-            <p class="muted">Откройте Повод внутри Telegram: бот сохранит карточки, а позже сможет присылать уведомления о бронях подарков.</p>
+            <h3>Авторизация через Telegram</h3>
+            <p class="muted">Telegram нужен только для входа без пароля. Саму карточку вы создаёте и редактируете в Поводе.</p>
             <div class="hero-actions" style="margin-top:14px">
-              <button class="btn btn-accent" onclick="telegramAuth()">${isLogin ? 'Войти через Telegram' : 'Создать через Telegram'}</button>
-              <button class="btn btn-soft" onclick="openTelegramBot()">Открыть бота</button>
+              <button class="btn btn-accent" type="button" onclick="telegramAuth()">Авторизоваться через Telegram</button>
+              <button class="btn btn-soft" type="button" onclick="openTelegramBot()">Открыть Telegram</button>
             </div>
-            <p class="muted" style="font-size:12px">Если страница открыта внутри Telegram Mini App, вход произойдёт автоматически.</p>
+            <p class="muted" style="font-size:12px">Если страница открыта из Telegram-бота, вход произойдёт автоматически.</p>
           </div>
           <div class="auth-divider">или</div>
           <details class="auth-secondary">
-            <summary>${isLogin ? 'Войти другим способом' : 'Другой способ регистрации'}</summary>
+            <summary>${isLogin ? 'Войти по email' : 'Зарегистрироваться по email'}</summary>
             <div class="form-grid" style="grid-template-columns:1fr;margin-top:14px">
               ${!isLogin ? '<label>Имя<input id="authName" placeholder="Например, Полина"></label>' : ''}
               <label>Email<input id="authEmail" type="email" placeholder="you@example.com"></label>
@@ -2097,15 +2097,14 @@
       }
     }
     async function openTelegramBot() {
+      const fallbackBotLink = 'https://t.me/mypovod_bot?start=povod';
       try {
         const response = await fetch('/api/telegram/config');
         const config = await response.json();
-        if (config.botLink) {
-          location.href = config.botLink;
-          return;
-        }
+        location.href = config.botLink || fallbackBotLink;
+        return;
       } catch {}
-      toast('Бот ещё не настроен. Проверьте TELEGRAM_BOT_TOKEN.');
+      location.href = fallbackBotLink;
     }
     async function register() {
       const name = document.getElementById('authName').value.trim();
