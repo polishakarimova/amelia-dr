@@ -107,6 +107,10 @@ async function ensurePgSchema() {
       token text primary key,
       data jsonb not null
     );
+    create table if not exists povod_login_tokens (
+      token text primary key,
+      data jsonb not null
+    );
     create table if not exists povod_events (
       id text primary key,
       user_id text not null,
@@ -129,6 +133,7 @@ function normalizeDb(db) {
   return {
     users: Array.isArray(db.users) ? db.users : [],
     sessions: Array.isArray(db.sessions) ? db.sessions : [],
+    loginTokens: Array.isArray(db.loginTokens) ? db.loginTokens : [],
     events: Array.isArray(db.events) ? db.events : [],
     gifts: Array.isArray(db.gifts) ? db.gifts : []
   };
@@ -141,6 +146,7 @@ async function replacePgDb(db) {
     await client.query('begin');
     await client.query('delete from povod_gifts');
     await client.query('delete from povod_events');
+    await client.query('delete from povod_login_tokens');
     await client.query('delete from povod_sessions');
     await client.query('delete from povod_users');
     for (const user of db.users) {
@@ -148,6 +154,9 @@ async function replacePgDb(db) {
     }
     for (const session of db.sessions) {
       await client.query('insert into povod_sessions (token, data) values ($1, $2::jsonb)', [session.token, JSON.stringify(session)]);
+    }
+    for (const loginToken of db.loginTokens) {
+      await client.query('insert into povod_login_tokens (token, data) values ($1, $2::jsonb)', [loginToken.token, JSON.stringify(loginToken)]);
     }
     for (const event of db.events) {
       await client.query('insert into povod_events (id, user_id, slug, data) values ($1, $2, $3, $4::jsonb)', [event.id, event.userId, event.slug, JSON.stringify(event)]);
@@ -289,18 +298,32 @@ async function sendTelegramStart(chatId) {
   });
 }
 
+async function sendTelegramLoginConfirmed(chatId) {
+  await telegramApi('sendMessage', {
+    chat_id: chatId,
+    text: 'Готово, вход подтверждён. Вернитесь на сайт Повода — карточки откроются автоматически.',
+    reply_markup: {
+      inline_keyboard: [[
+        { text: 'Вернуться в Повод', web_app: { url: `${appUrl}/login` } }
+      ]]
+    }
+  });
+}
+
 async function readDb() {
   if (pgPool) {
     await ensurePgSchema();
-    const [users, sessions, events, gifts] = await Promise.all([
+    const [users, sessions, loginTokens, events, gifts] = await Promise.all([
       pgPool.query('select data from povod_users order by data->>\'createdAt\' desc'),
       pgPool.query('select data from povod_sessions order by data->>\'createdAt\' desc'),
+      pgPool.query('select data from povod_login_tokens order by data->>\'createdAt\' desc'),
       pgPool.query('select data from povod_events order by data->>\'createdAt\' desc'),
       pgPool.query('select data from povod_gifts order by data->>\'createdAt\' desc')
     ]);
     return {
       users: users.rows.map(row => row.data),
       sessions: sessions.rows.map(row => row.data),
+      loginTokens: loginTokens.rows.map(row => row.data),
       events: events.rows.map(row => row.data),
       gifts: gifts.rows.map(row => row.data)
     };
@@ -308,7 +331,7 @@ async function readDb() {
   try {
     return normalizeDb(JSON.parse(await readFile(dbFile, 'utf8')));
   } catch {
-    return { users: [], sessions: [], events: [], gifts: [] };
+    return { users: [], sessions: [], loginTokens: [], events: [], gifts: [] };
   }
 }
 
@@ -469,6 +492,55 @@ async function api(req, res, url) {
     }
   }
 
+  if (path === '/api/auth/telegram-login-token') {
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    try {
+      const bot = telegramBotToken ? await getTelegramBotInfo() : null;
+      if (!bot?.username) return send(res, 503, { error: 'telegram_bot_not_configured' });
+      const token = `${uid()}${uid()}`;
+      const loginToken = {
+        token,
+        userId: '',
+        createdAt: now(),
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+        confirmedAt: '',
+        usedAt: ''
+      };
+      db.loginTokens = db.loginTokens.filter(item => new Date(item.expiresAt).getTime() > Date.now() && !item.usedAt);
+      db.loginTokens.push(loginToken);
+      await writeDb(db);
+      return send(res, 201, {
+        token,
+        expiresAt: loginToken.expiresAt,
+        botLink: `https://t.me/${bot.username}?start=login_${token}`
+      });
+    } catch (error) {
+      return send(res, 500, { error: error.message || 'telegram_login_token_failed' });
+    }
+  }
+
+  const telegramTokenMatch = path.match(/^\/api\/auth\/telegram-login-token\/([^/]+)$/);
+  if (telegramTokenMatch) {
+    if (req.method !== 'GET') return methodNotAllowed(res);
+    const token = telegramTokenMatch[1];
+    const loginToken = db.loginTokens.find(item => item.token === token);
+    if (!loginToken || loginToken.usedAt) return send(res, 404, { error: 'login_token_not_found' });
+    if (new Date(loginToken.expiresAt).getTime() <= Date.now()) {
+      db.loginTokens = db.loginTokens.filter(item => item.token !== token);
+      await writeDb(db);
+      return send(res, 410, { error: 'login_token_expired' });
+    }
+    if (!loginToken.userId) return send(res, 202, { status: 'pending' });
+    const user = db.users.find(item => item.id === loginToken.userId);
+    if (!user) return send(res, 404, { error: 'telegram_user_not_found' });
+    const sessionToken = uid();
+    db.sessions.push({ token: sessionToken, userId: user.id, createdAt: now() });
+    db.loginTokens = db.loginTokens.filter(item => item.token !== token);
+    await writeDb(db);
+    setSessionCookie(res, sessionToken);
+    return send(res, 200, { user: publicUser(user) });
+  }
+
   if (path === '/api/telegram/config') {
     if (req.method !== 'GET') return methodNotAllowed(res);
     try {
@@ -492,8 +564,39 @@ async function api(req, res, url) {
     const update = await body(req);
     const message = update.message || update.edited_message;
     const chatId = message?.chat?.id;
+    const telegramUser = message?.from;
     const text = String(message?.text || '');
     if (chatId && text.startsWith('/start')) {
+      const loginMatch = text.match(/^\/start\s+login_([a-f0-9]{40})/i);
+      if (loginMatch) {
+        const token = loginMatch[1];
+        const loginToken = db.loginTokens.find(item => item.token === token);
+        if (!loginToken || loginToken.usedAt || new Date(loginToken.expiresAt).getTime() <= Date.now()) {
+          db.loginTokens = db.loginTokens.filter(item => item.token !== token);
+          await writeDb(db);
+          await telegramApi('sendMessage', {
+            chat_id: chatId,
+            text: 'Ссылка для входа устарела. Вернитесь на сайт и нажмите «Авторизоваться через Telegram» ещё раз.'
+          }).catch(error => console.error(error));
+          return send(res, 200, { ok: true });
+        }
+        if (!telegramUser?.id) {
+          await telegramApi('sendMessage', {
+            chat_id: chatId,
+            text: 'Не получилось подтвердить Telegram-профиль. Откройте вход с сайта ещё раз.'
+          }).catch(error => console.error(error));
+          return send(res, 200, { ok: true });
+        }
+        const user = upsertTelegramUser(db, telegramUser);
+        Object.assign(loginToken, {
+          userId: user.id,
+          telegramChatId: String(chatId),
+          confirmedAt: now()
+        });
+        await writeDb(db);
+        await sendTelegramLoginConfirmed(chatId).catch(error => console.error(error));
+        return send(res, 200, { ok: true });
+      }
       await sendTelegramStart(chatId).catch(error => console.error(error));
     }
     return send(res, 200, { ok: true });

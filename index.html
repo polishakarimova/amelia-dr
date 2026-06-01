@@ -1706,7 +1706,8 @@
     const STORAGE = {
       users: 'povod_users',
       session: 'povod_session',
-      events: 'povod_events'
+      events: 'povod_events',
+      telegramLoginToken: 'povod_telegram_login_token'
     };
     let route = '/';
     let currentUser = null;
@@ -1720,6 +1721,8 @@
     let editingGiftId = null;
     let telegramAuthInProgress = false;
     let telegramAuthDone = false;
+    let telegramLoginPollTimer = null;
+    let telegramLoginPollToken = '';
     const BASE_PATH = location.pathname.startsWith('/amelia-dr') ? '/amelia-dr' : '';
 
     const sampleGifts = [
@@ -2043,7 +2046,7 @@
             <h3>Авторизация через Telegram</h3>
             <p class="muted">Telegram нужен только для входа без пароля. Саму карточку вы создаёте и редактируете в Поводе.</p>
             <div class="hero-actions" style="margin-top:14px">
-              <a class="btn btn-accent" href="https://t.me/mypovod_bot?start=povod" onclick="telegramAuth(event)">Авторизоваться через Telegram</a>
+              <button class="btn btn-accent" type="button" onclick="startTelegramLogin()">Авторизоваться через Telegram</button>
             </div>
             <p class="muted" style="font-size:12px">Если страница открыта из Telegram-бота, вход произойдёт автоматически.</p>
           </div>
@@ -2063,6 +2066,80 @@
         </div>
       `;
       setTimeout(() => telegramAuth(true), 0);
+      resumeTelegramLogin();
+    }
+    async function startTelegramLogin() {
+      if (telegramAuthInProgress) return;
+      const webApp = telegramWebApp();
+      if (webApp?.initData) {
+        await telegramAuth(false);
+        return;
+      }
+      telegramAuthInProgress = true;
+      try {
+        const data = await apiRequest('/api/auth/telegram-login-token', { method: 'POST', body: {} });
+        localStorage.setItem(STORAGE.telegramLoginToken, data.token);
+        toast('Откроем Telegram. Нажмите Start в боте и вернитесь сюда.');
+        startTelegramLoginPolling(data.token);
+        location.href = data.botLink;
+      } catch {
+        toast('Не получилось открыть вход через Telegram. Попробуйте ещё раз.');
+      } finally {
+        telegramAuthInProgress = false;
+      }
+    }
+    function resumeTelegramLogin() {
+      const token = localStorage.getItem(STORAGE.telegramLoginToken);
+      if (!token || telegramAuthDone) return;
+      startTelegramLoginPolling(token);
+    }
+    function stopTelegramLoginPolling() {
+      if (telegramLoginPollTimer) clearInterval(telegramLoginPollTimer);
+      telegramLoginPollTimer = null;
+      telegramLoginPollToken = '';
+    }
+    function startTelegramLoginPolling(token) {
+      if (!token) return;
+      if (telegramLoginPollTimer && telegramLoginPollToken === token) return;
+      stopTelegramLoginPolling();
+      telegramLoginPollToken = token;
+      let attempts = 0;
+      const check = async () => {
+        attempts += 1;
+        try {
+          const data = await apiRequest(`/api/auth/telegram-login-token/${encodeURIComponent(token)}`);
+          if (data.status === 'pending') {
+            if (attempts > 120) {
+              stopTelegramLoginPolling();
+              localStorage.removeItem(STORAGE.telegramLoginToken);
+              toast('Ссылка для входа устарела. Нажмите Telegram ещё раз.');
+            }
+            return;
+          }
+          if (!data.user) return;
+          stopTelegramLoginPolling();
+          localStorage.removeItem(STORAGE.telegramLoginToken);
+          syncServerUser(data.user);
+          await loadServerEvents();
+          telegramAuthDone = true;
+          toast('Вошли через Telegram');
+          navigate('/dashboard');
+        } catch (error) {
+          if (error.status === 202) return;
+          if (error.status === 404 || error.status === 410) {
+            stopTelegramLoginPolling();
+            localStorage.removeItem(STORAGE.telegramLoginToken);
+            if (attempts > 1) toast('Ссылка для входа устарела. Нажмите Telegram ещё раз.');
+            return;
+          }
+          if (attempts > 6) {
+            stopTelegramLoginPolling();
+            toast('Не получается проверить вход. Обновите страницу и попробуйте ещё раз.');
+          }
+        }
+      };
+      check();
+      telegramLoginPollTimer = setInterval(check, 2500);
     }
     async function telegramAuth(eventOrSilent = false) {
       const clickEvent = typeof eventOrSilent === 'object' ? eventOrSilent : null;
@@ -2072,7 +2149,7 @@
       const initData = webApp?.initData || '';
       if (!initData) {
         if (clickEvent) return;
-        if (!silent) await openTelegramBot();
+        if (!silent) await startTelegramLogin();
         return;
       }
       clickEvent?.preventDefault?.();
@@ -2098,16 +2175,6 @@
       } finally {
         telegramAuthInProgress = false;
       }
-    }
-    async function openTelegramBot() {
-      const fallbackBotLink = 'https://t.me/mypovod_bot?start=povod';
-      try {
-        const response = await fetch('/api/telegram/config');
-        const config = await response.json();
-        location.href = config.botLink || fallbackBotLink;
-        return;
-      } catch {}
-      location.href = fallbackBotLink;
     }
     async function register() {
       const name = document.getElementById('authName').value.trim();
@@ -2667,6 +2734,10 @@
     document.getElementById('cropStage').addEventListener('pointercancel', () => {
       if (coverCrop) coverCrop.dragging = false;
     });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) resumeTelegramLogin();
+    });
+    window.addEventListener('focus', resumeTelegramLogin);
     window.addEventListener('popstate', render);
     render();
   </script>

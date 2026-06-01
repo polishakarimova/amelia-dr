@@ -45,6 +45,8 @@ PORT=8080 npm start
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 - `POST /api/auth/telegram-mini-app`
+- `POST /api/auth/telegram-login-token`
+- `GET /api/auth/telegram-login-token/:token`
 - `GET /api/telegram/config`
 - `POST /api/telegram/webhook`
 - `POST /api/telegram/setup-webhook`

@@ -64,6 +64,8 @@
 - `POST /api/auth/logout`
 - `GET /api/auth/me`
 - `POST /api/auth/telegram-mini-app`
+- `POST /api/auth/telegram-login-token`
+- `GET /api/auth/telegram-login-token/:token`
 
 Telegram-токен бота нельзя хранить на фронте. Mini App присылает `initData`, backend проверяет подпись через bot token и создает cookie-сессию организатора.
 
