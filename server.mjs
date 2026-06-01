@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
-import { createHash, randomBytes, pbkdf2Sync } from 'node:crypto';
+import { createHash, createHmac, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,6 +27,10 @@ const dbFile = join(dataDir, 'db.json');
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || '127.0.0.1';
 const cookieName = 'povod_session';
+const appUrl = (process.env.APP_URL || `http://${host}:${port}`).replace(/\/$/, '');
+const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
+const telegramWebhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET || '';
+let telegramBotInfo = null;
 
 const mime = {
   '.html': 'text/html; charset=utf-8',
@@ -89,6 +93,92 @@ function publicUser(user) {
   if (!user) return null;
   const { passwordHash, ...safe } = user;
   return safe;
+}
+
+function safeCompare(a, b) {
+  const left = Buffer.from(String(a || ''), 'utf8');
+  const right = Buffer.from(String(b || ''), 'utf8');
+  if (left.length !== right.length) return false;
+  return timingSafeEqual(left, right);
+}
+
+function validateTelegramInitData(initData) {
+  if (!telegramBotToken) throw new Error('telegram_bot_token_missing');
+  const params = new URLSearchParams(initData || '');
+  const receivedHash = params.get('hash');
+  if (!receivedHash) throw new Error('telegram_hash_missing');
+  params.delete('hash');
+  const dataCheckString = [...params.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+  const secretKey = createHmac('sha256', 'WebAppData').update(telegramBotToken).digest();
+  const calculatedHash = createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+  if (!safeCompare(calculatedHash, receivedHash)) throw new Error('telegram_hash_invalid');
+  const authDate = Number(params.get('auth_date') || 0);
+  if (!authDate || Date.now() / 1000 - authDate > 86400 * 14) throw new Error('telegram_auth_expired');
+  const user = JSON.parse(params.get('user') || '{}');
+  if (!user.id) throw new Error('telegram_user_missing');
+  return user;
+}
+
+function upsertTelegramUser(db, telegramUser) {
+  const telegramId = String(telegramUser.id);
+  const email = `telegram:${telegramId}`;
+  const name = [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ').trim() || telegramUser.username || `Telegram ${telegramId}`;
+  let user = db.users.find(item => item.email === email || String(item.telegramId || '') === telegramId);
+  if (!user) {
+    user = {
+      id: uid(),
+      email,
+      name,
+      authProvider: 'telegram',
+      telegramId,
+      telegramUsername: telegramUser.username ? `@${telegramUser.username}` : '',
+      createdAt: now()
+    };
+    db.users.push(user);
+  } else {
+    Object.assign(user, {
+      email,
+      name,
+      authProvider: 'telegram',
+      telegramId,
+      telegramUsername: telegramUser.username ? `@${telegramUser.username}` : user.telegramUsername || '',
+      updatedAt: now()
+    });
+  }
+  return user;
+}
+
+async function telegramApi(method, payload = {}) {
+  if (!telegramBotToken) throw new Error('telegram_bot_token_missing');
+  const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/${method}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok === false) throw new Error(`telegram_${method}_failed`);
+  return data.result;
+}
+
+async function getTelegramBotInfo() {
+  if (telegramBotInfo) return telegramBotInfo;
+  telegramBotInfo = await telegramApi('getMe');
+  return telegramBotInfo;
+}
+
+async function sendTelegramStart(chatId) {
+  await telegramApi('sendMessage', {
+    chat_id: chatId,
+    text: 'Повод поможет собрать праздник, детали и подарки в одной ссылке. Нажмите кнопку ниже, чтобы создать карточку.',
+    reply_markup: {
+      inline_keyboard: [[
+        { text: 'Создать карточку в Поводе', web_app: { url: `${appUrl}/login` } }
+      ]]
+    }
+  });
 }
 
 async function readDb() {
@@ -214,6 +304,22 @@ async function api(req, res, url) {
     return send(res, 200, { ok: true });
   }
 
+  if (path === '/api/auth/telegram-mini-app') {
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    try {
+      const input = await body(req);
+      const telegramUser = validateTelegramInitData(String(input.initData || ''));
+      const user = upsertTelegramUser(db, telegramUser);
+      const token = uid();
+      db.sessions.push({ token, userId: user.id, createdAt: now() });
+      await writeDb(db);
+      setSessionCookie(res, token);
+      return send(res, 200, { user: publicUser(user) });
+    } catch (error) {
+      return send(res, 401, { error: error.message || 'telegram_auth_failed' });
+    }
+  }
+
   if (path === '/api/auth/telegram/start' || path === '/api/auth/telegram/callback') {
     if (req.method !== 'POST') return methodNotAllowed(res);
     const input = await body(req);
@@ -238,6 +344,60 @@ async function api(req, res, url) {
     await writeDb(db);
     setSessionCookie(res, token);
     return send(res, 200, { user: publicUser(user) });
+  }
+
+  if (path === '/api/telegram/config') {
+    if (req.method !== 'GET') return methodNotAllowed(res);
+    try {
+      const bot = telegramBotToken ? await getTelegramBotInfo() : null;
+      return send(res, 200, {
+        appUrl,
+        botUsername: bot?.username || '',
+        botLink: bot?.username ? `https://t.me/${bot.username}?startapp=povod` : '',
+        hasBot: Boolean(bot?.username)
+      });
+    } catch {
+      return send(res, 200, { appUrl, botUsername: '', botLink: '', hasBot: false });
+    }
+  }
+
+  if (path === '/api/telegram/webhook') {
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    if (telegramWebhookSecret && !safeCompare(req.headers['x-telegram-bot-api-secret-token'], telegramWebhookSecret)) {
+      return send(res, 401, { error: 'invalid_telegram_secret' });
+    }
+    const update = await body(req);
+    const message = update.message || update.edited_message;
+    const chatId = message?.chat?.id;
+    const text = String(message?.text || '');
+    if (chatId && text.startsWith('/start')) {
+      await sendTelegramStart(chatId).catch(error => console.error(error));
+    }
+    return send(res, 200, { ok: true });
+  }
+
+  if (path === '/api/telegram/setup-webhook') {
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    const input = await body(req);
+    if (telegramWebhookSecret && !safeCompare(input.secret, telegramWebhookSecret)) return send(res, 401, { error: 'invalid_secret' });
+    try {
+      await telegramApi('setWebhook', {
+        url: `${appUrl}/api/telegram/webhook`,
+        secret_token: telegramWebhookSecret || undefined,
+        allowed_updates: ['message', 'edited_message']
+      });
+      await telegramApi('setChatMenuButton', {
+        menu_button: {
+          type: 'web_app',
+          text: 'Открыть Повод',
+          web_app: { url: `${appUrl}/login` }
+        }
+      }).catch(() => null);
+      const webhook = await telegramApi('getWebhookInfo');
+      return send(res, 200, { ok: true, webhook });
+    } catch (error) {
+      return send(res, 500, { error: error.message || 'telegram_setup_failed' });
+    }
   }
 
   if (path === '/api/events') {

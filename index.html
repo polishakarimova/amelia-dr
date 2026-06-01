@@ -1131,6 +1131,7 @@
   </div>
   <div class="toast" id="toast"></div>
 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     const APP_NAME = 'Повод';
     const DOMAIN = 'mypovod.ru';
@@ -1147,6 +1148,8 @@
     let coverCrop = null;
     let giftFormOpen = false;
     let editingGiftId = null;
+    let telegramAuthInProgress = false;
+    let telegramAuthDone = false;
     const BASE_PATH = location.pathname.startsWith('/amelia-dr') ? '/amelia-dr' : '';
 
     const sampleGifts = [
@@ -1208,6 +1211,27 @@
     }
     function displayUserName(user) {
       return user?.name || user?.telegramUsername || user?.email || 'Организатор';
+    }
+    function telegramWebApp() {
+      return window.Telegram?.WebApp || null;
+    }
+    function syncServerUser(user) {
+      if (!user?.email) return;
+      const list = users();
+      const index = list.findIndex(item => item.email === user.email || item.id === user.id);
+      const nextUser = {
+        id: user.id,
+        email: user.email,
+        name: user.name || user.telegramUsername || 'Организатор',
+        telegramId: user.telegramId || '',
+        telegramUsername: user.telegramUsername || '',
+        authProvider: user.authProvider || 'telegram',
+        createdAt: user.createdAt || new Date().toISOString()
+      };
+      if (index >= 0) list[index] = { ...list[index], ...nextUser };
+      else list.push(nextUser);
+      setJSON(STORAGE.users, list);
+      setSession(user.email);
     }
     function toast(text) {
       const node = document.getElementById('toast');
@@ -1388,14 +1412,12 @@
           <p class="muted">${isLogin ? 'Организатор входит, чтобы вернуться к своим поводам. Гостям регистрация не нужна.' : 'Самый быстрый способ сохранить карточку и потом её редактировать — через Telegram.'}</p>
           <div class="auth-primary">
             <h3>Через Telegram</h3>
-            <p class="muted">Бот сохранит ваши карточки, пришлёт ссылку для гостей и позже сможет уведомлять о новых бронях подарков.</p>
-            <div class="form-grid" style="grid-template-columns:1fr;margin-top:14px">
-              <label>Имя или username в Telegram<input id="telegramName" placeholder="Например, Полина или @polina"></label>
-            </div>
+            <p class="muted">Откройте Повод внутри Telegram: бот сохранит карточки, а позже сможет присылать уведомления о бронях подарков.</p>
             <div class="hero-actions" style="margin-top:14px">
-              <button class="btn btn-accent" onclick="telegramAuth()">${isLogin ? 'Продолжить через Telegram' : 'Сохранить через Telegram'}</button>
+              <button class="btn btn-accent" onclick="telegramAuth()">${isLogin ? 'Войти через Telegram' : 'Создать через Telegram'}</button>
+              <button class="btn btn-soft" onclick="openTelegramBot()">Открыть бота</button>
             </div>
-            <p class="muted" style="font-size:12px">В этой демо-версии бот имитируется локально. Для продакшена нужен backend и настоящий Telegram Bot API.</p>
+            <p class="muted" style="font-size:12px">Если страница открыта внутри Telegram Mini App, вход произойдёт автоматически.</p>
           </div>
           <div class="auth-divider">или</div>
           <details class="auth-secondary">
@@ -1412,30 +1434,48 @@
           </details>
         </div>
       `;
+      setTimeout(() => telegramAuth(true), 0);
     }
-    function telegramAuth() {
-      const rawName = document.getElementById('telegramName').value.trim();
-      const username = rawName.replace(/^@/, '').trim();
-      if (!username) return toast('Введите имя или username в Telegram');
-      const telegramId = `tg_${slugify(username)}`;
-      const email = `telegram:${telegramId}`;
-      const list = users();
-      const existing = list.find(user => user.email === email);
-      if (!existing) {
-        list.push({
-          id: uid(),
-          email,
-          name: rawName.startsWith('@') ? rawName : username,
-          telegramId,
-          telegramUsername: rawName.startsWith('@') ? rawName : '',
-          authProvider: 'telegram',
-          createdAt: new Date().toISOString()
-        });
-        setJSON(STORAGE.users, list);
+    async function telegramAuth(silent = false) {
+      if (telegramAuthInProgress || telegramAuthDone) return;
+      const webApp = telegramWebApp();
+      const initData = webApp?.initData || '';
+      if (!initData) {
+        if (!silent) await openTelegramBot();
+        return;
       }
-      setSession(email);
-      toast('Карточки сохранены через Telegram');
-      navigate('/dashboard');
+      telegramAuthInProgress = true;
+      try {
+        webApp?.ready?.();
+        webApp?.expand?.();
+        const response = await fetch('/api/auth/telegram-mini-app', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ initData })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'telegram_auth_failed');
+        syncServerUser(data.user);
+        telegramAuthDone = true;
+        toast('Вошли через Telegram');
+        navigate('/dashboard');
+      } catch {
+        if (!silent) toast('Не получилось войти через Telegram. Откройте через бота ещё раз.');
+      } finally {
+        telegramAuthInProgress = false;
+      }
+    }
+    async function openTelegramBot() {
+      try {
+        const response = await fetch('/api/telegram/config');
+        const config = await response.json();
+        if (config.botLink) {
+          location.href = config.botLink;
+          return;
+        }
+      } catch {}
+      toast('Бот ещё не настроен. Проверьте TELEGRAM_BOT_TOKEN.');
     }
     function register() {
       const name = document.getElementById('authName').value.trim();
