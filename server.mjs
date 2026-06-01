@@ -298,13 +298,26 @@ async function sendTelegramStart(chatId) {
   });
 }
 
-async function sendTelegramLoginConfirmed(chatId) {
+async function sendTelegramLoginConfirmed(chatId, token = '') {
+  const returnUrl = token ? `${appUrl}/login?telegramLoginToken=${encodeURIComponent(token)}` : `${appUrl}/login`;
   await telegramApi('sendMessage', {
     chat_id: chatId,
     text: 'Готово, вход подтверждён. Вернитесь на сайт Повода — карточки откроются автоматически.',
     reply_markup: {
       inline_keyboard: [[
-        { text: 'Вернуться в Повод', web_app: { url: `${appUrl}/login` } }
+        { text: 'Вернуться в Повод', web_app: { url: returnUrl } }
+      ]]
+    }
+  });
+}
+
+async function sendTelegramLoginRequest(chatId, token) {
+  await telegramApi('sendMessage', {
+    chat_id: chatId,
+    text: 'Подтвердите вход в Повод. Нажимая кнопку ниже, вы разрешаете использовать ваш Telegram-профиль для входа в кабинет организатора.',
+    reply_markup: {
+      inline_keyboard: [[
+        { text: 'Подтвердить вход', callback_data: `confirm_login_${token}` }
       ]]
     }
   });
@@ -562,9 +575,50 @@ async function api(req, res, url) {
       return send(res, 401, { error: 'invalid_telegram_secret' });
     }
     const update = await body(req);
+    const callback = update.callback_query;
+    if (callback) {
+      const callbackMatch = String(callback.data || '').match(/^confirm_login_([a-f0-9]{40})$/i);
+      const callbackChatId = callback.message?.chat?.id || callback.from?.id;
+      if (callbackMatch && callbackChatId) {
+        const token = callbackMatch[1];
+        const loginToken = db.loginTokens.find(item => item.token === token);
+        if (!loginToken || loginToken.usedAt || new Date(loginToken.expiresAt).getTime() <= Date.now()) {
+          db.loginTokens = db.loginTokens.filter(item => item.token !== token);
+          await writeDb(db);
+          await telegramApi('answerCallbackQuery', {
+            callback_query_id: callback.id,
+            text: 'Ссылка для входа устарела'
+          }).catch(error => console.error(error));
+          await telegramApi('sendMessage', {
+            chat_id: callbackChatId,
+            text: 'Ссылка для входа устарела. Вернитесь на сайт и нажмите «Авторизоваться через Telegram» ещё раз.'
+          }).catch(error => console.error(error));
+          return send(res, 200, { ok: true });
+        }
+        if (!callback.from?.id) {
+          await telegramApi('answerCallbackQuery', {
+            callback_query_id: callback.id,
+            text: 'Не получилось подтвердить Telegram-профиль'
+          }).catch(error => console.error(error));
+          return send(res, 200, { ok: true });
+        }
+        const user = upsertTelegramUser(db, callback.from);
+        Object.assign(loginToken, {
+          userId: user.id,
+          telegramChatId: String(callbackChatId),
+          confirmedAt: now()
+        });
+        await writeDb(db);
+        await telegramApi('answerCallbackQuery', {
+          callback_query_id: callback.id,
+          text: 'Вход подтверждён'
+        }).catch(error => console.error(error));
+        await sendTelegramLoginConfirmed(callbackChatId, token).catch(error => console.error(error));
+      }
+      return send(res, 200, { ok: true });
+    }
     const message = update.message || update.edited_message;
     const chatId = message?.chat?.id;
-    const telegramUser = message?.from;
     const text = String(message?.text || '');
     if (chatId && text.startsWith('/start')) {
       const loginMatch = text.match(/^\/start\s+login_([a-f0-9]{40})/i);
@@ -580,21 +634,7 @@ async function api(req, res, url) {
           }).catch(error => console.error(error));
           return send(res, 200, { ok: true });
         }
-        if (!telegramUser?.id) {
-          await telegramApi('sendMessage', {
-            chat_id: chatId,
-            text: 'Не получилось подтвердить Telegram-профиль. Откройте вход с сайта ещё раз.'
-          }).catch(error => console.error(error));
-          return send(res, 200, { ok: true });
-        }
-        const user = upsertTelegramUser(db, telegramUser);
-        Object.assign(loginToken, {
-          userId: user.id,
-          telegramChatId: String(chatId),
-          confirmedAt: now()
-        });
-        await writeDb(db);
-        await sendTelegramLoginConfirmed(chatId).catch(error => console.error(error));
+        await sendTelegramLoginRequest(chatId, token).catch(error => console.error(error));
         return send(res, 200, { ok: true });
       }
       await sendTelegramStart(chatId).catch(error => console.error(error));
@@ -610,7 +650,7 @@ async function api(req, res, url) {
       await telegramApi('setWebhook', {
         url: `${appUrl}/api/telegram/webhook`,
         secret_token: telegramWebhookSecret || undefined,
-        allowed_updates: ['message', 'edited_message']
+        allowed_updates: ['message', 'edited_message', 'callback_query']
       });
       await telegramApi('setChatMenuButton', {
         menu_button: {
