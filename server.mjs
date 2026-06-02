@@ -549,12 +549,23 @@ async function api(req, res, url) {
   if (path === '/api/auth/telegram-login-token') {
     if (req.method !== 'POST') return methodNotAllowed(res);
     try {
+      const input = await body(req);
+      let telegramUser = null;
+      if (input.initData) {
+        try {
+          telegramUser = validateTelegramInitData(String(input.initData || ''));
+        } catch (error) {
+          console.error('telegram_init_data_for_login_token_failed', error.message || error);
+        }
+      }
       const bot = telegramBotToken ? await getTelegramBotInfo() : null;
       if (!bot?.username) return send(res, 503, { error: 'telegram_bot_not_configured' });
       const token = `${uid()}${uid()}`;
       const loginToken = {
         token,
         userId: '',
+        telegramId: telegramUser?.id ? String(telegramUser.id) : '',
+        telegramUsername: telegramUser?.username ? `@${telegramUser.username}` : '',
         createdAt: now(),
         expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
         confirmedAt: '',
@@ -563,10 +574,20 @@ async function api(req, res, url) {
       db.loginTokens = db.loginTokens.filter(item => new Date(item.expiresAt).getTime() > Date.now() && !item.usedAt);
       db.loginTokens.push(loginToken);
       await writeDb(db);
+      let directMessageSent = false;
+      if (telegramUser?.id) {
+        try {
+          await sendTelegramLoginRequest(telegramUser.id, token, loginToken);
+          directMessageSent = true;
+        } catch (error) {
+          console.error('telegram_direct_login_request_failed', error.message || error);
+        }
+      }
       return send(res, 201, {
         token,
         expiresAt: loginToken.expiresAt,
-        botLink: `https://t.me/${bot.username}?start=login_${token}`
+        botLink: `https://t.me/${bot.username}?start=login_${token}`,
+        directMessageSent
       });
     } catch (error) {
       return send(res, 500, { error: error.message || 'telegram_login_token_failed' });
@@ -692,6 +713,7 @@ async function api(req, res, url) {
     }
     const message = update.message || update.edited_message;
     const chatId = message?.chat?.id;
+    const telegramUser = message?.from;
     const text = String(message?.text || '');
     if (chatId && text.startsWith('/start')) {
       const loginMatch = text.match(/^\/start\s+login_([a-f0-9]{40})/i);
@@ -708,6 +730,14 @@ async function api(req, res, url) {
           return send(res, 200, { ok: true });
         }
         await sendTelegramLoginRequest(chatId, token, loginToken).catch(error => console.error(error));
+        return send(res, 200, { ok: true });
+      }
+      const telegramId = telegramUser?.id ? String(telegramUser.id) : '';
+      const latestUserToken = telegramId ? db.loginTokens
+        .filter(item => String(item.telegramId || '') === telegramId && !item.userId && !item.usedAt && new Date(item.expiresAt).getTime() > Date.now())
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] : null;
+      if (latestUserToken) {
+        await sendTelegramLoginRequest(chatId, latestUserToken.token, latestUserToken).catch(error => console.error(error));
         return send(res, 200, { ok: true });
       }
       await sendTelegramStart(chatId).catch(error => console.error(error));

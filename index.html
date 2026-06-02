@@ -2046,10 +2046,19 @@
       if (telegramAuthInProgress) return;
       telegramAuthInProgress = true;
       try {
-        const data = await apiRequest('/api/auth/telegram-login-token', { method: 'POST', body: {} });
+        const webApp = telegramWebApp();
+        const data = await apiRequest('/api/auth/telegram-login-token', {
+          method: 'POST',
+          body: { initData: webApp?.initData || '' }
+        });
         localStorage.setItem(STORAGE.telegramLoginToken, data.token);
-        toast('Откроем Telegram. Подтвердите вход в боте.');
         startTelegramLoginPolling(data.token);
+        if (data.directMessageSent) {
+          toast('Отправили подтверждение в Telegram-бота.');
+          if (webApp?.close) setTimeout(() => webApp.close(), 700);
+          return;
+        }
+        toast('Откроем Telegram. Подтвердите вход в боте.');
         openTelegramLoginLink(data.botLink);
       } catch {
         toast('Не получилось открыть вход через Telegram. Попробуйте ещё раз.');
