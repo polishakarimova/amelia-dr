@@ -1776,6 +1776,7 @@
     let editingGiftId = null;
     let telegramAuthInProgress = false;
     let telegramAuthDone = false;
+    let telegramMiniAppAuthAttempted = false;
     let telegramLoginPollTimer = null;
     let telegramLoginPollToken = '';
     let adminCache = null;
@@ -1891,6 +1892,12 @@
         await loadServerEvents();
         return currentUser;
       } catch {
+        const webApp = telegramWebApp();
+        if (webApp?.initData && !telegramMiniAppAuthAttempted && !telegramAuthDone) {
+          telegramMiniAppAuthAttempted = true;
+          const user = await telegramAuth(true);
+          if (user) return user;
+        }
         currentUser = null;
         eventsCache = [];
         setSession(null);
@@ -2302,6 +2309,25 @@
       const view = document.getElementById('authView');
       view.classList.add('active');
       const isLogin = mode === 'login';
+      const webApp = telegramWebApp();
+      if (webApp?.initData) {
+        view.innerHTML = `
+          <div class="card auth-card">
+            <h2>Входим через Telegram</h2>
+            <p class="muted">Вы открыли Повод внутри Telegram. Сейчас мы подтвердим профиль и откроем кабинет.</p>
+            <div class="hero-actions" style="margin-top:14px">
+              <button class="btn btn-accent" type="button" onclick="telegramAuth()">Продолжить</button>
+            </div>
+          </div>
+        `;
+        webApp.ready?.();
+        webApp.expand?.();
+        if (!telegramMiniAppAuthAttempted) {
+          telegramMiniAppAuthAttempted = true;
+          setTimeout(() => telegramAuth(true), 0);
+        }
+        return;
+      }
       view.innerHTML = `
         <div class="card auth-card">
           <h2>${isLogin ? 'Войти в Повод' : 'Создать событие'}</h2>
@@ -2489,11 +2515,13 @@
         telegramAuthDone = true;
         toast('Вы вошли через Telegram');
         navigate('/');
+        return data.user;
       } catch {
         if (!silent) toast('Не получилось войти через Telegram. Откройте через бота ещё раз.');
       } finally {
         telegramAuthInProgress = false;
       }
+      return null;
     }
     async function register() {
       const name = document.getElementById('authName').value.trim();
