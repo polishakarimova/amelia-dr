@@ -1977,6 +1977,16 @@
       clearTimeout(toast.timer);
       toast.timer = setTimeout(() => node.classList.remove('active'), 2400);
     }
+    function confirmTelegramMiniAppLogin(done) {
+      const message = 'Вы авторизованы через Telegram. Теперь можно создавать и редактировать свои поводы.';
+      const webApp = telegramWebApp();
+      if (webApp?.showAlert) {
+        webApp.showAlert(message, done);
+        return;
+      }
+      alert(message);
+      done();
+    }
     function closeModal(id) { document.getElementById(id).classList.remove('active'); }
     function navigate(path) {
       history.pushState({}, '', `${BASE_PATH}${path}`);
@@ -2516,8 +2526,12 @@
         clearTelegramLoginFallback();
         localStorage.removeItem(STORAGE.telegramConsent);
         telegramAuthDone = true;
-        toast('Вы вошли через Telegram');
-        navigate('/');
+        const finishLogin = () => {
+          toast('Вы вошли через Telegram');
+          navigate('/');
+        };
+        if (initData) confirmTelegramMiniAppLogin(finishLogin);
+        else finishLogin();
         return data.user;
       } catch {
         if (!silent) toast('Не получилось войти через Telegram. Откройте через бота ещё раз.');
