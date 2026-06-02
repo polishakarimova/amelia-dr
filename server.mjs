@@ -748,7 +748,8 @@ async function api(req, res, url) {
       await telegramApi('setWebhook', {
         url: `${appUrl}/api/telegram/webhook`,
         secret_token: telegramWebhookSecret || undefined,
-        allowed_updates: ['message', 'edited_message', 'callback_query']
+        allowed_updates: ['message', 'edited_message', 'callback_query'],
+        drop_pending_updates: Boolean(input.dropPendingUpdates)
       });
       await telegramApi('setChatMenuButton', {
         menu_button: {
