@@ -1950,8 +1950,7 @@
     function renderTopbar() {
       const isAuthRoute = route === '/login' || route === '/register';
       document.getElementById('topActions').innerHTML = currentUser ? `
-        <button class="btn btn-soft" data-route="/dashboard">Мои поводы</button>
-        <button class="btn btn-primary" onclick="logout()">Выйти</button>
+        <button class="btn btn-soft" data-route="/dashboard">Личный кабинет</button>
       ` : isAuthRoute ? `
       ` : `
         <button class="btn btn-soft" data-route="/login">Войти</button>
@@ -1968,7 +1967,7 @@
             <h1>Соберите праздник, подарки и пожелания в одной красивой ссылке</h1>
             <p class="lead">Повод помогает гостям быстро понять, куда прийти, что подарить и какой подарок уже забронирован.</p>
             <div class="hero-actions">
-              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать карточку</button>
+              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать событие</button>
               <button class="btn btn-soft" data-route="/p/meli-birthday">Посмотреть пример</button>
             </div>
             <p class="microcopy">Для дней рождения, baby shower, свадеб, новоселий и семейных праздников.</p>
@@ -2009,7 +2008,7 @@
             <h2>Готовы собрать свой повод?</h2>
             <p class="muted">Создайте карточку, добавьте детали праздника и отправьте гостям одну аккуратную ссылку.</p>
             <div class="hero-actions" style="margin-top:16px">
-              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать карточку</button>
+              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать событие</button>
             </div>
           </div>
         </section>
@@ -2021,7 +2020,7 @@
       const isLogin = mode === 'login';
       view.innerHTML = `
         <div class="card auth-card">
-          <h2>${isLogin ? 'Войти в Повод' : 'Создать карточку'}</h2>
+          <h2>${isLogin ? 'Войти в Повод' : 'Создать событие'}</h2>
           <p class="muted">${isLogin ? 'Войдите, чтобы вернуться к своим поводам. Гостям регистрация не нужна.' : 'Чтобы создать и потом редактировать карточку, сначала авторизуйтесь в Поводе.'}</p>
           <div class="auth-primary">
             <h3>Авторизация через Telegram</h3>
@@ -2116,7 +2115,7 @@
           await loadServerEvents();
           telegramAuthDone = true;
           toast('Вошли через Telegram');
-          navigate('/dashboard');
+          navigate('/');
         } catch (error) {
           if (error.status === 202) return;
           if (error.status === 404 || error.status === 410) {
@@ -2168,7 +2167,7 @@
         localStorage.removeItem(STORAGE.telegramConsent);
         telegramAuthDone = true;
         toast('Вошли через Telegram');
-        navigate('/dashboard');
+        navigate('/');
       } catch {
         if (!silent) toast('Не получилось войти через Telegram. Откройте через бота ещё раз.');
       } finally {
@@ -2184,7 +2183,7 @@
         const data = await apiRequest('/api/auth/register', { method: 'POST', body: { name, email, password } });
         syncServerUser(data.user);
         await loadServerEvents();
-        navigate('/dashboard');
+        navigate('/');
       } catch (error) {
         toast(error.status === 409 ? 'Такой email уже существует' : 'Не получилось создать аккаунт');
       }
@@ -2197,7 +2196,7 @@
         const data = await apiRequest('/api/auth/login', { method: 'POST', body: { email, password } });
         syncServerUser(data.user);
         await loadServerEvents();
-        navigate('/dashboard');
+        navigate('/');
       } catch {
         toast('Не нашли аккаунт с таким email и паролем');
       }
@@ -2217,7 +2216,10 @@
       view.innerHTML = `
         <div class="page-head">
           <div><h2>Мои поводы</h2><p>${displayUserName(currentUser)}, здесь хранятся черновики, опубликованные карточки и быстрые действия организатора.</p></div>
-          <button class="btn btn-accent" data-route="/dashboard/events/new">Создать новый повод</button>
+          <div class="hero-actions" style="margin:0">
+            ${own.length ? '<button class="btn btn-accent" data-route="/dashboard/events/new">Создать новый повод</button>' : ''}
+            <button class="btn btn-soft" onclick="logout()">Выйти</button>
+          </div>
         </div>
         ${own.length ? `<div class="dashboard-grid">
           ${own.map(event => {
