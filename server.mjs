@@ -483,7 +483,9 @@ async function api(req, res, url) {
 
   if (path === '/api/auth/me') {
     if (req.method !== 'GET') return methodNotAllowed(res);
-    return send(res, 200, { user: publicUser(currentUser(req, db)) });
+    const user = currentUser(req, db);
+    if (!user) clearSessionCookie(res);
+    return send(res, 200, { user: publicUser(user) });
   }
 
   if (path === '/api/auth/register') {

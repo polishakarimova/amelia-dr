@@ -1686,7 +1686,7 @@
       events: 'povod_events',
       telegramLoginToken: 'povod_telegram_login_token',
       telegramConsent: 'povod_telegram_consent',
-      clientReset: 'povod_client_reset_20260602'
+      clientReset: 'povod_client_reset_20260602_auth'
     };
     let route = '/';
     let currentUser = null;
@@ -1785,9 +1785,12 @@
         await loadServerEvents();
         return currentUser;
       } catch {
-        currentUser = me();
-        eventsCache = getJSON(STORAGE.events, []);
-        return currentUser;
+        currentUser = null;
+        eventsCache = [];
+        setSession(null);
+        localStorage.removeItem(STORAGE.users);
+        localStorage.removeItem(STORAGE.events);
+        return null;
       }
     }
     async function loadServerEvents() {
@@ -1817,7 +1820,7 @@
         .find(event => event?.gifts?.some(gift => gift.id === giftId));
     }
     function users() { return getJSON(STORAGE.users, []); }
-    function events() { return currentUser ? eventsCache : getJSON(STORAGE.events, []); }
+    function events() { return currentUser ? eventsCache : []; }
     function sessionEmail() { return localStorage.getItem(STORAGE.session); }
     function setSession(email) { email ? localStorage.setItem(STORAGE.session, email) : localStorage.removeItem(STORAGE.session); }
     function me() {
