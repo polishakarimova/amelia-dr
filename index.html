@@ -2309,19 +2309,52 @@
           <div class="auth-primary">
             <h3>Авторизация через Telegram</h3>
             <p class="muted">Telegram нужен только для входа без пароля. Саму карточку вы создаёте и редактируете в Поводе.</p>
-            <div class="hero-actions" style="margin-top:14px">
-              <button class="btn btn-accent" type="button" onclick="startTelegramLogin()">Авторизоваться через Telegram</button>
-            </div>
-            <p class="muted" style="font-size:12px">Нажимая кнопку, вы переходите в Telegram-бота и подтверждаете вход в Повод. Гости регистрироваться не будут.</p>
+            <div class="hero-actions" id="telegramLoginWidget" style="margin-top:14px"></div>
+            <p class="muted" style="font-size:12px">Нажимая кнопку Telegram, вы подтверждаете вход в официальном окне Telegram. Гости регистрироваться не будут.</p>
           </div>
         </div>
       `;
-      resumeTelegramLogin();
+      loadTelegramLoginWidget();
       if (shouldRunTelegramConsentAuth()) setTimeout(() => telegramAuth(true), 0);
     }
     function shouldRunTelegramConsentAuth() {
       const params = new URLSearchParams(location.search);
       return params.get('telegramConsent') === '1' || localStorage.getItem(STORAGE.telegramConsent) === '1';
+    }
+    async function loadTelegramLoginWidget() {
+      const container = document.getElementById('telegramLoginWidget');
+      if (!container) return;
+      container.innerHTML = '<span class="muted">Загружаем Telegram...</span>';
+      try {
+        const config = await apiRequest('/api/telegram/config');
+        if (!config.botUsername) throw new Error('telegram_bot_not_configured');
+        window.telegramWidgetAuth = telegramWidgetAuth;
+        container.innerHTML = '';
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = 'https://telegram.org/js/telegram-widget.js?22';
+        script.setAttribute('data-telegram-login', config.botUsername);
+        script.setAttribute('data-size', 'large');
+        script.setAttribute('data-radius', '16');
+        script.setAttribute('data-userpic', 'false');
+        script.setAttribute('data-onauth', 'telegramWidgetAuth(user)');
+        script.setAttribute('data-request-access', 'write');
+        container.appendChild(script);
+      } catch {
+        container.innerHTML = '<button class="btn btn-soft" type="button" disabled>Telegram временно недоступен</button>';
+      }
+    }
+    async function telegramWidgetAuth(user) {
+      try {
+        const data = await apiRequest('/api/auth/telegram-widget', { method: 'POST', body: user });
+        syncServerUser(data.user);
+        await loadServerEvents();
+        telegramAuthDone = true;
+        toast('Вы вошли через Telegram');
+        navigate('/');
+      } catch {
+        toast('Не получилось подтвердить вход через Telegram');
+      }
     }
     async function startTelegramLogin() {
       if (telegramAuthInProgress) return;

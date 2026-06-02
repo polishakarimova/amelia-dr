@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
-import { createHmac, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
+import { createHmac, createHash, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
@@ -270,6 +270,35 @@ function validateTelegramInitData(initData) {
   const user = JSON.parse(params.get('user') || '{}');
   if (!user.id) throw new Error('telegram_user_missing');
   return user;
+}
+
+function validateTelegramWidgetUser(input) {
+  if (!telegramBotToken) throw new Error('telegram_bot_token_missing');
+  const receivedHash = String(input.hash || '');
+  if (!receivedHash) throw new Error('telegram_hash_missing');
+  const data = {};
+  for (const [key, value] of Object.entries(input || {})) {
+    if (key === 'hash' || value === undefined || value === null || value === '') continue;
+    data[key] = String(value);
+  }
+  const dataCheckString = Object.entries(data)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n');
+  const secretKey = createHash('sha256').update(telegramBotToken).digest();
+  const calculatedHash = createHmac('sha256', secretKey).update(dataCheckString).digest('hex');
+  if (!safeCompare(calculatedHash, receivedHash)) throw new Error('telegram_hash_invalid');
+  const authDate = Number(data.auth_date || 0);
+  if (!authDate || Date.now() / 1000 - authDate > 86400 * 7) throw new Error('telegram_auth_expired');
+  if (!data.id) throw new Error('telegram_user_missing');
+  return {
+    id: data.id,
+    first_name: data.first_name || '',
+    last_name: data.last_name || '',
+    username: data.username || '',
+    photo_url: data.photo_url || '',
+    auth_date: authDate
+  };
 }
 
 function upsertTelegramUser(db, telegramUser) {
@@ -697,6 +726,27 @@ async function api(req, res, url) {
       return send(res, 200, { user: publicUser(user) });
     } catch (error) {
       return send(res, 401, { error: error.message || 'telegram_auth_failed' });
+    }
+  }
+
+  if (path === '/api/auth/telegram-widget') {
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    try {
+      const input = await body(req);
+      const telegramUser = validateTelegramWidgetUser(input);
+      const user = upsertTelegramUser(db, telegramUser);
+      Object.assign(user, {
+        consentPersonalDataAt: user.consentPersonalDataAt || now(),
+        consentTermsAt: user.consentTermsAt || now(),
+        consentAcceptedAt: user.consentAcceptedAt || now()
+      });
+      const token = uid();
+      db.sessions.push({ token, userId: user.id, createdAt: now() });
+      await writeDb(db);
+      setSessionCookie(res, token);
+      return send(res, 200, { user: publicUser(user) });
+    } catch (error) {
+      return send(res, 401, { error: error.message || 'telegram_widget_auth_failed' });
     }
   }
 
