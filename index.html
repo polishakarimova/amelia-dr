@@ -2356,9 +2356,10 @@
     async function startTelegramLogin() {
       if (telegramAuthInProgress) return;
       telegramAuthInProgress = true;
+      let data = null;
       try {
         const webApp = telegramWebApp();
-        const data = await apiRequest('/api/auth/telegram-login-token', {
+        data = await apiRequest('/api/auth/telegram-login-token', {
           method: 'POST',
           body: { initData: webApp?.initData || '' }
         });
@@ -2370,12 +2371,17 @@
           if (webApp?.close) setTimeout(() => webApp.close(), 700);
           return;
         }
-        toast('Откроем Telegram. Подтвердите вход в боте.');
-        openTelegramLoginLink(data);
       } catch {
-        toast('Не получилось открыть вход через Telegram. Попробуйте ещё раз.');
+        toast('Не получилось подготовить вход через Telegram. Попробуйте ещё раз.');
+        return;
       } finally {
         telegramAuthInProgress = false;
+      }
+      toast('Открываем Telegram. Если окно не открылось, используйте кнопку ниже.');
+      try {
+        openTelegramLoginLink(data);
+      } catch {
+        showTelegramFallback(data);
       }
     }
     function showTelegramFallback(data = {}) {
