@@ -1777,6 +1777,7 @@
     let telegramAuthInProgress = false;
     let telegramAuthDone = false;
     let telegramMiniAppAuthAttempted = false;
+    let telegramMiniAppManualLoginRequired = false;
     let telegramLoginPollTimer = null;
     let telegramLoginPollToken = '';
     let adminCache = null;
@@ -1884,6 +1885,8 @@
         const data = await apiRequest('/api/auth/me');
         currentUser = data.user || null;
         if (!currentUser) {
+          const telegramUser = await maybeTelegramMiniAppAutoAuth();
+          if (telegramUser) return telegramUser;
           setSession(null);
           eventsCache = [];
           return null;
@@ -1892,12 +1895,8 @@
         await loadServerEvents();
         return currentUser;
       } catch {
-        const webApp = telegramWebApp();
-        if (webApp?.initData && !telegramMiniAppAuthAttempted && !telegramAuthDone) {
-          telegramMiniAppAuthAttempted = true;
-          const user = await telegramAuth(true);
-          if (user) return user;
-        }
+        const telegramUser = await maybeTelegramMiniAppAutoAuth();
+        if (telegramUser) return telegramUser;
         currentUser = null;
         eventsCache = [];
         setSession(null);
@@ -1945,6 +1944,12 @@
     }
     function telegramWebApp() {
       return window.Telegram?.WebApp || null;
+    }
+    async function maybeTelegramMiniAppAutoAuth() {
+      const webApp = telegramWebApp();
+      if (!webApp?.initData || telegramMiniAppManualLoginRequired || telegramMiniAppAuthAttempted || telegramAuthDone) return null;
+      telegramMiniAppAuthAttempted = true;
+      return telegramAuth(true);
     }
     function syncServerUser(user) {
       if (!user?.email) return;
@@ -2313,8 +2318,8 @@
       if (webApp?.initData) {
         view.innerHTML = `
           <div class="card auth-card">
-            <h2>Входим через Telegram</h2>
-            <p class="muted">Вы открыли Повод внутри Telegram. Сейчас мы подтвердим профиль и откроем кабинет.</p>
+            <h2>${telegramMiniAppManualLoginRequired ? 'Войти в Повод' : 'Входим через Telegram'}</h2>
+            <p class="muted">${telegramMiniAppManualLoginRequired ? 'Вы внутри Telegram. Нажмите кнопку, чтобы снова открыть кабинет.' : 'Вы открыли Повод внутри Telegram. Сейчас мы подтвердим профиль и откроем кабинет.'}</p>
             <div class="hero-actions" style="margin-top:14px">
               <button class="btn btn-accent" type="button" onclick="telegramAuth()">Продолжить</button>
             </div>
@@ -2322,10 +2327,7 @@
         `;
         webApp.ready?.();
         webApp.expand?.();
-        if (!telegramMiniAppAuthAttempted) {
-          telegramMiniAppAuthAttempted = true;
-          setTimeout(() => telegramAuth(true), 0);
-        }
+        if (!telegramMiniAppManualLoginRequired) setTimeout(() => maybeTelegramMiniAppAutoAuth(), 0);
         return;
       }
       view.innerHTML = `
@@ -2493,6 +2495,7 @@
       }
       clickEvent?.preventDefault?.();
       telegramAuthInProgress = true;
+      telegramMiniAppManualLoginRequired = false;
       try {
         webApp?.ready?.();
         webApp?.expand?.();
@@ -2555,8 +2558,13 @@
       try { await apiRequest('/api/auth/logout', { method: 'POST', body: {} }); } catch {}
       currentUser = null;
       eventsCache = [];
+      telegramAuthDone = false;
+      telegramMiniAppAuthAttempted = false;
+      telegramMiniAppManualLoginRequired = Boolean(telegramWebApp()?.initData);
+      stopTelegramLoginPolling();
+      clearTelegramLoginFallback();
       setSession(null);
-      navigate('/');
+      navigate('/login');
     }
     function renderDashboard() {
       const view = document.getElementById('dashboardView');
