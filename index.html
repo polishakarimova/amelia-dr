@@ -1684,7 +1684,8 @@
       users: 'povod_users',
       session: 'povod_session',
       events: 'povod_events',
-      telegramLoginToken: 'povod_telegram_login_token'
+      telegramLoginToken: 'povod_telegram_login_token',
+      telegramConsent: 'povod_telegram_consent'
     };
     let route = '/';
     let currentUser = null;
@@ -2076,9 +2077,12 @@
       location.href = botLink;
     }
     function resumeTelegramLogin() {
-      const queryToken = new URLSearchParams(location.search).get('telegramLoginToken');
+      const params = new URLSearchParams(location.search);
+      const queryToken = params.get('telegramLoginToken');
+      const queryConsent = params.get('telegramConsent') === '1';
       if (queryToken) {
         localStorage.setItem(STORAGE.telegramLoginToken, queryToken);
+        if (queryConsent) localStorage.setItem(STORAGE.telegramConsent, '1');
         history.replaceState({}, '', `${BASE_PATH}/login`);
       }
       const token = queryToken || localStorage.getItem(STORAGE.telegramLoginToken);
@@ -2153,12 +2157,18 @@
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ initData })
+          body: JSON.stringify({
+            initData,
+            telegramLoginToken: new URLSearchParams(location.search).get('telegramLoginToken') || localStorage.getItem(STORAGE.telegramLoginToken) || '',
+            consentAccepted: new URLSearchParams(location.search).get('telegramConsent') === '1' || localStorage.getItem(STORAGE.telegramConsent) === '1'
+          })
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || 'telegram_auth_failed');
         syncServerUser(data.user);
         await loadServerEvents();
+        localStorage.removeItem(STORAGE.telegramLoginToken);
+        localStorage.removeItem(STORAGE.telegramConsent);
         telegramAuthDone = true;
         toast('Вошли через Telegram');
         navigate('/dashboard');

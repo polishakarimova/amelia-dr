@@ -322,9 +322,10 @@ async function sendTelegramLoginConfirmed(chatId, token = '') {
 }
 
 function telegramLoginConsentMarkup(token) {
+  const loginUrl = `${appUrl}/login?telegramLoginToken=${encodeURIComponent(token)}&telegramConsent=1`;
   return {
     inline_keyboard: [[
-      { text: 'Авторизироваться', callback_data: `confirm_login_${token}` }
+      { text: 'Авторизироваться', web_app: { url: loginUrl } }
     ]]
   };
 }
@@ -535,6 +536,26 @@ async function api(req, res, url) {
       const input = await body(req);
       const telegramUser = validateTelegramInitData(String(input.initData || ''));
       const user = upsertTelegramUser(db, telegramUser);
+      if (input.consentAccepted) {
+        Object.assign(user, {
+          consentPersonalDataAt: user.consentPersonalDataAt || now(),
+          consentTermsAt: user.consentTermsAt || now(),
+          consentAcceptedAt: user.consentAcceptedAt || now()
+        });
+      }
+      const loginToken = input.telegramLoginToken
+        ? db.loginTokens.find(item => item.token === String(input.telegramLoginToken))
+        : null;
+      if (loginToken && !loginToken.usedAt && new Date(loginToken.expiresAt).getTime() > Date.now()) {
+        Object.assign(loginToken, {
+          userId: user.id,
+          telegramChatId: String(telegramUser.id),
+          consentPersonalDataAt: loginToken.consentPersonalDataAt || user.consentPersonalDataAt || now(),
+          consentTermsAt: loginToken.consentTermsAt || user.consentTermsAt || now(),
+          consentAcceptedAt: loginToken.consentAcceptedAt || user.consentAcceptedAt || now(),
+          confirmedAt: loginToken.confirmedAt || now()
+        });
+      }
       const token = uid();
       db.sessions.push({ token, userId: user.id, createdAt: now() });
       await writeDb(db);
@@ -646,18 +667,18 @@ async function api(req, res, url) {
         if (!loginToken || loginToken.usedAt || new Date(loginToken.expiresAt).getTime() <= Date.now()) {
           db.loginTokens = db.loginTokens.filter(item => item.token !== token);
           await writeDb(db);
-          await telegramApi('answerCallbackQuery', {
+          telegramApi('answerCallbackQuery', {
             callback_query_id: callback.id,
             text: 'Ссылка для входа устарела'
           }).catch(error => console.error(error));
-          await telegramApi('sendMessage', {
+          telegramApi('sendMessage', {
             chat_id: callbackChatId,
             text: 'Ссылка для входа устарела. Вернитесь на сайт и нажмите «Авторизоваться через Telegram» ещё раз.'
           }).catch(error => console.error(error));
           return send(res, 200, { ok: true });
         }
         if (!callback.from?.id) {
-          await telegramApi('answerCallbackQuery', {
+          telegramApi('answerCallbackQuery', {
             callback_query_id: callback.id,
             text: 'Не получилось подтвердить Telegram-профиль'
           }).catch(error => console.error(error));
@@ -673,14 +694,14 @@ async function api(req, res, url) {
           confirmedAt: now()
         });
         await writeDb(db);
-        await telegramApi('answerCallbackQuery', {
+        telegramApi('answerCallbackQuery', {
           callback_query_id: callback.id,
           text: 'Вход подтверждён'
         }).catch(error => console.error(error));
         if (callback.message?.message_id) {
-          await updateTelegramLoginConfirmed(callbackChatId, callback.message.message_id, token).catch(error => console.error(error));
+          updateTelegramLoginConfirmed(callbackChatId, callback.message.message_id, token).catch(error => console.error(error));
         } else {
-          await sendTelegramLoginConfirmed(callbackChatId, token).catch(error => console.error(error));
+          sendTelegramLoginConfirmed(callbackChatId, token).catch(error => console.error(error));
         }
       }
       return send(res, 200, { ok: true });
