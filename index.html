@@ -1685,7 +1685,8 @@
       session: 'povod_session',
       events: 'povod_events',
       telegramLoginToken: 'povod_telegram_login_token',
-      telegramConsent: 'povod_telegram_consent'
+      telegramConsent: 'povod_telegram_consent',
+      clientReset: 'povod_client_reset_20260602'
     };
     let route = '/';
     let currentUser = null;
@@ -1873,31 +1874,20 @@
       const q = encodeURIComponent([event.placeName, event.address].filter(Boolean).join(', '));
       return event.mapUrl || `https://yandex.ru/maps/?text=${q}`;
     }
+    function resetLegacyLocalState() {
+      if (localStorage.getItem(STORAGE.clientReset)) return;
+      localStorage.removeItem(STORAGE.users);
+      localStorage.removeItem(STORAGE.session);
+      localStorage.removeItem(STORAGE.events);
+      localStorage.removeItem(STORAGE.telegramLoginToken);
+      localStorage.removeItem(STORAGE.telegramConsent);
+      localStorage.setItem(STORAGE.clientReset, '1');
+    }
     function seed() {
-      if (currentUser || getJSON(STORAGE.events, []).length) return;
-      const demo = {
-        id: uid(),
-        userId: 'demo',
-        title: 'День рождения Мели',
-        slug: 'meli-birthday',
-        type: 'Детский день рождения',
-        theme: 'pink',
-        date: '2026-06-14',
-        time: '15:00',
-        placeName: 'Центральный парк',
-        address: 'Москва, Крымский Вал, 9',
-        description: 'Будем рады разделить этот день с близкими людьми.',
-        wishes: 'Главное — ваше присутствие. Вишлист помогает не повторяться с подарками.',
-        coverImage: '',
-        status: 'published',
-        gifts: sampleGifts,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      setJSON(STORAGE.events, [demo]);
     }
 
     async function render() {
+      resetLegacyLocalState();
       seed();
       route = appPath();
       applyPageTheme();
