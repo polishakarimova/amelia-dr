@@ -240,23 +240,6 @@
       gap: 10px;
       align-items: end;
     }
-    .telegram-fallback {
-      display: none;
-      margin-top: 14px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: rgba(255,255,255,.72);
-    }
-    .telegram-fallback.active { display: block; }
-    .telegram-command {
-      margin: 10px 0;
-      padding: 10px 12px;
-      border-radius: 12px;
-      background: rgba(40,35,31,.06);
-      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-      overflow-wrap: anywhere;
-    }
     @keyframes enter {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -2330,23 +2313,10 @@
               <button class="btn btn-accent" type="button" onclick="startTelegramLogin()">Авторизоваться через Telegram</button>
             </div>
             <p class="muted" style="font-size:12px">Нажимая кнопку, вы переходите в Telegram-бота и подтверждаете вход в Повод. Гости регистрироваться не будут.</p>
-            <div class="telegram-fallback" id="telegramFallback">
-              <p class="muted">Если Telegram не открылся автоматически, откройте ссылку вручную или скопируйте команду в чат с ботом.</p>
-              <div class="hero-actions" style="margin-top:10px">
-                <a class="btn btn-primary" id="telegramFallbackLink" href="#" target="_blank" rel="noopener">Открыть Telegram</a>
-                <a class="btn btn-soft" id="telegramWebLink" href="https://web.telegram.org" target="_blank" rel="noopener">Открыть Web Telegram</a>
-              </div>
-              <div class="telegram-command" id="telegramStartCommand"></div>
-              <div class="hero-actions">
-                <button class="btn btn-soft" type="button" onclick="copyTelegramStartCommand()">Скопировать команду</button>
-                <button class="btn btn-soft" type="button" onclick="resumeTelegramLogin()">Проверить вход</button>
-              </div>
-            </div>
           </div>
         </div>
       `;
       resumeTelegramLogin();
-      restoreTelegramFallback();
       if (shouldRunTelegramConsentAuth()) setTimeout(() => telegramAuth(true), 0);
     }
     function shouldRunTelegramConsentAuth() {
@@ -2365,7 +2335,6 @@
         });
         localStorage.setItem(STORAGE.telegramLoginToken, data.token);
         startTelegramLoginPolling(data.token);
-        showTelegramFallback(data);
         if (data.directMessageSent) {
           toast('Отправили подтверждение в Telegram-бота.');
           if (webApp?.close) setTimeout(() => webApp.close(), 700);
@@ -2377,50 +2346,7 @@
       } finally {
         telegramAuthInProgress = false;
       }
-      toast('Открываем Telegram. Если окно не открылось, используйте кнопку ниже.');
-      try {
-        openTelegramLoginLink(data);
-      } catch {
-        showTelegramFallback(data);
-      }
-    }
-    function showTelegramFallback(data = {}) {
-      const fallback = document.getElementById('telegramFallback');
-      const link = document.getElementById('telegramFallbackLink');
-      const webLink = document.getElementById('telegramWebLink');
-      const command = document.getElementById('telegramStartCommand');
-      if (!fallback || !data.token) return;
-      const botLink = data.botLink || '';
-      const botUsername = data.botUsername || botLink.match(/t\.me\/([^?]+)/)?.[1] || '';
-      const startCommand = data.startCommand || `/start login_${data.token}`;
-      fallback.classList.add('active');
-      if (link) link.href = botUsername ? telegramDesktopLoginLink(botUsername, data.token) : (botLink || '#');
-      if (webLink) webLink.href = botUsername ? `https://web.telegram.org/k/#@${botUsername}` : 'https://web.telegram.org';
-      if (command) command.textContent = botUsername ? `${startCommand}  →  @${botUsername}` : startCommand;
-      localStorage.setItem('povod_telegram_start_command', startCommand);
-      localStorage.setItem('povod_telegram_bot_link', botLink);
-      if (botUsername) localStorage.setItem('povod_telegram_bot_username', botUsername);
-    }
-    function restoreTelegramFallback() {
-      const token = localStorage.getItem(STORAGE.telegramLoginToken);
-      const botLink = localStorage.getItem('povod_telegram_bot_link');
-      const botUsername = localStorage.getItem('povod_telegram_bot_username');
-      const startCommand = localStorage.getItem('povod_telegram_start_command');
-      if (!token || !botLink) return;
-      showTelegramFallback({ token, botLink, botUsername, startCommand });
-    }
-    async function copyTelegramStartCommand() {
-      const command = localStorage.getItem('povod_telegram_start_command') || document.getElementById('telegramStartCommand')?.textContent || '';
-      if (!command) return toast('Сначала нажмите авторизацию через Telegram');
-      try {
-        await navigator.clipboard.writeText(command.split('→')[0].trim());
-        toast('Команда скопирована');
-      } catch {
-        toast(command);
-      }
-    }
-    function telegramDesktopLoginLink(botUsername, token) {
-      return `tg://resolve?domain=${encodeURIComponent(botUsername)}&start=${encodeURIComponent(`login_${token}`)}`;
+      openTelegramLoginLink(data);
     }
     function openTelegramLoginLink(data = {}) {
       const webApp = telegramWebApp();
@@ -2429,8 +2355,7 @@
         setTimeout(() => webApp.close?.(), 250);
         return;
       }
-      const desktopLink = data.botUsername ? telegramDesktopLoginLink(data.botUsername, data.token) : data.botLink;
-      location.href = desktopLink || data.botLink;
+      location.href = data.botLink;
     }
     function resumeTelegramLogin() {
       const params = new URLSearchParams(location.search);
@@ -2452,9 +2377,6 @@
     }
     function clearTelegramLoginFallback() {
       localStorage.removeItem(STORAGE.telegramLoginToken);
-      localStorage.removeItem('povod_telegram_start_command');
-      localStorage.removeItem('povod_telegram_bot_link');
-      localStorage.removeItem('povod_telegram_bot_username');
     }
     function startTelegramLoginPolling(token) {
       if (!token) return;

@@ -348,7 +348,7 @@ async function sendTelegramLoginConfirmed(chatId, token = '') {
     text: 'Готово, вы авторизованы в Поводе. Вернитесь в приложение — кабинет откроется автоматически.',
     reply_markup: {
       inline_keyboard: [[
-        { text: 'Вернуться к созданию повода', web_app: { url: returnUrl } }
+        { text: 'Вернуться на сайт', url: returnUrl }
       ]]
     }
   });
@@ -383,7 +383,7 @@ async function updateTelegramLoginConfirmed(chatId, messageId, token) {
     text: 'Готово, вы авторизованы в Поводе. Вернитесь к созданию повода.',
     reply_markup: {
       inline_keyboard: [[
-        { text: 'Вернуться к созданию повода', web_app: { url: returnUrl } }
+        { text: 'Вернуться на сайт', url: returnUrl }
       ]]
     }
   });
@@ -395,6 +395,25 @@ async function sendTelegramLoginRequest(chatId, token, loginToken = {}) {
     text: telegramLoginConsentText(),
     reply_markup: telegramLoginConsentMarkup(token)
   });
+}
+
+async function confirmTelegramLoginToken(db, loginToken, telegramUser, chatId) {
+  const user = upsertTelegramUser(db, telegramUser);
+  Object.assign(loginToken, {
+    userId: user.id,
+    telegramChatId: String(chatId),
+    consentPersonalDataAt: loginToken.consentPersonalDataAt || user.consentPersonalDataAt || now(),
+    consentTermsAt: loginToken.consentTermsAt || user.consentTermsAt || now(),
+    consentAcceptedAt: loginToken.consentAcceptedAt || user.consentAcceptedAt || now(),
+    confirmedAt: loginToken.confirmedAt || now()
+  });
+  Object.assign(user, {
+    consentPersonalDataAt: user.consentPersonalDataAt || loginToken.consentPersonalDataAt || now(),
+    consentTermsAt: user.consentTermsAt || loginToken.consentTermsAt || now(),
+    consentAcceptedAt: user.consentAcceptedAt || loginToken.consentAcceptedAt || now()
+  });
+  await writeDb(db);
+  await sendTelegramLoginConfirmed(chatId, loginToken.token).catch(error => console.error(error));
 }
 
 async function readDb() {
@@ -848,22 +867,7 @@ async function api(req, res, url) {
           }).catch(error => console.error(error));
           return send(res, 200, { ok: true });
         }
-        const user = upsertTelegramUser(db, telegramUser);
-        Object.assign(loginToken, {
-          userId: user.id,
-          telegramChatId: String(chatId),
-          consentPersonalDataAt: loginToken.consentPersonalDataAt || user.consentPersonalDataAt || now(),
-          consentTermsAt: loginToken.consentTermsAt || user.consentTermsAt || now(),
-          consentAcceptedAt: loginToken.consentAcceptedAt || user.consentAcceptedAt || now(),
-          confirmedAt: loginToken.confirmedAt || now()
-        });
-        Object.assign(user, {
-          consentPersonalDataAt: user.consentPersonalDataAt || loginToken.consentPersonalDataAt || now(),
-          consentTermsAt: user.consentTermsAt || loginToken.consentTermsAt || now(),
-          consentAcceptedAt: user.consentAcceptedAt || loginToken.consentAcceptedAt || now()
-        });
-        await writeDb(db);
-        await sendTelegramLoginConfirmed(chatId, token).catch(error => console.error(error));
+        await confirmTelegramLoginToken(db, loginToken, telegramUser, chatId);
         return send(res, 200, { ok: true });
       }
       const telegramId = telegramUser?.id ? String(telegramUser.id) : '';
@@ -871,22 +875,16 @@ async function api(req, res, url) {
         .filter(item => String(item.telegramId || '') === telegramId && !item.userId && !item.usedAt && new Date(item.expiresAt).getTime() > Date.now())
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] : null;
       if (latestUserToken) {
-        const user = upsertTelegramUser(db, telegramUser);
-        Object.assign(latestUserToken, {
-          userId: user.id,
-          telegramChatId: String(chatId),
-          consentPersonalDataAt: latestUserToken.consentPersonalDataAt || user.consentPersonalDataAt || now(),
-          consentTermsAt: latestUserToken.consentTermsAt || user.consentTermsAt || now(),
-          consentAcceptedAt: latestUserToken.consentAcceptedAt || user.consentAcceptedAt || now(),
-          confirmedAt: latestUserToken.confirmedAt || now()
-        });
-        Object.assign(user, {
-          consentPersonalDataAt: user.consentPersonalDataAt || latestUserToken.consentPersonalDataAt || now(),
-          consentTermsAt: user.consentTermsAt || latestUserToken.consentTermsAt || now(),
-          consentAcceptedAt: user.consentAcceptedAt || latestUserToken.consentAcceptedAt || now()
-        });
-        await writeDb(db);
-        await sendTelegramLoginConfirmed(chatId, latestUserToken.token).catch(error => console.error(error));
+        await confirmTelegramLoginToken(db, latestUserToken, telegramUser, chatId);
+        return send(res, 200, { ok: true });
+      }
+      const recentAnonymousTokens = db.loginTokens.filter(item => {
+        if (item.userId || item.usedAt || new Date(item.expiresAt).getTime() <= Date.now()) return false;
+        if (String(item.telegramId || '')) return false;
+        return Date.now() - new Date(item.createdAt).getTime() <= 2 * 60 * 1000;
+      });
+      if (telegramUser?.id && recentAnonymousTokens.length === 1) {
+        await confirmTelegramLoginToken(db, recentAnonymousTokens[0], telegramUser, chatId);
         return send(res, 200, { ok: true });
       }
       await sendTelegramStart(chatId).catch(error => console.error(error));
