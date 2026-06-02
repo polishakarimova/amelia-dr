@@ -70,6 +70,7 @@ $telegramBotToken = Quote-EnvValue $envMap["TELEGRAM_BOT_TOKEN"]
 $telegramWebhookSecret = Quote-EnvValue $envMap["TELEGRAM_WEBHOOK_SECRET"]
 $quotedAppUrl = Quote-EnvValue $appUrl
 $adminTelegramIds = Quote-EnvValue $envMap["ADMIN_TELEGRAM_IDS"]
+$adminToken = Quote-EnvValue $envMap["ADMIN_TOKEN"]
 $quotedDomain = Quote-EnvValue $domain
 $quotedAppPort = Quote-EnvValue $appPort
 
@@ -81,6 +82,7 @@ $appEnvPath = Join-Path $env:TEMP "povod-app.env"
   "TELEGRAM_WEBHOOK_SECRET=$telegramWebhookSecret",
   "APP_URL=$quotedAppUrl",
   "ADMIN_TELEGRAM_IDS=$adminTelegramIds",
+  "ADMIN_TOKEN=$adminToken",
   "DOMAIN=$quotedDomain",
   "PORT=$quotedAppPort",
   "HOST=""127.0.0.1""",

@@ -34,6 +34,7 @@ const appUrl = (process.env.APP_URL || `http://${host}:${port}`).replace(/\/$/, 
 const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 const telegramWebhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET || '';
 const databaseUrl = process.env.DATABASE_URL || '';
+const adminToken = process.env.ADMIN_TOKEN || '';
 let telegramBotInfo = null;
 let pgPool = null;
 let pgSchemaReady = false;
@@ -122,8 +123,16 @@ async function ensurePgSchema() {
       event_id text not null,
       data jsonb not null
     );
+    create table if not exists povod_broadcasts (
+      id text primary key,
+      status text not null default 'draft',
+      channel text not null default 'telegram',
+      audience text not null default 'all',
+      data jsonb not null
+    );
     create index if not exists povod_events_user_id_idx on povod_events (user_id);
     create index if not exists povod_gifts_event_id_idx on povod_gifts (event_id);
+    create index if not exists povod_broadcasts_status_idx on povod_broadcasts (status);
   `);
   pgSchemaReady = true;
   await migrateJsonDbToPostgresIfNeeded();
@@ -135,7 +144,8 @@ function normalizeDb(db) {
     sessions: Array.isArray(db.sessions) ? db.sessions : [],
     loginTokens: Array.isArray(db.loginTokens) ? db.loginTokens : [],
     events: Array.isArray(db.events) ? db.events : [],
-    gifts: Array.isArray(db.gifts) ? db.gifts : []
+    gifts: Array.isArray(db.gifts) ? db.gifts : [],
+    broadcasts: Array.isArray(db.broadcasts) ? db.broadcasts : []
   };
 }
 
@@ -149,6 +159,7 @@ async function replacePgDb(db) {
     await client.query('delete from povod_login_tokens');
     await client.query('delete from povod_sessions');
     await client.query('delete from povod_users');
+    await client.query('delete from povod_broadcasts');
     for (const user of db.users) {
       await client.query('insert into povod_users (id, data) values ($1, $2::jsonb)', [user.id, JSON.stringify(user)]);
     }
@@ -163,6 +174,12 @@ async function replacePgDb(db) {
     }
     for (const gift of db.gifts) {
       await client.query('insert into povod_gifts (id, event_id, data) values ($1, $2, $3::jsonb)', [gift.id, gift.eventId, JSON.stringify(gift)]);
+    }
+    for (const broadcast of db.broadcasts) {
+      await client.query(
+        'insert into povod_broadcasts (id, status, channel, audience, data) values ($1, $2, $3, $4, $5::jsonb)',
+        [broadcast.id, broadcast.status || 'draft', broadcast.channel || 'telegram', broadcast.audience || 'all', JSON.stringify(broadcast)]
+      );
     }
     await client.query('commit');
   } catch (error) {
@@ -179,7 +196,8 @@ async function migrateJsonDbToPostgresIfNeeded() {
     select
       (select count(*)::int from povod_users) +
       (select count(*)::int from povod_events) +
-      (select count(*)::int from povod_gifts) as total
+      (select count(*)::int from povod_gifts) +
+      (select count(*)::int from povod_broadcasts) as total
   `);
   if (Number(count.rows[0]?.total || 0) > 0) return;
   const jsonDb = normalizeDb(JSON.parse(await readFile(dbFile, 'utf8')));
@@ -210,6 +228,21 @@ function publicUser(user) {
   if (!user) return null;
   const { passwordHash, ...safe } = user;
   return safe;
+}
+
+function requireAdmin(req, res, url) {
+  if (!adminToken) {
+    send(res, 503, { error: 'admin_token_not_configured' });
+    return false;
+  }
+  const authHeader = String(req.headers.authorization || '');
+  const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  const token = req.headers['x-admin-token'] || bearer || url.searchParams.get('token') || parseCookies(req).povod_admin_token;
+  if (!safeCompare(token, adminToken)) {
+    send(res, 401, { error: 'admin_unauthorized' });
+    return false;
+  }
+  return true;
 }
 
 function safeCompare(a, b) {
@@ -367,25 +400,27 @@ async function sendTelegramLoginRequest(chatId, token, loginToken = {}) {
 async function readDb() {
   if (pgPool) {
     await ensurePgSchema();
-    const [users, sessions, loginTokens, events, gifts] = await Promise.all([
+    const [users, sessions, loginTokens, events, gifts, broadcasts] = await Promise.all([
       pgPool.query('select data from povod_users order by data->>\'createdAt\' desc'),
       pgPool.query('select data from povod_sessions order by data->>\'createdAt\' desc'),
       pgPool.query('select data from povod_login_tokens order by data->>\'createdAt\' desc'),
       pgPool.query('select data from povod_events order by data->>\'createdAt\' desc'),
-      pgPool.query('select data from povod_gifts order by data->>\'createdAt\' desc')
+      pgPool.query('select data from povod_gifts order by data->>\'createdAt\' desc'),
+      pgPool.query('select data from povod_broadcasts order by data->>\'createdAt\' desc')
     ]);
     return {
       users: users.rows.map(row => row.data),
       sessions: sessions.rows.map(row => row.data),
       loginTokens: loginTokens.rows.map(row => row.data),
       events: events.rows.map(row => row.data),
-      gifts: gifts.rows.map(row => row.data)
+      gifts: gifts.rows.map(row => row.data),
+      broadcasts: broadcasts.rows.map(row => row.data)
     };
   }
   try {
     return normalizeDb(JSON.parse(await readFile(dbFile, 'utf8')));
   } catch {
-    return { users: [], sessions: [], loginTokens: [], events: [], gifts: [] };
+    return { users: [], sessions: [], loginTokens: [], events: [], gifts: [], broadcasts: [] };
   }
 }
 
@@ -477,9 +512,87 @@ function eventPayload(event, db) {
   };
 }
 
+function adminOverview(db) {
+  const users = db.users.map(user => publicUser(user));
+  const events = db.events.map(event => {
+    const owner = users.find(user => user.id === event.userId);
+    const gifts = db.gifts.filter(gift => gift.eventId === event.id);
+    return {
+      ...event,
+      ownerName: owner?.name || owner?.telegramUsername || owner?.email || '',
+      ownerEmail: owner?.email || '',
+      giftsCount: gifts.length,
+      reservedGiftsCount: gifts.filter(gift => gift.status === 'reserved').length
+    };
+  });
+  return {
+    stats: {
+      users: users.length,
+      events: events.length,
+      publishedEvents: events.filter(event => event.status === 'published').length,
+      gifts: db.gifts.length,
+      reservedGifts: db.gifts.filter(gift => gift.status === 'reserved').length,
+      broadcasts: db.broadcasts.length
+    },
+    users,
+    events,
+    broadcasts: db.broadcasts
+  };
+}
+
 async function api(req, res, url) {
   const db = await readDb();
   const path = url.pathname;
+
+  if (path === '/api/admin/overview') {
+    if (req.method !== 'GET') return methodNotAllowed(res);
+    if (!requireAdmin(req, res, url)) return;
+    return send(res, 200, adminOverview(db));
+  }
+
+  if (path === '/api/admin/broadcasts') {
+    if (!requireAdmin(req, res, url)) return;
+    if (req.method === 'GET') return send(res, 200, { broadcasts: db.broadcasts });
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    const input = await body(req);
+    const broadcast = {
+      id: uid(),
+      title: String(input.title || 'Broadcast'),
+      message: String(input.message || ''),
+      channel: String(input.channel || 'telegram'),
+      audience: String(input.audience || 'all'),
+      status: input.sendNow ? 'sent' : String(input.status || 'draft'),
+      scheduledAt: String(input.scheduledAt || ''),
+      sentAt: input.sendNow ? now() : '',
+      createdAt: now(),
+      updatedAt: now()
+    };
+    db.broadcasts.unshift(broadcast);
+    await writeDb(db);
+    return send(res, 201, { broadcast });
+  }
+
+  const adminBroadcastMatch = path.match(/^\/api\/admin\/broadcasts\/([^/]+)$/);
+  if (adminBroadcastMatch) {
+    if (!requireAdmin(req, res, url)) return;
+    const broadcast = db.broadcasts.find(item => item.id === adminBroadcastMatch[1]);
+    if (!broadcast) return send(res, 404, { error: 'broadcast_not_found' });
+    if (req.method === 'DELETE') {
+      db.broadcasts = db.broadcasts.filter(item => item.id !== broadcast.id);
+      await writeDb(db);
+      return send(res, 200, { ok: true });
+    }
+    if (req.method !== 'PATCH') return methodNotAllowed(res);
+    const input = await body(req);
+    assignAllowed(broadcast, input, ['title', 'message', 'channel', 'audience', 'status', 'scheduledAt']);
+    if (input.sendNow) {
+      broadcast.status = 'sent';
+      broadcast.sentAt = broadcast.sentAt || now();
+    }
+    broadcast.updatedAt = now();
+    await writeDb(db);
+    return send(res, 200, { broadcast });
+  }
 
   if (path === '/api/auth/me') {
     if (req.method !== 'GET') return methodNotAllowed(res);
@@ -609,6 +722,8 @@ async function api(req, res, url) {
         token,
         expiresAt: loginToken.expiresAt,
         botLink: `https://t.me/${bot.username}?start=login_${token}`,
+        botUsername: bot.username,
+        startCommand: `/start login_${token}`,
         directMessageSent
       });
     } catch (error) {

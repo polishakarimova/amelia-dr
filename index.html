@@ -178,6 +178,85 @@
     .btn-danger { color: #9b2f26; background: #fff1ee; border: 1px solid rgba(230,111,92,.25); }
     .view { display: none; animation: enter .24s ease both; }
     .view.active { display: block; }
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0 18px;
+    }
+    .admin-stat {
+      min-height: 86px;
+      padding: 14px;
+    }
+    .admin-stat b {
+      display: block;
+      font-size: 26px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .admin-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 14px 0;
+    }
+    .admin-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.72);
+    }
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+      font-size: 14px;
+    }
+    .admin-table th,
+    .admin-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    .admin-table th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      background: rgba(255,255,255,.58);
+    }
+    .admin-table tr:last-child td { border-bottom: 0; }
+    .admin-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+    .admin-form label:last-child { grid-column: 1 / -1; }
+    .admin-token-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .telegram-fallback {
+      display: none;
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.72);
+    }
+    .telegram-fallback.active { display: block; }
+    .telegram-command {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(40,35,31,.06);
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
     @keyframes enter {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
@@ -1618,6 +1697,13 @@
       .gift-admin-card {
         grid-template-columns: 1fr;
       }
+      .admin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .admin-form,
+      .admin-token-row {
+        grid-template-columns: 1fr;
+      }
       .event-preview,
       .gift-thumb {
         width: 100%;
@@ -1641,6 +1727,7 @@
     <section class="view" id="dashboardView"></section>
     <section class="view" id="editorView"></section>
     <section class="view" id="publicView"></section>
+    <section class="view" id="adminView"></section>
 
     <footer class="footer">mypovod.ru · Есть повод — собрать праздник в одной ссылке.</footer>
   </main>
@@ -1689,6 +1776,7 @@
       users: 'povod_users',
       session: 'povod_session',
       events: 'povod_events',
+      adminToken: 'povod_admin_token',
       telegramLoginToken: 'povod_telegram_login_token',
       telegramConsent: 'povod_telegram_consent',
       clientReset: 'povod_client_reset_20260602_auth'
@@ -1707,6 +1795,8 @@
     let telegramAuthDone = false;
     let telegramLoginPollTimer = null;
     let telegramLoginPollToken = '';
+    let adminCache = null;
+    let adminTab = 'users';
     const BASE_PATH = location.pathname.startsWith('/amelia-dr') ? '/amelia-dr' : '';
 
     const sampleGifts = [
@@ -1776,6 +1866,34 @@
         throw error;
       }
       return data;
+    }
+    function h(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      }[char]));
+    }
+    function adminTokenValue() {
+      const params = new URLSearchParams(location.search);
+      const queryToken = params.get('adminToken') || params.get('token');
+      if (queryToken) {
+        localStorage.setItem(STORAGE.adminToken, queryToken);
+        history.replaceState({}, '', `${BASE_PATH}/admin`);
+        return queryToken;
+      }
+      return localStorage.getItem(STORAGE.adminToken) || '';
+    }
+    async function adminRequest(path, options = {}) {
+      return apiRequest(path, {
+        ...options,
+        headers: {
+          ...(options.headers || {}),
+          'x-admin-token': adminTokenValue()
+        }
+      });
     }
     async function loadServerSession() {
       try {
@@ -1903,6 +2021,7 @@
       await loadServerSession();
       renderTopbar();
       if (route === '/') return renderHome();
+      if (route === '/admin') return renderAdmin();
       if (route === '/login') return renderAuth('login');
       if (route === '/register') return renderAuth('register');
       if (route === '/dashboard') return guard(renderDashboard);
@@ -1960,6 +2079,183 @@
       ` : `
         <button class="btn btn-soft" data-route="/login">Авторизироваться</button>
       `;
+      if (adminTokenValue()) {
+        document.getElementById('topActions').insertAdjacentHTML('beforeend', '<button class="btn btn-soft" data-route="/admin">Admin</button>');
+      }
+    }
+    async function renderAdmin() {
+      applyPageTheme();
+      const view = document.getElementById('adminView');
+      view.classList.add('active');
+      const token = adminTokenValue();
+      if (!token) {
+        view.innerHTML = `
+          <div class="card panel">
+            <div class="page-head"><div><h2>Admin</h2><p>Enter ADMIN_TOKEN to open management tables.</p></div></div>
+            <div class="admin-token-row">
+              <label>Admin token<input id="adminTokenInput" type="password" placeholder="ADMIN_TOKEN"></label>
+              <button class="btn btn-primary" type="button" onclick="saveAdminToken()">Open admin</button>
+            </div>
+          </div>`;
+        return;
+      }
+      view.innerHTML = '<div class="card panel"><h2>Admin</h2><p class="muted">Loading...</p></div>';
+      try {
+        adminCache = await adminRequest('/api/admin/overview');
+        renderAdminLoaded();
+      } catch (error) {
+        const message = error.status === 503 ? 'ADMIN_TOKEN is not configured on server.' : 'Token is invalid or expired.';
+        view.innerHTML = `
+          <div class="card panel">
+            <div class="page-head"><div><h2>Admin</h2><p>${message}</p></div></div>
+            <div class="admin-token-row">
+              <label>Admin token<input id="adminTokenInput" type="password" placeholder="ADMIN_TOKEN"></label>
+              <button class="btn btn-primary" type="button" onclick="saveAdminToken()">Retry</button>
+            </div>
+            <div class="hero-actions" style="margin-top:12px"><button class="btn btn-soft" type="button" onclick="clearAdminToken()">Clear token</button></div>
+          </div>`;
+      }
+    }
+    function renderAdminLoaded() {
+      const view = document.getElementById('adminView');
+      const stats = adminCache?.stats || {};
+      view.innerHTML = `
+        <div class="page-head">
+          <div><h2>Admin</h2><p>Users, events and broadcasts.</p></div>
+          <div class="hero-actions"><button class="btn btn-soft" type="button" onclick="clearAdminToken()">Logout</button></div>
+        </div>
+        <div class="admin-grid">
+          ${[
+            ['Users', stats.users],
+            ['Events', stats.events],
+            ['Published', stats.publishedEvents],
+            ['Gifts', stats.gifts],
+            ['Reserved', stats.reservedGifts],
+            ['Broadcasts', stats.broadcasts]
+          ].map(item => `<div class="card admin-stat"><b>${Number(item[1] || 0)}</b><span class="muted">${item[0]}</span></div>`).join('')}
+        </div>
+        <div class="admin-tabs">
+          ${['users', 'events', 'broadcasts'].map(tab => `<button class="btn btn-soft tab ${adminTab === tab ? 'active' : ''}" type="button" onclick="setAdminTab('${tab}')">${tab[0].toUpperCase() + tab.slice(1)}</button>`).join('')}
+        </div>
+        ${adminTab === 'users' ? adminUsersTable() : adminTab === 'events' ? adminEventsTable() : adminBroadcastsPanel()}
+      `;
+    }
+    function adminUsersTable() {
+      const rows = adminCache.users || [];
+      return `
+        <div class="admin-table-wrap"><table class="admin-table">
+          <thead><tr><th>User</th><th>Auth</th><th>Telegram</th><th>Created</th></tr></thead>
+          <tbody>${rows.map(user => `<tr>
+            <td><b>${h(user.name || user.telegramUsername || user.email || user.id)}</b><br><span class="muted">${h(user.email || user.id)}</span></td>
+            <td>${h(user.authProvider || 'email')}</td>
+            <td>${h(user.telegramUsername || user.telegramId || '')}</td>
+            <td>${h(formatDate(user.createdAt))}</td>
+          </tr>`).join('') || '<tr><td colspan="4">No users yet.</td></tr>'}</tbody>
+        </table></div>`;
+    }
+    function adminEventsTable() {
+      const rows = adminCache.events || [];
+      return `
+        <div class="admin-table-wrap"><table class="admin-table">
+          <thead><tr><th>Event</th><th>Owner</th><th>Status</th><th>Gifts</th><th>Date</th><th>Link</th></tr></thead>
+          <tbody>${rows.map(event => `<tr>
+            <td><b>${h(event.title || 'Untitled')}</b><br><span class="muted">${h(event.type || '')}</span></td>
+            <td>${h(event.ownerName || event.ownerEmail || event.userId)}</td>
+            <td>${h(event.status || 'draft')}</td>
+            <td>${Number(event.reservedGiftsCount || 0)} / ${Number(event.giftsCount || 0)}</td>
+            <td>${h(event.date || formatDate(event.createdAt))}</td>
+            <td><button class="btn btn-soft btn-small" type="button" data-route="/p/${h(event.slug)}">Open</button></td>
+          </tr>`).join('') || '<tr><td colspan="6">No events yet.</td></tr>'}</tbody>
+        </table></div>`;
+    }
+    function adminBroadcastsPanel() {
+      const rows = adminCache.broadcasts || [];
+      return `
+        <div class="card panel">
+          <h3>New broadcast</h3>
+          <div class="admin-form">
+            <label>Title<input id="broadcastTitle" placeholder="June product update"></label>
+            <label>Audience<select id="broadcastAudience"><option value="all">All users</option><option value="organizers">Organizers</option><option value="published_event_owners">Published event owners</option></select></label>
+            <label>Channel<select id="broadcastChannel"><option value="telegram">Telegram</option><option value="email">Email</option><option value="manual">Manual</option></select></label>
+            <label>Status<select id="broadcastStatus"><option value="draft">Draft</option><option value="scheduled">Scheduled</option><option value="sent">Sent</option></select></label>
+            <label>Message<textarea id="broadcastMessage" placeholder="Message text"></textarea></label>
+          </div>
+          <div class="hero-actions"><button class="btn btn-primary" type="button" onclick="createBroadcast(false)">Save draft</button><button class="btn btn-accent" type="button" onclick="createBroadcast(true)">Mark sent</button></div>
+        </div>
+        <div class="admin-table-wrap"><table class="admin-table">
+          <thead><tr><th>Broadcast</th><th>Audience</th><th>Channel</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead>
+          <tbody>${rows.map(item => `<tr>
+            <td><b>${h(item.title)}</b><br><span class="muted">${h(item.message)}</span></td>
+            <td>${h(item.audience)}</td>
+            <td>${h(item.channel)}</td>
+            <td>${h(item.status)}</td>
+            <td>${h(formatDate(item.updatedAt || item.createdAt))}</td>
+            <td><button class="btn btn-soft btn-small" type="button" onclick="sendBroadcast('${item.id}')">Send</button> <button class="btn btn-danger btn-small" type="button" onclick="deleteBroadcast('${item.id}')">Delete</button></td>
+          </tr>`).join('') || '<tr><td colspan="6">No broadcasts yet.</td></tr>'}</tbody>
+        </table></div>`;
+    }
+    function setAdminTab(tab) {
+      adminTab = tab;
+      renderAdminLoaded();
+    }
+    function saveAdminToken() {
+      const input = document.getElementById('adminTokenInput');
+      if (!input?.value.trim()) return toast('Enter admin token');
+      localStorage.setItem(STORAGE.adminToken, input.value.trim());
+      render();
+    }
+    function clearAdminToken() {
+      localStorage.removeItem(STORAGE.adminToken);
+      adminCache = null;
+      render();
+    }
+    async function refreshAdmin() {
+      adminCache = await adminRequest('/api/admin/overview');
+      renderAdminLoaded();
+    }
+    async function createBroadcast(sendNow = false) {
+      try {
+        await adminRequest('/api/admin/broadcasts', {
+          method: 'POST',
+          body: {
+            title: document.getElementById('broadcastTitle').value.trim(),
+            message: document.getElementById('broadcastMessage').value.trim(),
+            audience: document.getElementById('broadcastAudience').value,
+            channel: document.getElementById('broadcastChannel').value,
+            status: document.getElementById('broadcastStatus').value,
+            sendNow
+          }
+        });
+        toast(sendNow ? 'Broadcast marked as sent' : 'Broadcast saved');
+        await refreshAdmin();
+      } catch {
+        toast('Could not save broadcast');
+      }
+    }
+    async function sendBroadcast(id) {
+      try {
+        await adminRequest(`/api/admin/broadcasts/${encodeURIComponent(id)}`, { method: 'PATCH', body: { sendNow: true } });
+        toast('Broadcast marked as sent');
+        await refreshAdmin();
+      } catch {
+        toast('Could not send broadcast');
+      }
+    }
+    async function deleteBroadcast(id) {
+      if (!confirm('Delete this broadcast?')) return;
+      try {
+        await adminRequest(`/api/admin/broadcasts/${encodeURIComponent(id)}`, { method: 'DELETE' });
+        toast('Broadcast deleted');
+        await refreshAdmin();
+      } catch {
+        toast('Could not delete broadcast');
+      }
+    }
+    function formatDate(value) {
+      if (!value) return '';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' });
     }
     function renderHome() {
       applyPageTheme();
@@ -2034,10 +2330,23 @@
               <button class="btn btn-accent" type="button" onclick="startTelegramLogin()">Авторизоваться через Telegram</button>
             </div>
             <p class="muted" style="font-size:12px">Нажимая кнопку, вы переходите в Telegram-бота и подтверждаете вход в Повод. Гости регистрироваться не будут.</p>
+            <div class="telegram-fallback" id="telegramFallback">
+              <p class="muted">Если Telegram не открылся автоматически, откройте ссылку вручную или скопируйте команду в чат с ботом.</p>
+              <div class="hero-actions" style="margin-top:10px">
+                <a class="btn btn-primary" id="telegramFallbackLink" href="#" target="_blank" rel="noopener">Открыть Telegram</a>
+                <a class="btn btn-soft" id="telegramWebLink" href="https://web.telegram.org" target="_blank" rel="noopener">Открыть Web Telegram</a>
+              </div>
+              <div class="telegram-command" id="telegramStartCommand"></div>
+              <div class="hero-actions">
+                <button class="btn btn-soft" type="button" onclick="copyTelegramStartCommand()">Скопировать команду</button>
+                <button class="btn btn-soft" type="button" onclick="resumeTelegramLogin()">Проверить вход</button>
+              </div>
+            </div>
           </div>
         </div>
       `;
       resumeTelegramLogin();
+      restoreTelegramFallback();
       if (shouldRunTelegramConsentAuth()) setTimeout(() => telegramAuth(true), 0);
     }
     function shouldRunTelegramConsentAuth() {
@@ -2055,27 +2364,67 @@
         });
         localStorage.setItem(STORAGE.telegramLoginToken, data.token);
         startTelegramLoginPolling(data.token);
+        showTelegramFallback(data);
         if (data.directMessageSent) {
           toast('Отправили подтверждение в Telegram-бота.');
           if (webApp?.close) setTimeout(() => webApp.close(), 700);
           return;
         }
         toast('Откроем Telegram. Подтвердите вход в боте.');
-        openTelegramLoginLink(data.botLink);
+        openTelegramLoginLink(data);
       } catch {
         toast('Не получилось открыть вход через Telegram. Попробуйте ещё раз.');
       } finally {
         telegramAuthInProgress = false;
       }
     }
-    function openTelegramLoginLink(botLink) {
+    function showTelegramFallback(data = {}) {
+      const fallback = document.getElementById('telegramFallback');
+      const link = document.getElementById('telegramFallbackLink');
+      const webLink = document.getElementById('telegramWebLink');
+      const command = document.getElementById('telegramStartCommand');
+      if (!fallback || !data.token) return;
+      const botLink = data.botLink || '';
+      const botUsername = data.botUsername || botLink.match(/t\.me\/([^?]+)/)?.[1] || '';
+      const startCommand = data.startCommand || `/start login_${data.token}`;
+      fallback.classList.add('active');
+      if (link) link.href = botUsername ? telegramDesktopLoginLink(botUsername, data.token) : (botLink || '#');
+      if (webLink) webLink.href = botUsername ? `https://web.telegram.org/k/#@${botUsername}` : 'https://web.telegram.org';
+      if (command) command.textContent = botUsername ? `${startCommand}  →  @${botUsername}` : startCommand;
+      localStorage.setItem('povod_telegram_start_command', startCommand);
+      localStorage.setItem('povod_telegram_bot_link', botLink);
+      if (botUsername) localStorage.setItem('povod_telegram_bot_username', botUsername);
+    }
+    function restoreTelegramFallback() {
+      const token = localStorage.getItem(STORAGE.telegramLoginToken);
+      const botLink = localStorage.getItem('povod_telegram_bot_link');
+      const botUsername = localStorage.getItem('povod_telegram_bot_username');
+      const startCommand = localStorage.getItem('povod_telegram_start_command');
+      if (!token || !botLink) return;
+      showTelegramFallback({ token, botLink, botUsername, startCommand });
+    }
+    async function copyTelegramStartCommand() {
+      const command = localStorage.getItem('povod_telegram_start_command') || document.getElementById('telegramStartCommand')?.textContent || '';
+      if (!command) return toast('Сначала нажмите авторизацию через Telegram');
+      try {
+        await navigator.clipboard.writeText(command.split('→')[0].trim());
+        toast('Команда скопирована');
+      } catch {
+        toast(command);
+      }
+    }
+    function telegramDesktopLoginLink(botUsername, token) {
+      return `tg://resolve?domain=${encodeURIComponent(botUsername)}&start=${encodeURIComponent(`login_${token}`)}`;
+    }
+    function openTelegramLoginLink(data = {}) {
       const webApp = telegramWebApp();
       if (webApp?.openTelegramLink) {
-        webApp.openTelegramLink(botLink);
+        webApp.openTelegramLink(data.botLink);
         setTimeout(() => webApp.close?.(), 250);
         return;
       }
-      location.href = botLink;
+      const desktopLink = data.botUsername ? telegramDesktopLoginLink(data.botUsername, data.token) : data.botLink;
+      location.href = desktopLink || data.botLink;
     }
     function resumeTelegramLogin() {
       const params = new URLSearchParams(location.search);
@@ -2095,6 +2444,12 @@
       telegramLoginPollTimer = null;
       telegramLoginPollToken = '';
     }
+    function clearTelegramLoginFallback() {
+      localStorage.removeItem(STORAGE.telegramLoginToken);
+      localStorage.removeItem('povod_telegram_start_command');
+      localStorage.removeItem('povod_telegram_bot_link');
+      localStorage.removeItem('povod_telegram_bot_username');
+    }
     function startTelegramLoginPolling(token) {
       if (!token) return;
       if (telegramLoginPollTimer && telegramLoginPollToken === token) return;
@@ -2108,14 +2463,14 @@
           if (data.status === 'pending') {
             if (attempts > 120) {
               stopTelegramLoginPolling();
-              localStorage.removeItem(STORAGE.telegramLoginToken);
+              clearTelegramLoginFallback();
               toast('Ссылка для входа устарела. Нажмите Telegram ещё раз.');
             }
             return;
           }
           if (!data.user) return;
           stopTelegramLoginPolling();
-          localStorage.removeItem(STORAGE.telegramLoginToken);
+          clearTelegramLoginFallback();
           syncServerUser(data.user);
           await loadServerEvents();
           telegramAuthDone = true;
@@ -2125,7 +2480,7 @@
           if (error.status === 202) return;
           if (error.status === 404 || error.status === 410) {
             stopTelegramLoginPolling();
-            localStorage.removeItem(STORAGE.telegramLoginToken);
+            clearTelegramLoginFallback();
             if (attempts > 1) toast('Ссылка для входа устарела. Нажмите Telegram ещё раз.');
             return;
           }
@@ -2168,7 +2523,7 @@
         if (!response.ok) throw new Error(data.error || 'telegram_auth_failed');
         syncServerUser(data.user);
         await loadServerEvents();
-        localStorage.removeItem(STORAGE.telegramLoginToken);
+        clearTelegramLoginFallback();
         localStorage.removeItem(STORAGE.telegramConsent);
         telegramAuthDone = true;
         toast('Вы вошли через Telegram');
