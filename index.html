@@ -2033,8 +2033,12 @@
           </div>
         </div>
       `;
-      setTimeout(() => telegramAuth(true), 0);
       resumeTelegramLogin();
+      if (shouldRunTelegramConsentAuth()) setTimeout(() => telegramAuth(true), 0);
+    }
+    function shouldRunTelegramConsentAuth() {
+      const params = new URLSearchParams(location.search);
+      return params.get('telegramConsent') === '1' || localStorage.getItem(STORAGE.telegramConsent) === '1';
     }
     async function startTelegramLogin() {
       if (telegramAuthInProgress) return;

@@ -757,7 +757,7 @@ async function api(req, res, url) {
         menu_button: {
           type: 'web_app',
           text: 'Открыть Повод',
-          web_app: { url: `${appUrl}/login` }
+          web_app: { url: appUrl }
         }
       }).catch(() => null);
       const webhook = await telegramApi('getWebhookInfo');
