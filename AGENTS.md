@@ -35,6 +35,7 @@
 - `docs/design/POVOD_SELF_REVIEW_PROCESS.md`
 - `docs/design/POVOD_DO_NOT_REPEAT.md`
 - `docs/design/POVOD_IMPLEMENTATION_PLAN.md`
+- `docs/design/POVOD_CARD_TEMPLATE_SYSTEM.md`
 
 ## Approved Logo
 
@@ -45,4 +46,3 @@ Source of truth:
 Project copy for UI use:
 
 - `public/brand/povod-logo.svg`
-
