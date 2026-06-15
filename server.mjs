@@ -1145,6 +1145,8 @@ function priceFromHtml(html) {
     html.match(/"finalPrice"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
     html.match(/"priceValue"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
     html.match(/"currentPrice"\s*:\s*\{[^}]*"value"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
+    html.match(/"rawValue"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
+    html.match(/"value"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?[^}]{0,160}"currency"\s*:\s*"(?:RUR|RUB|₽)"/i)?.[1],
     html.match(/(\d[\d\s.,]{1,12})\s*₽/i)?.[1]
   ];
   return candidates.map(parsePriceValue).find(Boolean) || 0;
@@ -1169,6 +1171,34 @@ function cleanMarketplaceTitle(title) {
     .replace(/\s*[—-]\s*Яндекс\s*Маркет.*$/i, '')
     .replace(/\s*[—-]\s*купить.*$/i, '')
     .trim();
+}
+
+function isTechnicalMarketplaceTitle(title) {
+  const text = String(title || '').trim();
+  return /^@yandex-market\//i.test(text)
+    || /LazyLoader-market|webpack|runtime|chunk|bundle/i.test(text);
+}
+
+function yandexMarketTitleFromUrl(productUrl) {
+  const raw = decodeURIComponent(
+    productUrl.pathname.match(/\/product--([^/]+)/i)?.[1]
+    || productUrl.pathname.match(/\/card\/([^/]+)/i)?.[1]
+    || ''
+  );
+  const title = raw
+    .replace(/[-_]+/g, ' ')
+    .replace(/\b\d{5,}\b/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return title ? title.charAt(0).toUpperCase() + title.slice(1) : '';
+}
+
+function bestYandexMarketTitle(candidates, productUrl) {
+  for (const candidate of candidates) {
+    const title = cleanMarketplaceTitle(candidate);
+    if (title && !isTechnicalMarketplaceTitle(title) && !isYandexMarketChallengeTitle(title)) return title;
+  }
+  return yandexMarketTitleFromUrl(productUrl);
 }
 
 function textFromHtmlFragment(value) {
@@ -1275,11 +1305,13 @@ function isYandexMarketChallengeTitle(title) {
 
 function yandexMarketHtmlPreview(html, productUrl, source = 'yandex-market-html') {
   const structured = jsonLdPreview(html, productUrl.href);
-  const title = structured.title
-    || metaContent(html, 'og:title')
-    || metaContent(html, 'twitter:title')
-    || decodeJsonString(html.match(/"(?:productName|modelName|title|name)"\s*:\s*"([^"]{4,240})"/i)?.[1] || '')
-    || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
+  const title = bestYandexMarketTitle([
+    structured.title,
+    metaContent(html, 'og:title'),
+    metaContent(html, 'twitter:title'),
+    decodeJsonString(html.match(/"(?:productName|modelName|productTitle|rawTitle)"\s*:\s*"([^"]{4,240})"/i)?.[1] || ''),
+    decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '')
+  ], productUrl);
   const imageCandidates = [
     structured.image,
     metaContent(html, 'og:image'),
@@ -1295,7 +1327,7 @@ function yandexMarketHtmlPreview(html, productUrl, source = 'yandex-market-html'
     || priceFromHtml(html);
   return {
     source,
-    title: cleanMarketplaceTitle(title),
+    title,
     price: Math.round(price || 0),
     image,
     description: structured.description || metaContent(html, 'og:description') || '',
@@ -1596,7 +1628,7 @@ async function fetchYandexMarketPreview(productUrl) {
     preview.description = '';
     if (isYandexMarketChallengeTitle(preview.title)) throw yandexMarketPreviewBlockedError();
     if (preview.title || preview.image || preview.price) {
-      preview.title = cleanMarketplaceTitle(preview.title).trim() || 'Товар Яндекс Маркета';
+      preview.title = bestYandexMarketTitle([preview.title], productUrl) || 'Товар Яндекс Маркета';
       return preview;
     }
   } catch (error) {
@@ -1610,7 +1642,7 @@ async function fetchYandexMarketPreview(productUrl) {
       preview.description = '';
       if (isYandexMarketChallengeTitle(preview.title)) throw yandexMarketPreviewBlockedError();
       if (preview.title || preview.image || preview.price) {
-        preview.title = cleanMarketplaceTitle(preview.title).trim() || 'Товар Яндекс Маркета';
+        preview.title = bestYandexMarketTitle([preview.title], productUrl) || 'Товар Яндекс Маркета';
         return preview;
       }
     } catch (error) {
@@ -1634,6 +1666,7 @@ function productStoreFromUrl(productUrl) {
 function cachedProductPreview(entry) {
   const preview = entry?.preview || {};
   if (!preview.title && !preview.image && !preview.price) return null;
+  if (isTechnicalMarketplaceTitle(preview.title)) return null;
   const updatedAt = Date.parse(entry.updatedAt || entry.cachedAt || '');
   if (!Number.isFinite(updatedAt) || Date.now() - updatedAt > productPreviewCacheTtlMs) return null;
   return { ...preview, cached: true };
