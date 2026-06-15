@@ -3994,7 +3994,7 @@
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Новый подарок'}</h3>
         <label class="full">Ссылка на Wildberries или Ozon<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.ozon.ru/product/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.</span></label>
-        <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" id="giftPrefillButton" type="button" onclick="prefillGiftFromUrl(true)"><span class="btn-spinner" aria-hidden="true"></span><span id="giftPrefillButtonText">Подтянуть данные по ссылке</span></button></div>
+        <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" id="giftPrefillButton" type="button" onclick="prefillGiftFromUrl(true)"><span class="btn-spinner" aria-hidden="true"></span><span id="giftPrefillButtonText">Заполнить автоматически</span></button></div>
         <div class="gift-admin-card hidden" id="giftPreviewCard">
           <div class="gift-thumb" id="giftPreviewImage">Фото</div>
           <div>
@@ -4216,7 +4216,7 @@
       if (state === 'loading') text.textContent = 'Данные загружаются…';
       else if (state === 'done') text.textContent = 'Готово';
       else if (state === 'error') text.textContent = 'Попробовать ещё раз';
-      else text.textContent = 'Подтянуть данные по ссылке';
+      else text.textContent = 'Заполнить автоматически';
     }
     function handleGiftUrlKey(event) {
       if (event.key !== 'Enter') return;
