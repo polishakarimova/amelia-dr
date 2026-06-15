@@ -1,12 +1,15 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { createReadStream, existsSync, readFileSync } from 'node:fs';
+import { execFile } from 'node:child_process';
 import { createHmac, createHash, randomBytes, pbkdf2Sync, timingSafeEqual } from 'node:crypto';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 import pg from 'pg';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
+const execFileAsync = promisify(execFile);
 
 function loadEnvFile() {
   const envPath = join(root, '.env');
@@ -616,7 +619,8 @@ function wildberriesImageCandidates(productId) {
 async function imageUrlExists(url) {
   try {
     const response = await fetchWithTimeout(url, { method: 'HEAD', headers: { accept: 'image/webp,image/*,*/*' } }, 2500);
-    return response.ok && String(response.headers.get('content-type') || '').startsWith('image/');
+    const contentType = String(response.headers.get('content-type') || '');
+    return response.ok && (!contentType || contentType.startsWith('image/'));
   } catch {
     return false;
   }
@@ -662,11 +666,49 @@ async function wildberriesProductPreview(product, productId) {
   return preview;
 }
 
+function isWildberriesRequest(url) {
+  try {
+    const host = new URL(String(url)).hostname.toLowerCase();
+    return host === 'wildberries.ru'
+      || host.endsWith('.wildberries.ru')
+      || host === 'wb.ru'
+      || host.endsWith('.wb.ru')
+      || host.endsWith('.wb.ru')
+      || host.endsWith('.wbbasket.ru');
+  } catch {
+    return false;
+  }
+}
+
+async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
+  const args = [
+    '-L',
+    '-sS',
+    '--max-time', String(Math.max(2, Math.ceil(timeoutMs / 1000))),
+    '-A', 'Mozilla/5.0',
+    '-H', `accept: ${options.headers?.accept || 'application/json,text/html;q=0.9,*/*;q=0.8'}`
+  ];
+  if (String(options.method || 'GET').toUpperCase() === 'HEAD') args.push('-I');
+  args.push('-w', '\n__POVOD_HTTP_STATUS__:%{http_code}', String(url));
+  const { stdout } = await execFileAsync('curl', args, { maxBuffer: 12 * 1024 * 1024, windowsHide: true });
+  const marker = '\n__POVOD_HTTP_STATUS__:';
+  const markerIndex = stdout.lastIndexOf(marker);
+  const text = markerIndex >= 0 ? stdout.slice(0, markerIndex) : stdout;
+  const status = markerIndex >= 0 ? Number(stdout.slice(markerIndex + marker.length).trim()) : 0;
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    headers: { get: () => '' },
+    text: async () => text,
+    json: async () => JSON.parse(text)
+  };
+}
+
 async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    return await fetch(url, {
+    const response = await fetch(url, {
       ...options,
       signal: controller.signal,
       headers: {
@@ -676,6 +718,13 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
         ...(options.headers || {})
       }
     });
+    if (isWildberriesRequest(url) && [403, 429, 498].includes(response.status)) {
+      return await fetchWithCurl(url, options, timeoutMs);
+    }
+    return response;
+  } catch (error) {
+    if (isWildberriesRequest(url)) return await fetchWithCurl(url, options, timeoutMs);
+    throw error;
   } finally {
     clearTimeout(timer);
   }
