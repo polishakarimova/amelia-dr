@@ -93,10 +93,13 @@ Webhook принимает события от Telegram. Команда `/start`
 
 ### Gifts
 
+- `POST /api/gift-preview`
 - `GET /api/events/[id]/gifts`
 - `POST /api/events/[id]/gifts`
 - `PATCH /api/gifts/[id]`
 - `DELETE /api/gifts/[id]`
+
+`POST /api/gift-preview` принимает `{ "url": "..." }` и возвращает `preview` с `title`, `price`, `image`, `description`. Сейчас автозаполнение поддерживает ссылки Wildberries.
 
 ### Reservations
 

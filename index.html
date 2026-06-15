@@ -4,29 +4,38 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Повод — карточка праздника в одной ссылке</title>
-  <meta name="description" content="Есть повод — собрать праздник в одной ссылке. Дата, место, пожелания и подарки в аккуратной карточке для гостей." />
+  <meta name="description" content="Повод — красивая карточка праздника в одной ссылке. Дата, место, пожелания, подарки и статусы брони подарков для гостей." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; }
     :root {
-      --bg: #FFF8F3;
-      --bg-soft: #FFF0E8;
-      --surface: rgba(255, 255, 255, 0.86);
+      --bg: #FBF7F2;
+      --bg-soft: #FFF4EC;
+      --surface: #FFFFFF;
+      --surface-warm: #FFF7F0;
       --surface-solid: #FFFFFF;
-      --text: #28231F;
-      --muted: #766D66;
-      --muted-light: #9A9089;
-      --border: rgba(40, 35, 31, 0.10);
-      --primary: #EB7357;
-      --primary-hover: #D95F45;
-      --primary-soft: #FFE1D6;
-      --dark: #28231F;
+      --card-soft: #FFF4EA;
+      --text: #3A312B;
+      --text-dark: #2B2521;
+      --muted: #7E746D;
+      --muted-light: #A2968D;
+      --border: rgba(76, 60, 47, 0.12);
+      --primary: #F47B5C;
+      --primary-hover: #E6684A;
+      --primary-soft: #FFE2D8;
+      --gold: #E4A93E;
+      --gold-soft: #FFF1D3;
+      --lavender: #B8A3C9;
+      --lavender-soft: #F1EAF7;
+      --olive: #B8CA7A;
+      --olive-soft: #EEF4D7;
+      --peach: #FFD7C4;
+      --peach-soft: #FFF0E6;
+      --mint: var(--olive-soft);
+      --cream: var(--gold-soft);
+      --dark: var(--text-dark);
       --dark-hover: #171411;
-      --lavender: #E8DDFF;
-      --peach: #FFE3D3;
-      --mint: #DDF1EC;
-      --cream: #FFF4D6;
       --success: #3D9B6D;
       --success-soft: #E2F5EC;
       --warning: #C9822B;
@@ -40,15 +49,16 @@
       --line: var(--border);
       --coral: var(--primary);
       --coral-dark: var(--primary-hover);
-      --blue: #8fc7e8;
+      --blue: var(--lavender);
       --sand: var(--bg-soft);
       --green: #3f8d68;
-      --shadow: 0 20px 70px rgba(50, 40, 35, 0.10);
-      --shadow-soft: 0 20px 70px rgba(50, 40, 35, 0.10);
-      --shadow-card: 0 14px 40px rgba(50, 40, 35, 0.08);
-      --radius-xl: 32px;
+      --shadow: 0 18px 60px rgba(70, 54, 42, 0.08);
+      --shadow-soft: 0 18px 60px rgba(70, 54, 42, 0.08);
+      --shadow-card: 0 10px 30px rgba(70, 54, 42, 0.06);
+      --shadow-hover: 0 18px 44px rgba(70, 54, 42, 0.10);
+      --radius-xl: 34px;
       --radius-lg: 24px;
-      --radius-md: 16px;
+      --radius-md: 18px;
       --radius-sm: 12px;
       --radius-pill: 999px;
     }
@@ -59,10 +69,10 @@
       font-family: Onest, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 9% 10%, rgba(230,111,92,.20), transparent 28%),
-        radial-gradient(circle at 84% 7%, rgba(185,168,255,.24), transparent 26%),
-        radial-gradient(circle at 76% 74%, rgba(143,199,232,.20), transparent 30%),
-        linear-gradient(180deg, #fffaf4 0%, var(--milk) 45%, #fff 100%);
+        radial-gradient(circle at 9% 10%, rgba(242, 111, 85, .18), transparent 30%),
+        radial-gradient(circle at 86% 8%, rgba(184, 161, 201, .20), transparent 28%),
+        radial-gradient(circle at 76% 74%, rgba(184, 201, 124, .16), transparent 32%),
+        linear-gradient(180deg, var(--bg) 0%, var(--surface-warm) 48%, #fff 100%);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
     }
@@ -125,18 +135,23 @@
       padding: 4px 8px 4px 4px;
     }
     .brand-mark {
-      width: 36px;
-      height: 36px;
+      width: 42px;
+      height: 42px;
       display: grid;
       place-items: center;
-      border-radius: 14px;
-      background:
-        linear-gradient(145deg, rgba(255,255,255,.95), rgba(255,255,255,.56)),
-        radial-gradient(circle at 30% 25%, rgba(230,111,92,.35), transparent 42%);
-      border: 1px solid rgba(230,111,92,.22);
-      box-shadow: 0 10px 28px rgba(230,111,92,.16);
+      overflow: hidden;
+      border-radius: 15px;
+      background: var(--surface);
+      border: 1px solid rgba(242,111,85,.18);
+      box-shadow: 0 12px 30px rgba(242,111,85,.16);
       color: var(--coral-dark);
       font-size: 18px;
+    }
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
     }
     .top-actions { display: flex; gap: 8px; align-items: center; }
     .btn {
@@ -368,22 +383,95 @@
     textarea { resize: vertical; min-height: 92px; }
     input:focus, textarea:focus, select:focus { border-color: rgba(230,111,92,.42); box-shadow: 0 0 0 4px rgba(230,111,92,.08); }
     .dashboard-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-    .event-item { padding: 18px; display: grid; grid-template-columns: 80px 1fr; gap: 14px; }
+    .event-item {
+      position: relative;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr);
+      gap: 14px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .event-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-soft); }
     .event-preview {
-      height: 80px;
-      border-radius: 20px;
+      height: 76px;
+      border-radius: 18px;
       background: linear-gradient(135deg, #fff0e7, #ede9ff);
       display: grid; place-items: center;
       color: var(--coral-dark);
       font-weight: 900;
+      overflow: hidden;
     }
+    .event-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .event-topline { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-right: 38px; }
     .event-item h3 { font-size: 20px; margin-bottom: 5px; }
     .event-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .status-pill {
       display: inline-flex; width: fit-content;
-      padding: 6px 9px; border-radius: 999px;
+      padding: 5px 8px; border-radius: 999px;
       background: #fff; border: 1px solid var(--line);
-      color: var(--muted); font-size: 12px; font-weight: 800;
+      color: var(--muted); font-size: 11px; font-weight: 850;
+      line-height: 1;
+    }
+    .status-pill.draft {
+      background: var(--gold-soft);
+      border-color: rgba(228,169,62,.28);
+      color: #8c6122;
+    }
+    .status-pill.published {
+      background: var(--success-soft);
+      border-color: rgba(61,155,109,.24);
+      color: var(--success);
+    }
+    .event-menu {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+    }
+    .event-menu summary {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      list-style: none;
+      border-radius: 999px;
+      background: rgba(255,255,255,.82);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .event-menu summary::-webkit-details-marker { display: none; }
+    .event-menu[open] summary { box-shadow: 0 10px 24px rgba(50,40,35,.12); }
+    .event-menu-list {
+      position: absolute;
+      right: 0;
+      top: 38px;
+      min-width: 178px;
+      display: grid;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid var(--line);
+      box-shadow: 0 18px 46px rgba(50,40,35,.14);
+    }
+    .event-menu-list button {
+      min-height: 36px;
+      justify-content: flex-start;
+      padding: 8px 10px;
+      border-radius: 12px;
+      box-shadow: none;
+    }
+    .event-menu-list .danger { color: var(--danger); }
+    .preview-actions {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 24px;
+      background: rgba(255,255,255,.74);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-card);
     }
     .editor-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; align-items: start; }
     .editor-card { padding: 22px; max-width: 850px; }
@@ -603,7 +691,11 @@
     .hidden { display: none !important; }
     .footer { padding: 34px 0 12px; color: var(--muted); text-align: center; font-size: 13px; }
     body {
-      background: linear-gradient(180deg, var(--bg) 0%, #fffdfa 55%, #fff 100%);
+      background:
+        radial-gradient(circle at 8% 8%, rgba(244, 123, 92, .16), transparent 28%),
+        radial-gradient(circle at 84% 5%, rgba(184, 163, 201, .18), transparent 27%),
+        radial-gradient(circle at 72% 68%, rgba(184, 202, 122, .14), transparent 30%),
+        linear-gradient(180deg, var(--bg) 0%, var(--surface-warm) 55%, #fff 100%);
     }
     body::before {
       content: "";
@@ -613,11 +705,11 @@
       inset: -140px -120px auto;
       height: 660px;
       background:
-        radial-gradient(circle at 12% 22%, rgba(255, 179, 143, .48), transparent 27%),
-        radial-gradient(circle at 78% 12%, rgba(232, 221, 255, .78), transparent 24%),
-        radial-gradient(circle at 66% 72%, rgba(221, 241, 236, .76), transparent 28%),
-        radial-gradient(circle at 38% 70%, rgba(255, 244, 214, .72), transparent 26%);
-      filter: blur(16px);
+        radial-gradient(circle at 12% 22%, rgba(255, 215, 196, .50), transparent 27%),
+        radial-gradient(circle at 78% 12%, rgba(184, 163, 201, .30), transparent 25%),
+        radial-gradient(circle at 66% 72%, rgba(184, 202, 122, .25), transparent 29%),
+        radial-gradient(circle at 38% 70%, rgba(255, 241, 211, .56), transparent 26%);
+      filter: blur(18px);
     }
     body.theme-blue {
       --primary: #5A9FE8;
@@ -646,17 +738,17 @@
     .shell { width: min(1240px, 100%); padding: calc(14px + env(safe-area-inset-top)) 20px 38px; }
     .topbar {
       min-height: 68px;
-      padding: 8px 10px;
+      padding: 9px 12px;
       margin-bottom: 28px;
-      border-radius: 30px;
-      background: rgba(255,255,255,.72);
-      border-color: rgba(255,255,255,.82);
-      box-shadow: 0 18px 54px rgba(53,39,31,.09);
+      border-radius: 32px;
+      background: rgba(255,255,255,.78);
+      border-color: rgba(255,255,255,.88);
+      box-shadow: var(--shadow-card);
       backdrop-filter: blur(24px) saturate(140%);
     }
-    .brand { font-size: 19px; font-weight: 800; letter-spacing: 0; }
+    .brand { font-size: 20px; font-weight: 850; letter-spacing: 0; }
     .brand { min-height: 44px; }
-    .brand-mark { background: linear-gradient(145deg, #fff, var(--primary-soft)); border-color: rgba(235,115,87,.24); box-shadow: 0 10px 28px rgba(235,115,87,.16); }
+    .brand-mark { background: var(--surface); border-color: rgba(242,111,85,.18); box-shadow: 0 12px 30px rgba(242,111,85,.16); }
     .btn {
       min-height: 44px;
       border-radius: var(--radius-pill);
@@ -1205,11 +1297,13 @@
       }
       .hero {
         width: 100%;
+        max-width: 100%;
         margin-top: 8px;
         padding: 22px 14px 18px;
         border-radius: 24px;
         gap: 14px;
         text-align: left;
+        overflow: hidden;
       }
       .hero .lead,
       .hero .microcopy,
@@ -1223,7 +1317,18 @@
         margin-bottom: 8px;
       }
       .hero-actions .btn {
-        flex: 1 1 150px;
+        flex: 1 1 100%;
+        width: 100%;
+        white-space: normal;
+      }
+      .hero .lead,
+      .hero .microcopy,
+      .section-title,
+      .section-title p,
+      .info-card,
+      .step-card,
+      .product-pill {
+        max-width: 100%;
       }
       .eyebrow {
         padding: 6px 10px;
@@ -1231,7 +1336,7 @@
         font-size: 12px;
       }
       h1 {
-        font-size: clamp(30px, 9vw, 38px);
+        font-size: clamp(28px, 8vw, 36px);
         line-height: 1.06;
         margin-bottom: 10px;
         letter-spacing: -0.015em;
@@ -1245,11 +1350,19 @@
         font-size: 12px;
         line-height: 1.38;
       }
+      .section-title {
+        margin-top: 34px;
+        text-align: left;
+      }
+      .section-title h2 {
+        font-size: clamp(25px, 7vw, 32px);
+        line-height: 1.1;
+      }
       .product-strip {
         width: 100%;
         transform: none;
         margin: 10px 0 18px;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 8px;
       }
       .product-pill {
@@ -1693,13 +1806,962 @@
         height: 112px;
       }
     }
+    .topbar {
+      min-height: 70px;
+      background: rgba(255, 250, 245, .78);
+      border: 1px solid rgba(76, 60, 47, .10);
+      box-shadow: 0 16px 44px rgba(70, 54, 42, .08);
+    }
+    .brand {
+      gap: 11px;
+      color: var(--text-strong, var(--text-dark));
+      font-size: 21px;
+      font-weight: 850;
+    }
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border: 0;
+      border-radius: 17px;
+      background: transparent;
+      box-shadow: none;
+    }
+    .brand-mark img {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+    }
+    .top-actions .btn-soft {
+      background: var(--surface);
+      border-color: rgba(76, 60, 47, .12);
+      color: var(--text);
+      box-shadow: 0 8px 22px rgba(70, 54, 42, .05);
+    }
+    .btn-accent {
+      background: linear-gradient(135deg, var(--primary), #F39C71);
+      box-shadow: 0 18px 40px rgba(244, 123, 92, .24);
+    }
+    .btn-accent:hover {
+      background: linear-gradient(135deg, var(--primary-hover), #EA8D5F);
+      box-shadow: var(--shadow-hover);
+    }
+    .home-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(420px, 1fr);
+      gap: clamp(24px, 4vw, 48px);
+      align-items: center;
+      max-width: 1160px;
+      min-height: calc(100vh - 132px);
+      padding: clamp(24px, 4vw, 52px);
+      margin: 0 auto 34px;
+      overflow: hidden;
+      border: 1px solid rgba(76, 60, 47, .10);
+      border-radius: var(--radius-xl);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(255, 226, 216, .80), transparent 33%),
+        radial-gradient(circle at 82% 12%, rgba(241, 234, 247, .95), transparent 30%),
+        radial-gradient(circle at 82% 86%, rgba(238, 244, 215, .86), transparent 34%),
+        linear-gradient(135deg, rgba(255, 247, 240, .98), rgba(255, 255, 255, .72));
+      box-shadow: 0 24px 70px rgba(70, 54, 42, .09);
+    }
+    .home-hero::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      pointer-events: none;
+      border: 1px solid rgba(255, 255, 255, .68);
+      border-radius: calc(var(--radius-xl) - 10px);
+    }
+    .home-hero::after {
+      content: "✦";
+      position: absolute;
+      right: 36px;
+      top: 28px;
+      color: var(--gold);
+      font-size: 28px;
+      transform: rotate(12deg);
+      text-shadow: 0 12px 28px rgba(228, 169, 62, .30);
+    }
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 610px;
+    }
+    .home-hero h1 {
+      max-width: 650px;
+      margin-bottom: 20px;
+      color: var(--text-strong, var(--text-dark));
+      font-size: clamp(34px, 4.4vw, 56px);
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+    .home-hero .lead {
+      max-width: 590px;
+      margin-bottom: 24px;
+      color: var(--muted);
+      font-size: clamp(16px, 1.45vw, 19px);
+      line-height: 1.58;
+    }
+    .home-hero .eyebrow {
+      margin-bottom: 18px;
+      background: rgba(255, 255, 255, .72);
+      border-color: rgba(244, 123, 92, .20);
+      color: var(--primary-hover);
+      box-shadow: 0 10px 24px rgba(70, 54, 42, .04);
+    }
+    .hero-trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+    .hero-trust span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 8px 11px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, .62);
+      border: 1px solid rgba(76, 60, 47, .09);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 720;
+    }
+    .hero-visual {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(126px, .72fr) minmax(260px, 1fr);
+      gap: 16px;
+      align-items: center;
+      min-width: 0;
+    }
+    .chaos-stack {
+      display: grid;
+      gap: 10px;
+      transform: rotate(-2deg);
+    }
+    .chat-bubble {
+      width: fit-content;
+      max-width: 160px;
+      padding: 10px 13px;
+      border-radius: 18px 18px 18px 7px;
+      background: rgba(255, 255, 255, .78);
+      border: 1px solid rgba(76, 60, 47, .09);
+      box-shadow: 0 12px 28px rgba(70, 54, 42, .07);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 760;
+    }
+    .chat-bubble:nth-child(2) {
+      margin-left: 18px;
+      background: var(--lavender-soft);
+    }
+    .chat-bubble:nth-child(3) {
+      background: var(--gold-soft);
+    }
+    .chat-bubble:nth-child(4) {
+      margin-left: 12px;
+      background: var(--olive-soft);
+    }
+    .one-link-card {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 22px;
+      background: var(--text-strong, var(--text-dark));
+      color: #fff;
+      box-shadow: 0 18px 36px rgba(43, 37, 33, .16);
+      transform: rotate(1.5deg);
+    }
+    .one-link-card small {
+      display: block;
+      margin-bottom: 6px;
+      color: rgba(255,255,255,.66);
+      font-weight: 720;
+    }
+    .one-link-card b {
+      display: block;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+    .celebration-preview {
+      position: relative;
+      min-width: 0;
+      padding: 15px;
+      border-radius: 32px;
+      background: rgba(255, 255, 255, .82);
+      border: 1px solid rgba(76, 60, 47, .10);
+      box-shadow: 0 26px 68px rgba(70, 54, 42, .13);
+      backdrop-filter: blur(18px);
+    }
+    .celebration-preview::before {
+      content: "";
+      position: absolute;
+      inset: -14px auto auto -14px;
+      width: 72px;
+      height: 72px;
+      border-radius: 26px;
+      background: var(--primary-soft);
+      z-index: -1;
+    }
+    .preview-cover {
+      position: relative;
+      min-height: 132px;
+      padding: 16px;
+      overflow: hidden;
+      border-radius: 25px;
+      background:
+        radial-gradient(circle at 22% 28%, rgba(255,255,255,.90), transparent 17%),
+        radial-gradient(circle at 76% 24%, rgba(255,241,211,.92), transparent 18%),
+        linear-gradient(135deg, var(--peach), var(--lavender-soft));
+    }
+    .preview-cover::before,
+    .preview-cover::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      background: rgba(255,255,255,.58);
+    }
+    .preview-cover::before { width: 92px; height: 92px; right: 18px; bottom: -30px; }
+    .preview-cover::after { width: 42px; height: 42px; right: 104px; top: 20px; }
+    .cover-label {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(255,255,255,.72);
+      color: var(--primary-hover);
+      font-size: 12px;
+      font-weight: 830;
+    }
+    .preview-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 16px 2px 12px;
+    }
+    .preview-title-row h3 {
+      color: var(--text-strong, var(--text-dark));
+      font-size: 24px;
+      line-height: 1.08;
+    }
+    .sparkle-pill {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      background: var(--gold-soft);
+      color: var(--gold);
+      font-size: 17px;
+      box-shadow: 0 10px 24px rgba(228, 169, 62, .16);
+    }
+    .preview-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .preview-chip {
+      min-width: 0;
+      padding: 10px;
+      border-radius: 16px;
+      background: var(--surface-warm);
+      border: 1px solid rgba(76, 60, 47, .08);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .preview-wish {
+      margin: 0 0 13px;
+      padding: 12px;
+      border-radius: 18px;
+      background: var(--olive-soft);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .preview-gifts {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 13px;
+    }
+    .gift-mini {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 8px;
+      border-radius: 17px;
+      background: rgba(255, 255, 255, .72);
+      border: 1px solid rgba(76, 60, 47, .08);
+    }
+    .gift-mini-icon {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 13px;
+      background: var(--primary-soft);
+      color: var(--primary-hover);
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .gift-mini b {
+      display: block;
+      overflow: hidden;
+      color: var(--text);
+      font-size: 13px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .gift-mini small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .gift-status {
+      padding: 6px 8px;
+      border-radius: var(--radius-pill);
+      background: var(--olive-soft);
+      color: #627332;
+      font-size: 11px;
+      font-weight: 830;
+      white-space: nowrap;
+    }
+    .gift-status.reserved {
+      background: var(--primary-soft);
+      color: var(--primary-hover);
+    }
+    .preview-button {
+      width: 100%;
+      min-height: 42px;
+    }
+    @media (max-width: 940px) {
+      .home-hero {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        padding: 34px;
+      }
+      .hero-copy { max-width: 760px; }
+      .hero-visual { grid-template-columns: minmax(126px, .6fr) minmax(270px, 1fr); }
+    }
+    @media (max-width: 720px) {
+      html,
+      body {
+        width: 100%;
+        overflow-x: hidden;
+      }
+      .topbar {
+        min-height: 62px;
+        border-radius: 24px;
+      }
+      .brand {
+        font-size: 19px;
+      }
+      .brand-mark,
+      .brand-mark img {
+        width: 40px;
+        height: 40px;
+      }
+      .home-hero {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        padding: 22px 14px 18px;
+        border-radius: 26px;
+      }
+      .hero-copy,
+      .hero-visual,
+      .hero-trust,
+      .celebration-preview {
+        width: 100%;
+        max-width: 340px;
+        margin-left: 0;
+        margin-right: auto;
+      }
+      .home-hero::before { inset: 8px; border-radius: 20px; }
+      .home-hero::after { right: 22px; top: 18px; font-size: 21px; }
+      .home-hero h1 {
+        max-width: 100%;
+        font-size: clamp(29px, 7.8vw, 34px);
+        line-height: 1.08;
+        overflow-wrap: anywhere;
+      }
+      .home-hero .lead { font-size: 16px; }
+      .home-hero .hero-actions .btn {
+        width: 100%;
+      }
+      .home-hero .hero-actions {
+        max-width: 340px;
+        margin-left: 0;
+        margin-right: auto;
+      }
+      .hero-visual {
+        width: 100%;
+        min-width: 0;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .chaos-stack {
+        width: 100%;
+        min-width: 0;
+        max-width: 340px;
+        margin-left: 0;
+        margin-right: auto;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        transform: none;
+      }
+      .chat-bubble,
+      .chat-bubble:nth-child(2),
+      .chat-bubble:nth-child(4) {
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+      }
+      .one-link-card {
+        grid-column: 1 / -1;
+        margin-top: 0;
+        transform: none;
+      }
+      .celebration-preview {
+        width: 100%;
+        min-width: 0;
+      }
+      .preview-cover { min-height: 104px; }
+      .preview-title-row h3 { font-size: 22px; }
+    }
+    @media (max-width: 390px) {
+      .home-hero { padding-left: 12px; padding-right: 12px; }
+      .preview-meta { grid-template-columns: 1fr; }
+      .gift-mini { grid-template-columns: 34px minmax(0, 1fr); }
+      .gift-status { grid-column: 2; width: fit-content; }
+    }
+    body.design-preview-mode {
+      background:
+        radial-gradient(circle at 12% 8%, rgba(242, 111, 85, .20), transparent 26%),
+        radial-gradient(circle at 86% 14%, rgba(184, 163, 201, .28), transparent 28%),
+        radial-gradient(circle at 78% 86%, rgba(184, 202, 122, .20), transparent 30%),
+        linear-gradient(180deg, #FBF3EA 0%, #FFF8F1 58%, #FFFDF8 100%);
+    }
+    body.design-preview-mode .topbar,
+    body.design-preview-mode .footer {
+      display: none;
+    }
+    body.design-preview-mode .shell {
+      width: 100%;
+      max-width: none;
+      padding: 0;
+    }
+    .design-home-prototype {
+      min-height: 100vh;
+      padding: 20px;
+      color: #332A24;
+      overflow: hidden;
+    }
+    .design-home-wrap {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+    .design-preview-header {
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 10px 8px 12px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(87, 66, 50, .10);
+      border-radius: 26px;
+      background: rgba(255, 250, 245, .70);
+      box-shadow: 0 12px 34px rgba(63, 46, 34, .07);
+      backdrop-filter: blur(22px) saturate(145%);
+    }
+    .design-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      color: #332A24;
+      font-size: 21px;
+      font-weight: 850;
+      letter-spacing: -.01em;
+      text-decoration: none;
+    }
+    .design-logo img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+    .design-login {
+      min-height: 42px;
+      padding: 10px 18px;
+      border: 1px solid rgba(87, 66, 50, .12);
+      border-radius: 999px;
+      background: #fff;
+      color: #332A24;
+      font-weight: 780;
+      box-shadow: 0 8px 20px rgba(63, 46, 34, .06);
+    }
+    .design-stage {
+      position: relative;
+      min-height: min(820px, calc(100vh - 98px));
+      display: grid;
+      grid-template-columns: minmax(280px, 340px) minmax(450px, 560px) minmax(130px, 180px);
+      gap: 18px;
+      align-items: center;
+      padding: 34px;
+      border: 1px solid rgba(87, 66, 50, .10);
+      border-radius: 42px;
+      background:
+        radial-gradient(circle at 22% 18%, rgba(255, 215, 196, .72), transparent 32%),
+        radial-gradient(circle at 68% 20%, rgba(241, 234, 247, .92), transparent 32%),
+        radial-gradient(circle at 76% 86%, rgba(238, 244, 215, .74), transparent 34%),
+        linear-gradient(135deg, rgba(255, 248, 241, .96), rgba(255, 255, 255, .70));
+      box-shadow: 0 30px 90px rgba(63, 46, 34, .10);
+    }
+    .design-stage::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      pointer-events: none;
+      border: 1px solid rgba(255,255,255,.68);
+      border-radius: 30px;
+    }
+    .design-stage::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 520px;
+      height: 520px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255,255,255,.72), transparent 66%);
+      transform: translate(-38%, -48%);
+      pointer-events: none;
+    }
+    .design-offer {
+      position: relative;
+      z-index: 2;
+      align-self: center;
+    }
+    .design-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 8px 13px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(242, 111, 85, .20);
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      color: #E6684A;
+      font-size: 13px;
+      font-weight: 830;
+      box-shadow: 0 10px 26px rgba(63, 46, 34, .05);
+    }
+    .design-offer h1 {
+      max-width: 330px;
+      margin: 0 0 14px;
+      color: #332A24;
+      font-size: clamp(38px, 4.2vw, 56px);
+      line-height: .98;
+      letter-spacing: -.035em;
+      font-weight: 820;
+    }
+    .design-offer p {
+      max-width: 330px;
+      margin: 0 0 20px;
+      color: #776B63;
+      font-size: 16px;
+      line-height: 1.56;
+    }
+    .design-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 18px;
+    }
+    .design-primary,
+    .design-secondary,
+    .design-card-cta {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 0;
+      padding: 12px 18px;
+      font-weight: 820;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .design-primary,
+    .design-card-cta {
+      background: linear-gradient(135deg, #F26F55, #F39B6B);
+      color: #fff;
+      box-shadow: 0 18px 40px rgba(242, 111, 85, .24);
+    }
+    .design-secondary {
+      background: rgba(255,255,255,.76);
+      border: 1px solid rgba(87, 66, 50, .12);
+      color: #332A24;
+      box-shadow: 0 10px 26px rgba(63, 46, 34, .05);
+    }
+    .design-chat {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      max-width: 295px;
+    }
+    .design-chat span {
+      padding: 9px 12px;
+      border: 1px solid rgba(87, 66, 50, .10);
+      border-radius: 17px 17px 17px 7px;
+      background: rgba(255,255,255,.72);
+      color: #40362F;
+      font-size: 13px;
+      font-weight: 780;
+      box-shadow: 0 10px 24px rgba(63, 46, 34, .06);
+    }
+    .design-chat span:nth-child(2) { background: #F1EAF7; }
+    .design-chat span:nth-child(3) { background: #FFF1D3; }
+    .design-link-chip {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 3px;
+      padding: 11px 13px;
+      border-radius: 20px;
+      background: #332A24;
+      color: #fff;
+      box-shadow: 0 18px 36px rgba(51, 42, 36, .18);
+    }
+    .design-link-chip small {
+      color: rgba(255,255,255,.58);
+      font-weight: 760;
+    }
+    .design-card-zone {
+      position: relative;
+      z-index: 3;
+      align-self: center;
+    }
+    .design-card-zone::before,
+    .design-card-zone::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      z-index: -1;
+    }
+    .design-card-zone::before {
+      width: 92px;
+      height: 92px;
+      left: -34px;
+      top: -16px;
+      background: #FFD7C4;
+    }
+    .design-card-zone::after {
+      width: 70px;
+      height: 70px;
+      right: -20px;
+      top: 54px;
+      background: #FFF1D3;
+    }
+    .party-card {
+      position: relative;
+      width: min(520px, 100%);
+      min-height: 690px;
+      padding: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(87, 66, 50, .11);
+      border-radius: 36px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,247,240,.86)),
+        radial-gradient(circle at 30% 0%, rgba(255,226,216,.88), transparent 32%);
+      box-shadow: 0 34px 80px rgba(63, 46, 34, .16);
+    }
+    .party-cover {
+      min-height: 178px;
+      padding: 18px;
+      overflow: hidden;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 20% 28%, rgba(255,255,255,.82), transparent 16%),
+        radial-gradient(circle at 76% 32%, rgba(255,255,255,.55), transparent 20%),
+        linear-gradient(135deg, #FFD7C4, #F1EAF7 72%);
+    }
+    .party-cover-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      z-index: 1;
+    }
+    .party-label {
+      display: inline-flex;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.74);
+      color: #E6684A;
+      font-size: 12px;
+      font-weight: 840;
+    }
+    .party-spark {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 16px;
+      background: rgba(255, 241, 211, .82);
+      color: #E4A93E;
+      font-size: 20px;
+      box-shadow: 0 12px 26px rgba(228, 169, 62, .18);
+    }
+    .party-card h2 {
+      margin: 18px 4px 8px;
+      color: #332A24;
+      font-size: 32px;
+      line-height: 1.02;
+      letter-spacing: -.025em;
+    }
+    .party-sub {
+      margin: 0 4px 14px;
+      color: #7E746D;
+      font-size: 14px;
+      line-height: 1.42;
+    }
+    .party-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+    .party-meta span,
+    .party-wish,
+    .party-gift {
+      border: 1px solid rgba(87, 66, 50, .10);
+      background: rgba(255, 246, 238, .82);
+    }
+    .party-meta span {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 18px;
+      color: #3B332D;
+      font-size: 13px;
+      font-weight: 780;
+    }
+    .party-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 26px;
+      width: 26px;
+      height: 26px;
+      border-radius: 10px;
+      background: #FFE2D8;
+      color: #E6684A;
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .party-wish {
+      margin: 0 0 13px;
+      padding: 13px 14px;
+      border-radius: 20px;
+      color: #4A4038;
+      font-size: 14px;
+      line-height: 1.45;
+      background: #EEF4D7;
+    }
+    .party-section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0 2px 9px;
+      color: #332A24;
+      font-size: 14px;
+      font-weight: 860;
+    }
+    .party-section-title small {
+      color: #7E746D;
+      font-size: 12px;
+      font-weight: 760;
+    }
+    .party-gifts {
+      display: grid;
+      gap: 9px;
+    }
+    .party-gift {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.70);
+    }
+    .party-gift-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      background: #FFE2D8;
+      color: #E6684A;
+      font-weight: 900;
+    }
+    .party-gift b {
+      display: block;
+      color: #332A24;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .party-gift small {
+      display: block;
+      color: #7E746D;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .party-status {
+      padding: 7px 9px;
+      border-radius: 999px;
+      background: #EEF4D7;
+      color: #667633;
+      font-size: 12px;
+      font-weight: 860;
+      white-space: nowrap;
+    }
+    .party-status.booked {
+      background: #FFE2D8;
+      color: #E6684A;
+    }
+    .design-card-cta {
+      width: 100%;
+      margin-top: 14px;
+    }
+    .design-side-notes {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 12px;
+    }
+    .design-note {
+      padding: 12px;
+      border: 1px solid rgba(87, 66, 50, .10);
+      border-radius: 22px;
+      background: rgba(255,255,255,.64);
+      color: #40362F;
+      box-shadow: 0 14px 30px rgba(63, 46, 34, .07);
+    }
+    .design-note b {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 13px;
+    }
+    .design-note span {
+      display: block;
+      color: #7E746D;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .design-note:nth-child(2) { background: #F1EAF7; transform: translateX(-8px); }
+    .design-note:nth-child(3) { background: #FFF1D3; transform: translateX(7px); }
+    .design-note:nth-child(4) { background: #EEF4D7; }
+    @media (max-width: 1040px) {
+      .design-stage {
+        grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+      }
+      .design-side-notes {
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 760px) {
+      body.design-preview-mode,
+      body.design-preview-mode .shell,
+      .design-home-prototype {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+      .design-home-prototype { padding: 10px; }
+      .design-home-wrap {
+        width: 100%;
+        max-width: 370px;
+        margin-left: 0;
+        margin-right: auto;
+      }
+      .design-preview-header {
+        height: 58px;
+        margin-bottom: 10px;
+        border-radius: 22px;
+      }
+      .design-logo { font-size: 19px; }
+      .design-logo img { width: 38px; height: 38px; }
+      .design-stage {
+        width: 100%;
+        max-width: 370px;
+        min-width: 0;
+        grid-template-columns: 1fr;
+        min-height: 0;
+        padding: 16px;
+        border-radius: 30px;
+      }
+      .design-stage::before { inset: 8px; border-radius: 23px; }
+      .design-offer h1 {
+        max-width: 100%;
+        font-size: clamp(29px, 7.7vw, 34px);
+        line-height: 1.04;
+        letter-spacing: -.025em;
+      }
+      .design-offer,
+      .design-card-zone,
+      .design-side-notes {
+        width: 100%;
+        min-width: 0;
+      }
+      .design-offer p { max-width: 100%; font-size: 15px; }
+      .design-actions > * { width: 100%; }
+      .design-chat { max-width: none; }
+      .party-card {
+        width: 100%;
+        min-height: 0;
+        border-radius: 28px;
+        padding: 12px;
+      }
+      .party-cover { min-height: 128px; border-radius: 22px; }
+      .party-card h2 { font-size: 26px; }
+      .party-meta { grid-template-columns: 1fr; }
+      .party-gift { grid-template-columns: 40px minmax(0, 1fr); }
+      .party-status { grid-column: 2; width: fit-content; }
+      .design-side-notes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 420px) {
+      .design-login { padding: 9px 13px; }
+      .design-chat { grid-template-columns: 1fr; }
+      .design-link-chip { flex-direction: column; align-items: flex-start; }
+      .design-side-notes { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
   <main class="shell">
     <nav class="topbar">
       <button class="brand" type="button" data-route="/">
-        <span class="brand-mark">✦</span>
+        <span class="brand-mark"><img src="/public/brand/povod-logo.svg" alt="" /></span>
         <span>Повод</span>
       </button>
       <div class="top-actions" id="topActions"></div>
@@ -1712,7 +2774,7 @@
     <section class="view" id="publicView"></section>
     <section class="view" id="adminView"></section>
 
-    <footer class="footer">mypovod.ru · Есть повод — собрать праздник в одной ссылке.</footer>
+    <footer class="footer">mypovod.ru · Повод — красивая карточка праздника в одной ссылке.</footer>
   </main>
 
   <div class="modal" id="reserveModal" onclick="if(event.target===this)closeModal('reserveModal')">
@@ -1774,6 +2836,8 @@
     let coverCrop = null;
     let giftFormOpen = false;
     let editingGiftId = null;
+    let giftPreviewTimer = null;
+    let giftPreviewRequest = 0;
     let telegramAuthInProgress = false;
     let telegramAuthDone = false;
     let telegramMiniAppAuthAttempted = false;
@@ -2022,9 +3086,11 @@
       seed();
       route = appPath();
       applyPageTheme();
+      document.body.classList.toggle('design-preview-mode', route === '/design-preview/povod-home');
       document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
       await loadServerSession();
       renderTopbar();
+      if (route === '/design-preview/povod-home') return renderPovodHomeDesignPreview();
       if (route === '/') return renderHome();
       if (route === '/admin') return renderAdmin();
       if (route === '/login') return renderAuth('login');
@@ -2079,14 +3145,99 @@
     function renderTopbar() {
       const isAuthRoute = route === '/login' || route === '/register';
       document.getElementById('topActions').innerHTML = currentUser ? `
-        <button class="btn btn-soft" data-route="/dashboard">Личный кабинет</button>
+        <button class="btn btn-soft" data-route="/dashboard">Мои поводы</button>
+        <button class="btn btn-soft" onclick="logout()">Выйти</button>
       ` : isAuthRoute ? `
       ` : `
-        <button class="btn btn-soft" data-route="/login">Авторизироваться</button>
+        <button class="btn btn-soft" data-route="/login">Войти</button>
       `;
       if (adminTokenValue()) {
         document.getElementById('topActions').insertAdjacentHTML('beforeend', '<button class="btn btn-soft" data-route="/admin">Admin</button>');
       }
+    }
+    function renderPovodHomeDesignPreview() {
+      const view = document.getElementById('homeView');
+      view.classList.add('active');
+      view.innerHTML = `
+        <div class="design-home-prototype">
+          <div class="design-home-wrap">
+            <header class="design-preview-header">
+              <a class="design-logo" href="/" data-route="/">
+                <img src="/public/brand/povod-logo.svg" alt="">
+                <span>Повод</span>
+              </a>
+              <button class="design-login" data-route="${currentUser ? '/dashboard' : '/login'}">${currentUser ? 'Мои поводы' : 'Войти'}</button>
+            </header>
+            <section class="design-stage" aria-label="Прототип первого экрана Повода">
+              <div class="design-offer">
+                <div class="design-badge">Одна ссылка вместо хаоса в чатах</div>
+                <h1>Праздник, подарки и гости — в одной красивой карточке</h1>
+                <p>Соберите дату, место, пожелания и вишлист в одной ссылке. Гости быстро поймут, куда прийти, что подарить и какие подарки уже заняты.</p>
+                <div class="design-actions">
+                  <button class="design-primary" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать повод</button>
+                  <button class="design-secondary" data-route="/p/meli-birthday">Посмотреть пример</button>
+                </div>
+                <div class="design-chat" aria-label="Вопросы из чата">
+                  <span>Когда?</span>
+                  <span>Где?</span>
+                  <span>Что подарить?</span>
+                  <div class="design-link-chip">
+                    <small>одна ссылка</small>
+                    <b>povod.link/alisa</b>
+                  </div>
+                </div>
+              </div>
+              <div class="design-card-zone">
+                <article class="party-card">
+                  <div class="party-cover">
+                    <div class="party-cover-top">
+                      <span class="party-label">карточка праздника</span>
+                      <span class="party-spark">✦</span>
+                    </div>
+                  </div>
+                  <h2>День рождения Алисы</h2>
+                  <p class="party-sub">Тёплый праздник во дворе с играми, тортом и подарками без дублей.</p>
+                  <div class="party-meta">
+                    <span><i class="party-icon">Д</i> 12 июля</span>
+                    <span><i class="party-icon">В</i> 16:00</span>
+                    <span><i class="party-icon">М</i> Лофт у сада</span>
+                    <span><i class="party-icon">Г</i> 18 гостей</span>
+                  </div>
+                  <p class="party-wish">Пожалуйста, возьмите удобную обувь для игр. Если хотите поддержать настроение праздника, добавьте в образ что-то персиковое или золотое.</p>
+                  <div class="party-section-title">
+                    <span>Вишлист подарков</span>
+                    <small>1 из 3 уже занят</small>
+                  </div>
+                  <div class="party-gifts">
+                    <div class="party-gift">
+                      <span class="party-gift-mark">П</span>
+                      <span><b>Самокат Micro</b><small>около 4 200 ₽ · ссылка и цвет внутри</small></span>
+                      <span class="party-status booked">Забронировано</span>
+                    </div>
+                    <div class="party-gift">
+                      <span class="party-gift-mark">К</span>
+                      <span><b>Конструктор LEGO</b><small>любой набор из списка</small></span>
+                      <span class="party-status">Свободно</span>
+                    </div>
+                    <div class="party-gift">
+                      <span class="party-gift-mark">С</span>
+                      <span><b>Сертификат в книжный</b><small>любой номинал, можно онлайн</small></span>
+                      <span class="party-status">Свободно</span>
+                    </div>
+                  </div>
+                  <button class="design-card-cta" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Забронировать подарок</button>
+                </article>
+              </div>
+              <aside class="design-side-notes" aria-label="Мини-статусы карточки">
+                <div class="design-note"><b>Место</b><span>карта и маршрут рядом</span></div>
+                <div class="design-note"><b>Гости</b><span>все детали без переписки</span></div>
+                <div class="design-note"><b>Подарки</b><span>цены, ссылки и фото</span></div>
+                <div class="design-note"><b>Бронь</b><span>видно, что уже занято</span></div>
+              </aside>
+            </section>
+          </div>
+        </div>
+      `;
     }
     async function renderAdmin() {
       applyPageTheme();
@@ -2267,54 +3418,101 @@
       const view = document.getElementById('homeView');
       view.classList.add('active');
       view.innerHTML = `
-        <section class="hero">
-          <div>
+        <section class="home-hero">
+          <div class="hero-copy">
             <div class="eyebrow">Одна ссылка вместо хаоса в чатах</div>
             <h1>Соберите праздник, подарки и пожелания в одной красивой ссылке</h1>
             <p class="lead">Повод помогает гостям быстро понять, куда прийти, что подарить и какой подарок уже забронирован.</p>
             <div class="hero-actions">
-              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать событие</button>
+              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать повод</button>
               <button class="btn btn-soft" data-route="/p/meli-birthday">Посмотреть пример</button>
             </div>
-            <p class="microcopy">Для дней рождения, baby shower, свадеб, новоселий и семейных праздников.</p>
+            <div class="hero-trust" aria-label="Что есть в карточке">
+              <span>Дата и место</span>
+              <span>Пожелания гостям</span>
+              <span>Бронь подарков</span>
+            </div>
+          </div>
+          <div class="hero-visual" aria-label="Хаос в чате превращается в одну карточку праздника">
+            <div class="chaos-stack">
+              <div class="chat-bubble">Когда?</div>
+              <div class="chat-bubble">Где?</div>
+              <div class="chat-bubble">Что подарить?</div>
+              <div class="chat-bubble">Кто идёт?</div>
+              <div class="one-link-card">
+                <small>Одна ссылка</small>
+                <b>povod.link/moiprazdnik</b>
+              </div>
+            </div>
+            <article class="celebration-preview">
+              <div class="preview-cover">
+                <span class="cover-label">Карточка праздника</span>
+              </div>
+              <div class="preview-title-row">
+                <div>
+                  <h3>Мой повод</h3>
+                  <p class="muted" style="margin:6px 0 0;font-size:13px">Праздник без потерянных деталей</p>
+                </div>
+                <span class="sparkle-pill">✦</span>
+              </div>
+              <div class="preview-meta">
+                <span class="preview-chip">12 июля</span>
+                <span class="preview-chip">16:00</span>
+                <span class="preview-chip">Лофт у сада</span>
+                <span class="preview-chip">18 гостей</span>
+              </div>
+              <p class="preview-wish">Возьмите хорошее настроение и удобную обувь для игр.</p>
+              <div class="preview-gifts" aria-label="Вишлист подарков">
+                <div class="gift-mini">
+                  <span class="gift-mini-icon">П</span>
+                  <span><b>Самокат</b><small>ссылка, цена, комментарий</small></span>
+                  <span class="gift-status reserved">Бронь</span>
+                </div>
+                <div class="gift-mini">
+                  <span class="gift-mini-icon">К</span>
+                  <span><b>Конструктор</b><small>можно выбрать цвет</small></span>
+                  <span class="gift-status">Свободно</span>
+                </div>
+                <div class="gift-mini">
+                  <span class="gift-mini-icon">С</span>
+                  <span><b>Сертификат</b><small>любой номинал</small></span>
+                  <span class="gift-status">Свободно</span>
+                </div>
+              </div>
+              <button class="btn btn-accent preview-button" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать повод</button>
+            </article>
           </div>
         </section>
-        <section class="product-strip" aria-label="Что будет в карточке">
-          <div class="product-pill"><b>Дата и место</b><span>Гости не ищут детали в чате</span></div>
-          <div class="product-pill"><b>Карта</b><span>Ссылка на маршрут сразу под рукой</span></div>
-          <div class="product-pill"><b>Подарки</b><span>Идеи, цены и ссылки в одном списке</span></div>
-          <div class="product-pill"><b>Бронь</b><span>Видно, что уже выбрали другие</span></div>
-        </section>
         <section>
-          <div class="section-title"><h2>Не организует праздник за вас. Просто убирает хаос.</h2><p>Повод помогает собрать всё важное в одном месте: детали праздника, пожелания, подарки и бронь. А гостям — быстро понять, куда прийти и что подарить.</p></div>
+          <div class="section-title"><h2>Всё, что обычно теряется в чатах, теперь собрано в одной карточке</h2><p>Адрес, время, карта, пожелания, список подарков и статусы брони подарков — всё лежит в одной аккуратной ссылке. Гостям проще разобраться, а организатору не нужно по десять раз отвечать на одни и те же вопросы.</p></div>
           <div class="grid cols-5">
             ${[
-              ['Всё о празднике — в одной ссылке','Дата, место, карта, пожелания и детали не теряются в переписке.', 'var(--peach)'],
-              ['Подарки без дублей','Гость бронирует подарок, остальные видят, что он уже занят.', 'var(--lavender)'],
-              ['Не неловкий вишлист','Это выглядит как заботливая подсказка, а не требование подарков.', 'var(--mint)'],
-              ['Гостям проще выбрать','Можно добавить ссылки, цены, фото и комментарии.', 'var(--cream)'],
-              ['Красиво отправить в чат','Ссылка выглядит как аккуратное приглашение, а не список в сообщении.', 'var(--primary-soft)']
+              ['Гости не теряются в переписке','В карточке уже есть дата, место, карта, пожелания и важные детали.', 'var(--peach)'],
+              ['Подарки не повторяются','Гость бронирует подарок, и остальные сразу видят, что он уже выбран.', 'var(--lavender)'],
+              ['Просить подарки становится не неловко','Это выглядит как заботливая подсказка для гостей, а не список требований.', 'var(--mint)'],
+              ['Гостям проще купить то, что правда нужно','Можно добавить ссылки, цены, фото и комментарии к каждому подарку.', 'var(--cream)'],
+              ['Ссылка выглядит как приглашение','Не просто список сообщений, а аккуратная страница праздника.', 'var(--primary-soft)']
             ].map((item, i) => `<div class="card info-card" style="--accent:${item[2]}"><div class="icon">${['•','✓','♡','↗','→'][i]}</div><h3>${item[0]}</h3><p>${item[1]}</p></div>`).join('')}
           </div>
         </section>
         <section>
           <div class="section-title"><h2>Как это работает</h2></div>
           <div class="steps-line">
-            <div class="card step-card"><div class="step-num">1</div><h3>Создаёте повод</h3><p class="muted">Выбираете тип события, добавляете дату, место и пожелания.</p><div class="step-mini"><span class="mini-line"></span><span class="mini-line short"></span></div></div>
-            <div class="card step-card"><div class="step-num">2</div><h3>Добавляете подарки</h3><p class="muted">Добавляете ссылки, картинки, цены и комментарии.</p><div class="step-mini"><span class="mini-line short"></span><span class="mini-line"></span></div></div>
-            <div class="card step-card"><div class="step-num">3</div><h3>Отправляете гостям</h3><p class="muted">Гости открывают ссылку, выбирают подарок и бронируют его.</p><div class="step-mini"><span class="mini-line"></span><span class="mini-line short"></span></div></div>
+            <div class="card step-card"><div class="step-num">1</div><h3>Создаёте карточку</h3><p class="muted">Выбираете тип праздника, добавляете дату, место, карту и пожелания для гостей.</p><div class="step-mini"><span class="mini-line"></span><span class="mini-line short"></span></div></div>
+            <div class="card step-card"><div class="step-num">2</div><h3>Добавляете подарки</h3><p class="muted">Вносите идеи, ссылки, цены, фото и комментарии: что важно, какой размер, цвет или бюджет.</p><div class="step-mini"><span class="mini-line short"></span><span class="mini-line"></span></div></div>
+            <div class="card step-card"><div class="step-num">3</div><h3>Отправляете ссылку гостям</h3><p class="muted">Гости открывают карточку, выбирают подарок и бронируют его, чтобы не было дублей.</p><div class="step-mini"><span class="mini-line"></span><span class="mini-line short"></span></div></div>
           </div>
         </section>
         <section>
-          <div class="section-title"><h2>Повод не только для детских дней рождения</h2><p>Начните с простой карточки, а дальше используйте сервис для любых событий, где есть гости, детали и подарки.</p></div>
-          <div class="occasion-grid">${['Детский день рождения','Взрослый день рождения','Свадьба','Baby shower','Девичник','Новый год','Новоселье','Семейный праздник','Выпускной','Корпоратив'].map(x => `<span class="occasion-chip">${x}</span>`).join('')}</div>
+          <div class="section-title"><h2>Для любого события, где есть гости, детали и подарки</h2><p>Начните с простой карточки праздника, а потом используйте Повод для дней рождения, свадеб, новоселий, baby shower, девичников, выпускных и семейных встреч.</p></div>
+          <div class="occasion-grid">${['Детский день рождения','Взрослый день рождения','Свадьба','Baby shower','Новоселье','Девичник','Новый год','Семейный праздник'].map(x => `<span class="occasion-chip">${x}</span>`).join('')}</div>
         </section>
         <section class="bottom-cta">
           <div class="card">
-            <h2>Готовы собрать свой повод?</h2>
-            <p class="muted">Создайте карточку, добавьте детали праздника и отправьте гостям одну аккуратную ссылку.</p>
+            <h2>Создайте красивую карточку для ближайшего праздника</h2>
+            <p class="muted">Добавьте детали, подарки и пожелания — и отправьте гостям одну аккуратную ссылку вместо десятка сообщений.</p>
             <div class="hero-actions" style="margin-top:16px">
-              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать событие</button>
+              <button class="btn btn-accent" data-route="${currentUser ? '/dashboard/events/new' : '/register'}">Создать карточку</button>
             </div>
           </div>
         </section>
@@ -2342,7 +3540,7 @@
       }
       view.innerHTML = `
         <div class="card auth-card">
-          <h2>${isLogin ? 'Войти в Повод' : 'Создать событие'}</h2>
+          <h2>${isLogin ? 'Войти в Повод' : 'Создать карточку праздника'}</h2>
           <p class="muted">${isLogin ? 'Войдите, чтобы вернуться к своим поводам. Гостям регистрация не нужна.' : 'Чтобы создать и потом редактировать карточку, сначала авторизуйтесь в Поводе.'}</p>
           <div class="auth-primary">
             <h3>Авторизация через Telegram</h3>
@@ -2595,21 +3793,31 @@
         ${own.length ? `<div class="dashboard-grid">
           ${own.map(event => {
             const reservedCount = event.gifts.filter(g => g.status === 'reserved').length;
-            return `<article class="card event-item">
+            const isPublished = event.status === 'published';
+            return `<article class="card event-item" role="button" tabindex="0" onclick="navigate('/dashboard/events/${event.id}/preview')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigate('/dashboard/events/${event.id}/preview')}">
+              <details class="event-menu" onclick="event.stopPropagation()">
+                <summary aria-label="Действия с поводом">•••</summary>
+                <div class="event-menu-list">
+                  <button class="btn btn-soft btn-small" type="button" onclick="navigate('/dashboard/events/${event.id}/preview')">Предпросмотр</button>
+                  <button class="btn btn-soft btn-small" type="button" onclick="navigate('/dashboard/events/${event.id}/edit')">Редактировать</button>
+                  <button class="btn btn-soft btn-small" type="button" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку</button>
+                  <button class="btn btn-soft btn-small" type="button" onclick="${isPublished ? `unpublishEvent('${event.id}')` : `publishEvent('${event.id}')`}">${isPublished ? 'Снять публикацию' : 'Опубликовать'}</button>
+                  <button class="btn btn-soft btn-small danger" type="button" onclick="deleteEvent('${event.id}')">Удалить</button>
+                </div>
+              </details>
               <div class="event-preview">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : (event.type ? event.type.split(' ')[0] : 'Повод')}</div>
               <div>
-                <span class="status-pill">${event.status === 'published' ? 'опубликована' : 'черновик'}</span>
+                <div class="event-topline"><span class="status-pill ${isPublished ? 'published' : 'draft'}">${isPublished ? 'опубликована' : 'черновик'}</span></div>
                 <h3>${event.title || 'Без названия'}</h3>
                 <p class="muted">${event.date || 'Дата не указана'} · ${event.type || 'Тип повода не выбран'}</p>
                 <div class="event-chips">
                   <span class="tag">${event.gifts.length} подарков</span>
-                  <span class="tag">${reservedCount} забронировано</span>
+                  <span class="tag">Бронь подарков: ${reservedCount}</span>
                 </div>
                 <div class="event-actions">
-                  <button class="btn btn-soft btn-small" data-route="/dashboard/events/${event.id}/edit">Редактировать</button>
-                  <button class="btn btn-soft btn-small" data-route="/p/${event.slug}">Открыть</button>
-                  <button class="btn btn-primary btn-small" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку</button>
-                  <button class="btn btn-soft btn-small" onclick="${event.status === 'published' ? `unpublishEvent('${event.id}')` : `publishEvent('${event.id}')`}">${event.status === 'published' ? 'Снять с публикации' : 'Опубликовать'}</button>
+                  <button class="btn btn-primary btn-small" type="button" onclick="event.stopPropagation(); navigate('/dashboard/events/${event.id}/preview')">Посмотреть</button>
+                  <button class="btn btn-soft btn-small" type="button" onclick="event.stopPropagation(); navigate('/dashboard/events/${event.id}/edit')">Редактировать</button>
+                  <button class="btn btn-soft btn-small" type="button" onclick="event.stopPropagation(); copyText('${publicUrl(event)}')">Скопировать ссылку</button>
                 </div>
               </div>
             </article>`;
@@ -2715,12 +3923,21 @@
       const gift = editingGiftId ? event.gifts.find(item => item.id === editingGiftId) : null;
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Новый подарок'}</h3>
-        <label class="full">Ссылка на подарок<input id="giftUrl" value="${gift?.url || ''}" placeholder="Ozon, Wildberries или другая ссылка" oninput="prefillGiftFromUrl()"><span class="field-hint">Ссылку можно добавить с Ozon, Wildberries или любого магазина. Если данные не подтянутся автоматически, заполните вручную.</span></label>
+        <label class="full">Ссылка на Wildberries<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.wildberries.ru/catalog/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries: название, цена и фото подтянутся автоматически.</span></label>
+        <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" type="button" onclick="prefillGiftFromUrl(true)">Подтянуть данные по ссылке</button></div>
+        <div class="gift-admin-card hidden" id="giftPreviewCard">
+          <div class="gift-thumb" id="giftPreviewImage">Фото</div>
+          <div>
+            <b id="giftPreviewTitle">Данные подарка</b>
+            <div class="muted" id="giftPreviewPrice">Цена подтянется автоматически</div>
+            <div class="gift-admin-meta"><span class="status-pill published">готово к сохранению</span></div>
+          </div>
+        </div>
         <div class="form-grid">
-          <label>Название подарка<input id="giftTitle" value="${gift?.title || ''}" placeholder="Например, самокат"></label>
-          <label>Цена<input id="giftPrice" type="number" min="0" value="${gift?.price || ''}" placeholder="Например, 3500"></label>
-          <label>Картинка<input id="giftImage" value="${gift?.image || ''}" placeholder="Ссылка на изображение"></label>
-          <label class="full">Описание<textarea id="giftDescription" placeholder="Коротко: размер, цвет, важные детали">${gift?.description || ''}</textarea></label>
+          <label>Название<input id="giftTitle" value="${gift?.title || ''}" placeholder="Подтянется автоматически"></label>
+          <label>Цена<input id="giftPrice" type="number" min="0" value="${gift?.price || ''}" placeholder="Подтянется автоматически"></label>
+          <label>Картинка<input id="giftImage" value="${gift?.image || ''}" placeholder="Подтянется автоматически"></label>
+          <label class="full">Описание<textarea id="giftDescription" placeholder="Можно оставить пустым">${gift?.description || ''}</textarea></label>
         </div>
         <div class="hero-actions"><button class="btn btn-primary" onclick="saveGift('${eventId}')">Сохранить подарок</button><button class="btn btn-soft" onclick="closeGiftForm('${eventId}')">Отмена</button></div>
       </div>`;
@@ -2734,7 +3951,7 @@
           <div class="muted">${money(gift.price)}</div>
           <div class="gift-admin-meta">
             <span class="tag">${gift.category || 'Подарок'}</span>
-            <span class="status-pill">${reserved ? 'забронирован' : 'свободен'}</span>
+            <span class="status-pill">${reserved ? 'подарок забронирован' : 'подарок свободен'}</span>
             <span class="field-hint">${gift.url ? 'Ссылка добавлена' : 'Ссылка пока не добавлена'}</span>
           </div>
         </div>
@@ -2917,28 +4134,93 @@
       editingGiftId = null;
       renderEditor(findEvent(eventId), 'gifts');
     }
-    function prefillGiftFromUrl() {
-      const url = document.getElementById('giftUrl').value.trim();
+    function giftUrlStatus(text) {
+      const node = document.getElementById('giftUrlStatus');
+      if (node) node.textContent = text;
+    }
+    function handleGiftUrlKey(event) {
+      if (event.key !== 'Enter') return;
+      event.preventDefault();
+      prefillGiftFromUrl(true);
+    }
+    function renderGiftPreviewCard(preview) {
+      const card = document.getElementById('giftPreviewCard');
+      if (!card) return;
+      const title = document.getElementById('giftPreviewTitle');
+      const price = document.getElementById('giftPreviewPrice');
+      const image = document.getElementById('giftPreviewImage');
+      if (title) title.textContent = preview.title || 'Подарок с Wildberries';
+      if (price) price.textContent = Number(preview.price) > 0 ? money(Number(preview.price)) : 'Цена не указана';
+      if (image) image.innerHTML = preview.image ? `<img src="${h(preview.image)}" alt="">` : 'Фото';
+      card.classList.remove('hidden');
+    }
+    function applyGiftPreview(preview) {
+      const title = document.getElementById('giftTitle');
+      const price = document.getElementById('giftPrice');
+      const image = document.getElementById('giftImage');
+      const description = document.getElementById('giftDescription');
+      if (preview.title) title.value = preview.title;
+      if (Number(preview.price) > 0) price.value = Math.round(Number(preview.price));
+      if (preview.image) image.value = preview.image;
+      if (preview.description && !description.value.trim()) description.value = preview.description;
+      renderGiftPreviewCard(preview);
+    }
+    function prefillGiftFromUrl(force = false) {
+      const input = document.getElementById('giftUrl');
+      const url = input?.value.trim() || '';
       const lower = url.toLowerCase();
-      if (!url) return;
-      if (lower.includes('ozon')) {
-        document.getElementById('giftTitle').value ||= 'Подарок с Ozon';
-        document.getElementById('giftDescription').value ||= 'Данные подтянутся автоматически после подключения backend-парсера.';
+      clearTimeout(giftPreviewTimer);
+      if (!url) {
+        giftUrlStatus('Вставьте ссылку Wildberries: название, цена и фото подтянутся автоматически.');
+        return Promise.resolve(false);
       }
-      if (lower.includes('wildberries') || lower.includes('wb.ru')) {
-        document.getElementById('giftTitle').value ||= 'Подарок с Wildberries';
-        document.getElementById('giftDescription').value ||= 'Данные подтянутся автоматически после подключения backend-парсера.';
+      if (!lower.includes('wildberries') && !lower.includes('wb.ru')) {
+        giftUrlStatus('Автозаполнение сейчас работает для Wildberries. Эту ссылку можно сохранить вручную.');
+        return Promise.resolve(false);
       }
+      const run = async () => {
+        const requestId = ++giftPreviewRequest;
+        giftUrlStatus('Подтягиваю данные с Wildberries...');
+        try {
+          const data = await apiRequest('/api/gift-preview', { method: 'POST', body: { url } });
+          if (requestId !== giftPreviewRequest) return;
+          applyGiftPreview(data.preview || {});
+          giftUrlStatus('Готово: название, цена и фото подтянуты. Проверьте и сохраните подарок.');
+          return true;
+        } catch (error) {
+          if (requestId !== giftPreviewRequest) return;
+          const message = error.message === 'unsupported_store'
+            ? 'Автозаполнение сейчас работает для Wildberries. Эту ссылку можно сохранить вручную.'
+            : 'Не получилось подтянуть данные с Wildberries. Проверьте ссылку или попробуйте ещё раз.';
+          giftUrlStatus(message);
+          toast(message);
+          return false;
+        }
+      };
+      if (force) return run();
+      giftPreviewTimer = setTimeout(run, 650);
+      return Promise.resolve(false);
     }
     async function saveGift(eventId) {
       const event = findEvent(eventId);
+      const url = document.getElementById('giftUrl').value.trim();
+      const lowerUrl = url.toLowerCase();
+      if (url && (lowerUrl.includes('wildberries') || lowerUrl.includes('wb.ru'))) {
+        const hasPreview = document.getElementById('giftTitle').value.trim()
+          && document.getElementById('giftImage').value.trim()
+          && Number(document.getElementById('giftPrice').value || 0) > 0;
+        if (!hasPreview) {
+          const loaded = await prefillGiftFromUrl(true);
+          if (!loaded) return toast('Не получилось подтянуть товар с Wildberries. Проверьте ссылку и попробуйте ещё раз.');
+        }
+      }
       const title = document.getElementById('giftTitle').value.trim();
-      if (!title) return toast('Добавьте название подарка');
+      if (!url && !title) return toast('Добавьте ссылку Wildberries');
       const gift = {
         id: uid(),
         title,
         description: document.getElementById('giftDescription').value.trim(),
-        url: document.getElementById('giftUrl').value.trim(),
+        url,
         price: Number(document.getElementById('giftPrice').value || 0),
         image: document.getElementById('giftImage').value.trim(),
         category: event.gifts.find(item => item.id === editingGiftId)?.category || 'Подарок',
@@ -2960,8 +4242,8 @@
         upsertEventCache(nextEvent);
         toast('Подарок сохранён');
         renderEditor(nextEvent, 'gifts');
-      } catch {
-        toast('Не получилось сохранить подарок');
+      } catch (error) {
+        toast(error.message === 'gift_preview_failed' ? 'Не получилось подтянуть товар с Wildberries. Проверьте ссылку и попробуйте ещё раз.' : 'Не получилось сохранить подарок');
       }
       return;
     }
@@ -2976,6 +4258,21 @@
         renderEditor(nextEvent, 'gifts');
       } catch {
         toast('Не получилось удалить подарок');
+      }
+      return;
+    }
+    async function deleteEvent(id) {
+      const event = findEvent(id);
+      const title = event?.title || 'этот повод';
+      if (!confirm(`Удалить «${title}»? Это удалит карточку и все подарки внутри.`)) return;
+      try {
+        await apiRequest(`/api/events/${id}`, { method: 'DELETE' });
+        eventsCache = eventsCache.filter(item => item.id !== id);
+        setJSON(STORAGE.events, eventsCache);
+        toast('Повод удалён');
+        renderDashboard();
+      } catch {
+        toast('Не получилось удалить повод');
       }
       return;
     }
@@ -3012,9 +4309,17 @@
       const unpublishedNotice = event.status !== 'published' && !preview
         ? '<div class="public-notice">Карточка пока не опубликована. Гости увидят её после публикации организатором.</div>'
         : '';
+      const previewActions = preview ? `
+        <div class="preview-actions hero-actions">
+          <button class="btn btn-soft" data-route="/dashboard">В кабинет</button>
+          <button class="btn btn-primary" data-route="/dashboard/events/${event.id}/edit">Редактировать</button>
+          <button class="btn btn-soft" data-route="/dashboard/events/${event.id}/gifts">Подарки</button>
+          <button class="btn btn-soft" onclick="copyText('${publicUrl(event)}')">Скопировать ссылку</button>
+          <button class="btn btn-accent" onclick="${event.status === 'published' ? `unpublishEvent('${event.id}')` : `publishEvent('${event.id}')`}">${event.status === 'published' ? 'Снять публикацию' : 'Опубликовать'}</button>
+        </div>` : '';
       view.innerHTML = `
         ${unpublishedNotice}
-        <div class="page-head"><div><h2>${preview ? 'Предпросмотр' : event.title}</h2><p>${preview ? 'Так карточку увидит гость.' : 'Откройте детали праздника и вишлист подарков.'}</p></div>${preview ? '<button class="btn btn-soft" data-route="/dashboard">В кабинет</button>' : '<button class="btn btn-accent" data-route="/">Создать свою карточку</button>'}</div>
+        <div class="page-head"><div><h2>${preview ? 'Предпросмотр карточки' : event.title}</h2><p>${preview ? 'Так карточку увидит гость. Предпросмотр доступен даже для черновика.' : 'Откройте детали праздника и список подарков.'}</p></div>${preview ? '<button class="btn btn-soft" data-route="/dashboard">В кабинет</button>' : '<button class="btn btn-accent" data-route="/">Создать свою карточку</button>'}</div>
         <div class="guest-layout">
           <aside class="card guest-side">
             ${eventSummary(event)}
@@ -3027,11 +4332,12 @@
             <div class="guest-gifts">${giftsGrid(event)}</div>
             <div class="footer">Создано в Поводе · <button class="btn btn-soft btn-small" data-route="/">Создать свою карточку</button></div>
           </section>
-        </div>`;
+        </div>
+        ${previewActions}`;
     }
     function giftCard(gift) {
       const reserved = gift.status === 'reserved';
-      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Уже забронирован' : 'Подарок свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Уже забронирован' : 'Забронировать'}</button></div></div></article>`;
+      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Подарок уже забронирован' : 'Подарок свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Подарок забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
     }
     function openReserve(giftId) {
       pendingReserve = { event: eventByGiftId(giftId), giftId };

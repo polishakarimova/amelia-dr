@@ -523,6 +523,238 @@ async function saveDataUrlImage(dataUrl) {
   return `/uploads/${filename}`;
 }
 
+function decodeHtml(value) {
+  return String(value || '')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseProductUrl(rawUrl) {
+  let parsed;
+  try {
+    parsed = new URL(String(rawUrl || '').trim());
+  } catch {
+    const error = new Error('invalid_product_url');
+    error.status = 400;
+    throw error;
+  }
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    const error = new Error('unsupported_product_url');
+    error.status = 400;
+    throw error;
+  }
+  return parsed;
+}
+
+function isWildberriesHost(hostname) {
+  const host = String(hostname || '').toLowerCase();
+  return host === 'wildberries.ru' || host.endsWith('.wildberries.ru') || host === 'wb.ru' || host.endsWith('.wb.ru');
+}
+
+function isWildberriesUrlText(rawUrl) {
+  try {
+    return isWildberriesHost(parseProductUrl(rawUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function wildberriesProductIdFromUrl(rawUrl) {
+  const text = String(rawUrl || '');
+  return (
+    text.match(/\/catalog\/(\d+)\//i)?.[1] ||
+    text.match(/[?&](?:nm|card|imt|product)=(\d+)/i)?.[1] ||
+    text.match(/\/(\d+)\/detail\.aspx/i)?.[1] ||
+    ''
+  );
+}
+
+function wildberriesBasketHost(productId) {
+  const vol = Math.floor(Number(productId) / 100000);
+  const ranges = [
+    [143, '01'], [287, '02'], [431, '03'], [719, '04'], [1007, '05'],
+    [1061, '06'], [1115, '07'], [1169, '08'], [1313, '09'], [1601, '10'],
+    [1655, '11'], [1919, '12'], [2045, '13'], [2189, '14'], [2405, '15']
+  ];
+  const basket = ranges.find(([max]) => vol <= max)?.[1] || '16';
+  return `basket-${basket}.wbbasket.ru`;
+}
+
+function wildberriesImageUrl(productId, index = 1) {
+  const id = Number(productId);
+  const vol = Math.floor(id / 100000);
+  const part = Math.floor(id / 1000);
+  return `https://${wildberriesBasketHost(id)}/vol${vol}/part${part}/${id}/images/big/${index}.webp`;
+}
+
+function wildberriesPrice(product) {
+  const values = [
+    product?.salePriceU,
+    product?.priceU,
+    product?.sizes?.[0]?.price?.total,
+    product?.sizes?.[0]?.price?.product,
+    product?.sizes?.[0]?.price?.basic
+  ];
+  const raw = values.find(value => Number(value) > 0);
+  return raw ? Math.round(Number(raw) / 100) : 0;
+}
+
+function normalizeWildberriesProduct(product, productId) {
+  const id = String(product?.id || productId || '');
+  const title = decodeHtml([product?.brand, product?.name].filter(Boolean).join(' ')) || `Товар Wildberries ${id}`;
+  const image = product?.pics ? wildberriesImageUrl(id) : (product?.image || wildberriesImageUrl(id));
+  return {
+    source: 'wildberries',
+    productId: id,
+    title,
+    price: wildberriesPrice(product),
+    image,
+    description: product?.brand ? `Бренд: ${decodeHtml(product.brand)}` : '',
+    url: `https://www.wildberries.ru/catalog/${id}/detail.aspx`
+  };
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        'user-agent': 'Mozilla/5.0 PovodBot/1.0 (+https://mypovod.ru)',
+        accept: 'text/html,application/json;q=0.9,*/*;q=0.8',
+        ...(options.headers || {})
+      }
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchWildberriesApi(productId) {
+  const apiUrl = new URL('https://card.wb.ru/cards/v2/detail');
+  apiUrl.searchParams.set('appType', '1');
+  apiUrl.searchParams.set('curr', 'rub');
+  apiUrl.searchParams.set('dest', '-1257786');
+  apiUrl.searchParams.set('spp', '30');
+  apiUrl.searchParams.set('nm', productId);
+  const response = await fetchWithTimeout(apiUrl);
+  if (!response.ok) throw new Error(`wildberries_api_${response.status}`);
+  const data = await response.json();
+  const product = data?.data?.products?.[0];
+  if (!product) throw new Error('wildberries_product_not_found');
+  return normalizeWildberriesProduct(product, productId);
+}
+
+async function searchWildberriesProduct(productId) {
+  const apiUrl = new URL('https://search.wb.ru/exactmatch/ru/common/v18/search');
+  apiUrl.searchParams.set('appType', '1');
+  apiUrl.searchParams.set('curr', 'rub');
+  apiUrl.searchParams.set('dest', '-1257786');
+  apiUrl.searchParams.set('page', '1');
+  apiUrl.searchParams.set('query', productId);
+  apiUrl.searchParams.set('resultset', 'catalog');
+  apiUrl.searchParams.set('sort', 'popular');
+  apiUrl.searchParams.set('spp', '30');
+  const response = await fetchWithTimeout(apiUrl);
+  if (!response.ok) throw new Error(`wildberries_search_${response.status}`);
+  const data = await response.json();
+  const products = data?.data?.products || [];
+  const product = products.find(item => String(item?.id) === String(productId)) || products[0];
+  if (!product) throw new Error('wildberries_search_not_found');
+  return normalizeWildberriesProduct(product, productId);
+}
+
+function metaContent(html, property) {
+  const escaped = property.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const patterns = [
+    new RegExp(`<meta[^>]+property=["']${escaped}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+name=["']${escaped}["'][^>]+content=["']([^"']+)["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+property=["']${escaped}["'][^>]*>`, 'i'),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escaped}["'][^>]*>`, 'i')
+  ];
+  return decodeHtml(patterns.map(pattern => html.match(pattern)?.[1]).find(Boolean) || '');
+}
+
+async function fetchPageMetadata(productUrl) {
+  const response = await fetchWithTimeout(productUrl.href);
+  if (!response.ok) throw new Error(`product_page_${response.status}`);
+  const html = await response.text();
+  const title = metaContent(html, 'og:title') || metaContent(html, 'twitter:title') || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
+  const image = metaContent(html, 'og:image') || metaContent(html, 'twitter:image');
+  const price = Number(String(metaContent(html, 'product:price:amount') || '').replace(',', '.')) || 0;
+  return {
+    source: 'page-meta',
+    title: title.replace(/\s*\|\s*Wildberries.*$/i, ''),
+    price: Math.round(price),
+    image,
+    description: metaContent(html, 'og:description') || '',
+    url: productUrl.href
+  };
+}
+
+async function fetchGiftPreview(rawUrl) {
+  const productUrl = parseProductUrl(rawUrl);
+  if (!isWildberriesHost(productUrl.hostname)) {
+    const error = new Error('unsupported_store');
+    error.status = 400;
+    throw error;
+  }
+  const productId = wildberriesProductIdFromUrl(productUrl.href);
+  if (productId) {
+    try {
+      return await fetchWildberriesApi(productId);
+    } catch (error) {
+      console.error('wildberries_api_preview_failed', error.message || error);
+    }
+    try {
+      return await searchWildberriesProduct(productId);
+    } catch (error) {
+      console.error('wildberries_search_preview_failed', error.message || error);
+    }
+  }
+  const preview = await fetchPageMetadata(productUrl);
+  if (!preview.title && !preview.image) {
+    const error = new Error('product_preview_not_found');
+    error.status = 404;
+    throw error;
+  }
+  return preview;
+}
+
+async function giftInputWithPreview(input) {
+  const url = String(input.url || '').trim();
+  let preview = {};
+  const needsPreview = url && (input.autofill || !input.title || !input.image || !Number(input.price || 0));
+  if (needsPreview) {
+    try {
+      preview = await fetchGiftPreview(url);
+    } catch (error) {
+      if (isWildberriesUrlText(url)) {
+        const previewError = new Error('gift_preview_failed');
+        previewError.status = error.status === 400 ? 400 : 422;
+        throw previewError;
+      }
+    }
+  }
+  const title = String(input.title || preview.title || '').trim();
+  return {
+    title: title || (url ? 'Подарок по ссылке' : ''),
+    description: String(input.description || preview.description || ''),
+    url,
+    price: Number(input.price || preview.price || 0),
+    image: String(input.image || preview.image || ''),
+    category: String(input.category || 'Подарок')
+  };
+}
+
 function send(res, status, data, headers = {}) {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', ...headers });
   res.end(JSON.stringify(data));
@@ -980,6 +1212,19 @@ async function api(req, res, url) {
     }
   }
 
+  if (path === '/api/gift-preview') {
+    const user = requireUser(req, res, db);
+    if (!user) return;
+    if (req.method !== 'POST') return methodNotAllowed(res);
+    try {
+      const input = await body(req);
+      const preview = await fetchGiftPreview(input.url);
+      return send(res, 200, { preview });
+    } catch (error) {
+      return send(res, error.status || 502, { error: error.message || 'gift_preview_failed' });
+    }
+  }
+
   if (path === '/api/events') {
     const user = requireUser(req, res, db);
     if (!user) return;
@@ -1046,23 +1291,30 @@ async function api(req, res, url) {
   }
 
   const eventGiftsMatch = path.match(/^\/api\/events\/([^/]+)\/gifts$/);
-  if (eventGiftsMatch) {
-    const user = requireUser(req, res, db);
-    if (!user) return;
-    const event = db.events.find(item => item.id === eventGiftsMatch[1] && item.userId === user.id);
-    if (!event) return send(res, 404, { error: 'event_not_found' });
-    if (req.method === 'GET') return send(res, 200, { gifts: db.gifts.filter(gift => gift.eventId === event.id) });
-    if (req.method !== 'POST') return methodNotAllowed(res);
+    if (eventGiftsMatch) {
+      const user = requireUser(req, res, db);
+      if (!user) return;
+      const event = db.events.find(item => item.id === eventGiftsMatch[1] && item.userId === user.id);
+      if (!event) return send(res, 404, { error: 'event_not_found' });
+      if (req.method === 'GET') return send(res, 200, { gifts: db.gifts.filter(gift => gift.eventId === event.id) });
+      if (req.method !== 'POST') return methodNotAllowed(res);
     const input = await body(req);
+    let giftInput;
+    try {
+      giftInput = await giftInputWithPreview(input);
+    } catch (error) {
+      return send(res, error.status || 422, { error: error.message || 'gift_preview_failed' });
+    }
+    if (!giftInput.url && !giftInput.title) return send(res, 400, { error: 'gift_url_or_title_required' });
     const gift = {
       id: uid(),
       eventId: event.id,
-      title: String(input.title || ''),
-      description: String(input.description || ''),
-      url: String(input.url || ''),
-      price: Number(input.price || 0),
-      image: String(input.image || ''),
-      category: String(input.category || 'Подарок'),
+      title: giftInput.title,
+      description: giftInput.description,
+      url: giftInput.url,
+      price: giftInput.price,
+      image: giftInput.image,
+      category: giftInput.category,
       status: 'available',
       createdAt: now(),
       updatedAt: now()
@@ -1086,8 +1338,20 @@ async function api(req, res, url) {
     }
     if (req.method !== 'PATCH') return methodNotAllowed(res);
     const input = await body(req);
-    assignAllowed(gift, input, ['title', 'description', 'url', 'image', 'category']);
-    if (Object.hasOwn(input, 'price')) gift.price = Number(input.price || 0);
+    let giftInput;
+    try {
+      giftInput = await giftInputWithPreview({ ...gift, ...input, autofill: Boolean(input.url && input.url !== gift.url) });
+    } catch (error) {
+      return send(res, error.status || 422, { error: error.message || 'gift_preview_failed' });
+    }
+    Object.assign(gift, {
+      title: giftInput.title,
+      description: giftInput.description,
+      url: giftInput.url,
+      image: giftInput.image,
+      category: giftInput.category,
+      price: giftInput.price
+    });
     gift.updatedAt = now();
     await writeDb(db);
     return send(res, 200, { gift });
