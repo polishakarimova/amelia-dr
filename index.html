@@ -87,7 +87,8 @@
         radial-gradient(circle at 76% 74%, rgba(185,168,255,.16), transparent 30%),
         linear-gradient(180deg, #f7fbff 0%, #eef7ff 45%, #fff 100%);
     }
-    body.theme-neutral {
+    body.theme-neutral,
+    body.theme-beige {
       --coral: #8b7a66;
       --coral-dark: #5b4e42;
       --lavender: #d0c8bd;
@@ -774,7 +775,8 @@
       --coral-dark: var(--primary-hover);
       background: linear-gradient(180deg, var(--bg) 0%, #fbfdff 55%, #fff 100%);
     }
-    body.theme-neutral {
+    body.theme-neutral,
+    body.theme-beige {
       --primary: #8B7A66;
       --primary-hover: #5B4E42;
       --primary-soft: #EFE8DE;
@@ -808,7 +810,9 @@
     }
     .btn:hover { transform: translateY(-1px); }
     .btn:disabled { cursor: not-allowed; opacity: .62; }
-    .btn:focus-visible, .theme-option:focus-visible, .tab:focus-visible {
+    .btn:focus-visible, .theme-option:focus-visible, .tab:focus-visible,
+    .color-orb:focus-visible, .mode-choice:focus-visible, .template-slide:focus-visible,
+    .carousel-arrow:focus-visible, .template-select:focus-visible {
       outline: 0;
       box-shadow: 0 0 0 4px rgba(235,115,87,.16);
     }
@@ -876,6 +880,380 @@
     .theme-sample-line { height: 8px; border-radius: 999px; background: rgba(255,255,255,.74); }
     .theme-sample-line.short { width: 58%; }
     .theme-option b, .theme-option .field-hint { position: relative; z-index: 1; }
+    .style-flow {
+      display: grid;
+      gap: 18px;
+    }
+    .style-flow-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: end;
+    }
+    .style-kicker {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      margin-bottom: 10px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(76,60,47,.10);
+      background: rgba(255,255,255,.66);
+      color: var(--coral-dark);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .style-flow-head h3 { font-size: clamp(28px, 4vw, 42px); line-height: 1.03; margin-bottom: 8px; }
+    .style-flow-head p { max-width: 660px; margin: 0; color: var(--muted); line-height: 1.58; }
+    .style-live-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--coral-dark);
+      font-size: 13px;
+      font-weight: 850;
+      white-space: nowrap;
+      box-shadow: 0 12px 28px rgba(70,54,42,.06);
+    }
+    .style-live-chip::before {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--primary);
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+    .style-step-panel {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(16px, 3vw, 24px);
+      border-radius: 34px;
+      border: 1px solid rgba(76,60,47,.10);
+      background:
+        radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--primary-soft) 78%, transparent), transparent 34%),
+        radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--lavender-soft, #F1EAF7) 72%, transparent), transparent 32%),
+        linear-gradient(145deg, rgba(255,255,255,.82), rgba(255,247,240,.66));
+      box-shadow: 0 18px 48px rgba(70,54,42,.07);
+    }
+    .style-step-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .style-step-top h4 { font-size: 22px; margin-bottom: 5px; }
+    .style-step-top p { margin: 0; color: var(--muted); line-height: 1.52; }
+    .style-step-num {
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--surface);
+      color: var(--coral-dark);
+      font-weight: 900;
+      box-shadow: inset 0 0 0 1px rgba(76,60,47,.09), 0 10px 26px rgba(70,54,42,.07);
+    }
+    .color-orbs {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: clamp(12px, 3vw, 24px);
+      flex-wrap: wrap;
+    }
+    .color-orb {
+      width: min(29vw, 138px);
+      min-width: 96px;
+      display: grid;
+      justify-items: center;
+      gap: 9px;
+      border: 0;
+      padding: 0;
+      color: var(--ink);
+      background: transparent;
+      text-align: center;
+    }
+    .color-orb-image {
+      width: min(22vw, 96px);
+      min-width: 76px;
+      aspect-ratio: 1;
+      padding: 5px;
+      border-radius: 999px;
+      border: 1px solid rgba(76,60,47,.10);
+      background: rgba(255,255,255,.74);
+      box-shadow: 0 14px 34px rgba(70,54,42,.09);
+      transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+    .color-orb-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 999px;
+      object-fit: cover;
+    }
+    .color-orb b { font-size: 14px; }
+    .color-orb small {
+      min-height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.58);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .color-orb.active .color-orb-image {
+      transform: translateY(-3px) scale(1.08);
+      border-color: color-mix(in srgb, var(--primary) 42%, white);
+      box-shadow: 0 18px 42px color-mix(in srgb, var(--primary) 20%, rgba(70,54,42,.08));
+    }
+    .color-orb.active small { color: var(--coral-dark); background: var(--primary-soft); }
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .mode-choice {
+      position: relative;
+      min-height: 172px;
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border: 1px solid rgba(76,60,47,.10);
+      border-radius: 28px;
+      background: rgba(255,255,255,.66);
+      text-align: left;
+      box-shadow: 0 12px 30px rgba(70,54,42,.05);
+      transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .mode-choice:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); }
+    .mode-choice.active {
+      border-color: color-mix(in srgb, var(--primary) 40%, rgba(76,60,47,.10));
+      background: linear-gradient(145deg, rgba(255,255,255,.86), color-mix(in srgb, var(--primary-soft) 58%, white));
+      box-shadow: 0 16px 44px color-mix(in srgb, var(--primary) 16%, rgba(70,54,42,.06));
+    }
+    .mode-visual {
+      height: 132px;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 50% 31%, rgba(255,255,255,.95) 0 25%, transparent 26%),
+        linear-gradient(160deg, var(--primary-soft), var(--surface));
+      border: 1px solid rgba(255,255,255,.72);
+      box-shadow: inset 0 0 0 1px rgba(76,60,47,.06);
+    }
+    .mode-choice[data-mode="without-photo"] .mode-visual {
+      background:
+        radial-gradient(circle at 28% 22%, rgba(255,255,255,.82) 0 7%, transparent 8%),
+        radial-gradient(circle at 72% 28%, rgba(255,255,255,.74) 0 6%, transparent 7%),
+        linear-gradient(160deg, var(--gold-soft), var(--primary-soft));
+    }
+    .mode-choice b { display: block; font-size: 18px; margin-bottom: 5px; }
+    .mode-choice span { color: var(--muted); line-height: 1.45; font-size: 13px; }
+    .template-carousel-shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 14px;
+    }
+    .template-carousel {
+      position: relative;
+      min-height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+    .template-slide {
+      position: absolute;
+      width: min(300px, 64vw);
+      border: 0;
+      padding: 0;
+      background: transparent;
+      opacity: .72;
+      transform: translateX(0) scale(.7);
+      transition: transform .34s cubic-bezier(.2,.8,.2,1), opacity .26s ease, filter .26s ease;
+      filter: saturate(.88);
+    }
+    .template-slide.is-active {
+      z-index: 3;
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      filter: saturate(1);
+    }
+    .template-slide.is-left {
+      z-index: 2;
+      transform: translateX(-62%) scale(.78) rotate(-2deg);
+    }
+    .template-slide.is-right {
+      z-index: 2;
+      transform: translateX(62%) scale(.78) rotate(2deg);
+    }
+    .template-slide.is-hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateX(0) scale(.58);
+    }
+    .template-preview-card {
+      position: relative;
+      display: block;
+      padding: 8px;
+      border-radius: 34px;
+      background: rgba(255,255,255,.78);
+      border: 1px solid rgba(255,255,255,.86);
+      box-shadow: 0 24px 70px rgba(70,54,42,.13);
+    }
+    .template-preview-card img {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      display: block;
+      border-radius: 27px;
+      object-fit: cover;
+      background: var(--surface-warm);
+    }
+    .template-slide.is-active .template-preview-card {
+      box-shadow: 0 28px 82px color-mix(in srgb, var(--primary) 18%, rgba(70,54,42,.14));
+    }
+    .template-slide.is-active .template-preview-card::after {
+      content: "выбрано";
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: var(--coral-dark);
+      background: rgba(255,255,255,.82);
+      font-size: 11px;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(70,54,42,.08);
+    }
+    .carousel-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .carousel-arrow {
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(76,60,47,.10);
+      border-radius: 999px;
+      background: rgba(255,255,255,.72);
+      color: var(--ink);
+      font-size: 22px;
+      line-height: 1;
+      box-shadow: 0 12px 30px rgba(70,54,42,.06);
+    }
+    .template-count {
+      min-width: 92px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 850;
+    }
+    .template-select-row {
+      display: flex;
+      justify-content: center;
+    }
+    .template-select {
+      min-width: 190px;
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 22px;
+      background: var(--dark);
+      color: #fff;
+      font-weight: 850;
+      box-shadow: 0 18px 42px rgba(42,37,33,.16);
+    }
+    .template-select:disabled {
+      opacity: .54;
+      cursor: not-allowed;
+    }
+    .template-photo-note {
+      grid-column: 1 / -1;
+      padding: 16px;
+      border-radius: 24px;
+      border: 1px solid rgba(76,60,47,.10);
+      background: linear-gradient(145deg, rgba(255,255,255,.70), var(--primary-soft));
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .template-photo-note b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+      font-size: 17px;
+    }
+    .cover-preview.is-circle {
+      width: min(180px, 100%);
+      height: auto;
+      aspect-ratio: 1;
+      border-radius: 999px;
+      justify-self: center;
+    }
+    #coverCropModal.crop-circle-mode .crop-frame {
+      width: min(76%, 360px);
+      aspect-ratio: 1;
+      border-radius: 999px;
+    }
+    #coverCropModal.crop-circle-mode .crop-frame::before,
+    #coverCropModal.crop-circle-mode .crop-frame::after {
+      border-color: rgba(255,255,255,.30);
+    }
+    @media (max-width: 720px) {
+      .style-flow-head {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+      .style-live-chip {
+        width: fit-content;
+      }
+      .style-step-top {
+        gap: 10px;
+      }
+      .mode-grid {
+        grid-template-columns: 1fr;
+      }
+      .mode-choice {
+        min-height: 136px;
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
+      .mode-visual {
+        height: 104px;
+        border-radius: 22px;
+      }
+      .template-carousel {
+        min-height: 410px;
+      }
+      .template-slide {
+        width: min(246px, 72vw);
+      }
+      .template-slide.is-left {
+        transform: translateX(-52%) scale(.72) rotate(-2deg);
+      }
+      .template-slide.is-right {
+        transform: translateX(52%) scale(.72) rotate(2deg);
+      }
+      .template-preview-card {
+        border-radius: 28px;
+      }
+      .template-preview-card img {
+        border-radius: 22px;
+      }
+    }
     .form-section {
       grid-column: 1 / -1;
       display: grid;
@@ -2904,6 +3282,8 @@
     let editorTab = 'style';
     let pendingReserve = null;
     let coverCrop = null;
+    let templateSwipeStart = null;
+    let templateSwipeDidMove = false;
     let giftFormOpen = false;
     let editingGiftId = null;
     let giftPreviewTimer = null;
@@ -2940,7 +3320,7 @@
       ]
     };
     const BUILDER_STEPS = [
-      { id: 'style', label: 'Тип повода' },
+      { id: 'style', label: 'Стиль' },
       { id: 'details', label: 'Детали' },
       { id: 'gifts', label: 'Подарки' },
       { id: 'publish', label: 'Ссылка' }
@@ -2949,6 +3329,46 @@
       { type: 'День рождения девочки', theme: 'pink', label: 'День рождения девочки', hint: 'Мягкая светлая тема для детского дня рождения.', colors: ['#FFE3D3', '#E8DDFF', '#FFE1D6'] },
       { type: 'День рождения мальчика', theme: 'blue', label: 'День рождения мальчика', hint: 'Голубая тема с более свежим и активным настроением.', colors: ['#D9ECFF', '#E6F0FF', '#E1F0FF'] },
       { type: 'Взрослый день рождения', theme: 'neutral', label: 'Взрослый день рождения', hint: 'Спокойная взрослая карточка без детского визуала.', colors: ['#EFE8DE', '#E7E1D9', '#F0EBE5'] }
+    ];
+    const CARD_TEMPLATE_COLORS = [
+      {
+        id: 'pink',
+        label: 'Розовый',
+        tone: 'мягкий ягодный праздник',
+        type: 'Розовая карточка праздника',
+        swatch: '/public/card-templates/swatches/ChatGPT Image 15 июн. 2026 г., 23_03_33.png'
+      },
+      {
+        id: 'blue',
+        label: 'Голубой',
+        tone: 'свежий воздушный праздник',
+        type: 'Голубая карточка праздника',
+        swatch: '/public/card-templates/swatches/ChatGPT Image 15 июн. 2026 г., 23_04_10.png'
+      },
+      {
+        id: 'beige',
+        label: 'Бежевый',
+        tone: 'теплая спокойная классика',
+        type: 'Бежевая карточка праздника',
+        swatch: '/public/card-templates/swatches/ChatGPT Image 15 июн. 2026 г., 23_03_53.png'
+      }
+    ];
+    const CARD_TEMPLATES = [
+      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'pink-no-photo-01', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/ChatGPT Image 15 июн. 2026 г., 23_20_53.png' },
+      { id: 'pink-no-photo-02', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/Дизайн без названия (4).png' },
+      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (6).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'blue-no-photo-01', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/ChatGPT Image 15 июн. 2026 г., 23_18_43.png' },
+      { id: 'blue-no-photo-02', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/Дизайн без названия (11).png' },
+      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'beige-no-photo-01', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/ChatGPT Image 15 июн. 2026 г., 23_17_05.png' },
+      { id: 'beige-no-photo-02', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/Дизайн без названия.png' }
     ];
 
     function uid() {
@@ -3181,9 +3601,10 @@
       renderHome();
     }
     function applyPageTheme(event = null) {
-      const theme = event?.theme || 'pink';
+      const theme = normalizeTemplateTheme(event?.theme || 'pink');
       document.body.classList.toggle('theme-blue', theme === 'blue');
-      document.body.classList.toggle('theme-neutral', theme === 'neutral');
+      document.body.classList.toggle('theme-neutral', theme === 'neutral' || theme === 'beige');
+      document.body.classList.toggle('theme-beige', theme === 'beige');
     }
     async function guard(next) {
       if (!currentUser) {
@@ -3207,7 +3628,9 @@
         mapUrl: '',
         description: '',
         wishes: '',
-        coverImage: ''
+        coverImage: '',
+        templateMode: '',
+        templateId: ''
       };
       const data = await apiRequest('/api/events', { method: 'POST', body: draft });
       const event = data.event;
@@ -3935,28 +4358,158 @@
     function templateButtons(group, targetId) {
       return `<div class="template-box"><h4>Не знаете, что написать?</h4><div class="template-options">${TEXT_TEMPLATES[group].map((item, index) => `<button class="btn btn-soft" type="button" onclick="applyTextTemplate('${group}', ${index}, '${targetId}')">${item.label}</button>`).join('')}</div></div>`;
     }
+    function normalizeTemplateTheme(theme) {
+      if (theme === 'neutral') return 'beige';
+      return CARD_TEMPLATE_COLORS.some(color => color.id === theme) ? theme : 'pink';
+    }
+    function normalizeTemplateMode(mode) {
+      return mode === 'with-photo' || mode === 'without-photo' ? mode : '';
+    }
+    function colorByTheme(theme) {
+      return CARD_TEMPLATE_COLORS.find(color => color.id === normalizeTemplateTheme(theme)) || CARD_TEMPLATE_COLORS[0];
+    }
+    function templatesForValues(theme, mode) {
+      const normalizedTheme = normalizeTemplateTheme(theme);
+      const normalizedMode = normalizeTemplateMode(mode);
+      if (!normalizedMode) return [];
+      return CARD_TEMPLATES.filter(template => template.theme === normalizedTheme && template.mode === normalizedMode);
+    }
+    function templatesForEvent(event) {
+      return templatesForValues(event?.theme || 'pink', event?.templateMode || '');
+    }
+    function activeTemplateForEvent(event) {
+      const list = templatesForEvent(event);
+      return list.find(template => template.id === event?.templateId) || list[0] || null;
+    }
+    function renderStyleStep(event) {
+      const theme = normalizeTemplateTheme(event.theme || 'pink');
+      const mode = normalizeTemplateMode(event.templateMode || '');
+      const color = colorByTheme(theme);
+      return `
+        <div class="style-flow">
+          <div class="style-flow-head">
+            <div>
+              <span class="style-kicker">Стиль карточки</span>
+              <h3>Выберите настроение праздника</h3>
+              <p>Сначала цвет, потом формат с фото или без, а затем сам макет. Всё ниже сразу подстраивается под выбранный оттенок.</p>
+            </div>
+            <span class="style-live-chip">${color.label}</span>
+          </div>
+          <section class="style-step-panel" id="templateColorStep">
+            <div class="style-step-top">
+              <div>
+                <h4>Цвет</h4>
+                <p>Три фирменных направления: розовый, голубой и бежевый.</p>
+              </div>
+              <span class="style-step-num">1</span>
+            </div>
+            <div class="color-orbs">
+              ${CARD_TEMPLATE_COLORS.map(item => `
+                <button class="color-orb ${theme === item.id ? 'active' : ''}" type="button" onclick="setTemplateColor('${event.id}', '${item.id}')">
+                  <span class="color-orb-image"><img src="${h(item.swatch)}" alt=""></span>
+                  <b>${item.label}</b>
+                  <small>${theme === item.id ? 'Цвет выбран' : 'Выбрать цвет'}</small>
+                </button>
+              `).join('')}
+            </div>
+          </section>
+          <section class="style-step-panel" id="templateModeStep">
+            <div class="style-step-top">
+              <div>
+                <h4>Фото на карточке</h4>
+                <p>Можно выбрать макет с круглым фото или оставить полностью декоративный дизайн.</p>
+              </div>
+              <span class="style-step-num">2</span>
+            </div>
+            <div class="mode-grid">
+              <button class="mode-choice ${mode === 'with-photo' ? 'active' : ''}" data-mode="with-photo" type="button" onclick="setTemplateMode('${event.id}', 'with-photo')">
+                <span class="mode-visual"></span>
+                <span><b>С фото</b><span>Фото будет кадрироваться в круг под выбранный шаблон.</span></span>
+              </button>
+              <button class="mode-choice ${mode === 'without-photo' ? 'active' : ''}" data-mode="without-photo" type="button" onclick="setTemplateMode('${event.id}', 'without-photo')">
+                <span class="mode-visual"></span>
+                <span><b>Без фото</b><span>Только готовая праздничная графика и аккуратные блоки с деталями.</span></span>
+              </button>
+            </div>
+          </section>
+          ${mode ? `
+            <section class="style-step-panel" id="templateStyleStep">
+              <div class="style-step-top">
+                <div>
+                  <h4>Макет</h4>
+                  <p>Листайте карточки: центральная карточка активна, боковые показывают соседние варианты.</p>
+                </div>
+                <span class="style-step-num">3</span>
+              </div>
+              ${templateCarousel(event)}
+            </section>
+          ` : ''}
+        </div>`;
+    }
+    function templateCarousel(event) {
+      const list = templatesForEvent(event);
+      const active = activeTemplateForEvent(event);
+      if (!list.length || !active) return '<p class="muted">Для этого выбора пока нет загруженных макетов.</p>';
+      const activeIndex = list.findIndex(template => template.id === active.id);
+      const slides = list.map((template, index) => {
+        let diff = index - activeIndex;
+        if (list.length > 2) {
+          if (diff > list.length / 2) diff -= list.length;
+          if (diff < -list.length / 2) diff += list.length;
+        }
+        const position = diff === 0 ? 'is-active' : diff === -1 ? 'is-left' : diff === 1 ? 'is-right' : 'is-hidden';
+        return `
+          <button class="template-slide ${position}" type="button" onclick="setTemplateChoice('${event.id}', '${template.id}', event)" aria-label="Выбрать макет">
+            <span class="template-preview-card"><img src="${h(template.image)}" alt=""></span>
+          </button>`;
+      }).join('');
+      return `
+        <div class="template-carousel-shell">
+          <div class="template-carousel" onpointerdown="startTemplateSwipe(event)" onpointerup="finishTemplateSwipe(event, '${event.id}')">
+            ${slides}
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-arrow" type="button" onclick="shiftTemplateCarousel('${event.id}', -1)" aria-label="Предыдущий макет">‹</button>
+            <span class="template-count">${activeIndex + 1} / ${list.length}</span>
+            <button class="carousel-arrow" type="button" onclick="shiftTemplateCarousel('${event.id}', 1)" aria-label="Следующий макет">›</button>
+          </div>
+          <div class="template-select-row">
+            <button class="template-select" type="button" onclick="confirmCardTemplate('${event.id}')">Выбрать</button>
+          </div>
+        </div>`;
+    }
+    function coverUploadMarkup(event) {
+      const mode = normalizeTemplateMode(event.templateMode || '');
+      if (mode === 'without-photo') {
+        return `
+          <div class="template-photo-note">
+            <b>Вы выбрали макет без фото</b>
+            Фото здесь не нужно: дальше останется только заполнить название, дату, место и текст для гостей.
+          </div>`;
+      }
+      const round = mode === 'with-photo';
+      return `
+        <div class="cover-upload">
+          <div class="cover-preview ${round ? 'is-circle' : ''}">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : (round ? 'Фото в круг' : 'Фото')}</div>
+          <div class="cover-copy">
+            <h3>${round ? 'Фото для круглого окна' : 'Фото для карточки'}</h3>
+            <p>${round ? 'Загрузите фото и подвиньте его так, чтобы главный объект красиво попал в круг на шаблоне.' : 'Фото необязательно — можно оставить декоративную обложку. Если загрузите файл, откроется кадрирование.'}</p>
+            <input class="file-input" id="eventCover" type="file" accept="image/*" onchange="openCoverCrop(this.files[0])">
+            <div class="upload-actions">
+              <button class="btn btn-soft" type="button" onclick="document.getElementById('eventCover').click()">Загрузить фото</button>
+              <span class="field-hint">${event.coverImage ? 'Фото загружено и обрезано.' : 'Файл не выбран.'}</span>
+            </div>
+          </div>
+        </div>`;
+    }
     function editorBody(event) {
-      if (editorTab === 'style') return `
-        <h3>Какой повод?</h3><p class="muted">Выберите тип повода. От этого зависит оформление карточки.</p>
-        <div class="theme-grid">${OCCASION_TYPES.map(item => `<button class="theme-option ${event.type === item.type ? 'active' : ''}" style="--theme-a:${item.colors[0]};--theme-b:${item.colors[1]};--theme-glow:${item.colors[2]}" onclick="setOccasion('${event.id}', '${item.type}', '${item.theme}')"><span class="theme-sample"><span class="theme-sample-top"><span class="theme-sample-dot"></span><span class="theme-sample-dot"></span></span><span class="theme-sample-line"></span><span class="theme-sample-line short"></span></span><b>${item.label}</b><span class="field-hint">${item.hint}</span></button>`).join('')}</div>
-        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="continueFromOccasion('${event.id}')" ${event.type ? '' : 'disabled'}>Продолжить</button><span class="field-hint">${event.type ? 'Можно продолжить к деталям.' : 'Сначала выберите тип повода.'}</span></div>`;
+      if (editorTab === 'style') return renderStyleStep(event);
       if (editorTab === 'details') return `
         <div class="form-grid">
           <section class="form-section">
             <h3>Основное</h3>
-            <p class="section-note">Название, дата и фото, которое гости увидят вверху карточки.</p>
-            <div class="cover-upload">
-              <div class="cover-preview">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : 'Фото'}</div>
-              <div class="cover-copy">
-                <h3>Фото для карточки</h3>
-                <p>Фото необязательно — можно оставить декоративную обложку. Если загрузите файл, откроется кадрирование.</p>
-                <input class="file-input" id="eventCover" type="file" accept="image/*" onchange="openCoverCrop(this.files[0])">
-                <div class="upload-actions">
-                  <button class="btn btn-soft" type="button" onclick="document.getElementById('eventCover').click()">Загрузить фото</button>
-                  <span class="field-hint">${event.coverImage ? 'Фото загружено и обрезано.' : 'Файл не выбран.'}</span>
-                </div>
-              </div>
-            </div>
+            <p class="section-note">${normalizeTemplateMode(event.templateMode || '') === 'without-photo' ? 'Название и дата попадут в выбранный декоративный макет.' : 'Название, дата и фото, которое гости увидят вверху карточки.'}</p>
+            ${coverUploadMarkup(event)}
             <label class="full">Название события<input id="eventTitle" value="${event.title || ''}" placeholder="Например, День рождения Тимофея"></label>
             <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
             <label>Время<input id="eventTime" type="time" value="${event.time || ''}"></label>
@@ -4083,6 +4636,78 @@
       if (!event?.type) return toast('Сначала выберите тип повода');
       renderEditor(event, 'details');
     }
+    async function setTemplateColor(id, theme) {
+      const normalizedTheme = normalizeTemplateTheme(theme);
+      const event = findEvent(id);
+      const color = colorByTheme(normalizedTheme);
+      const mode = normalizeTemplateMode(event?.templateMode || '');
+      const currentTemplate = CARD_TEMPLATES.find(template => template.id === event?.templateId && template.theme === normalizedTheme && (!mode || template.mode === mode));
+      const fallbackTemplate = mode ? templatesForValues(normalizedTheme, mode)[0] : null;
+      applyPageTheme({ theme: normalizedTheme });
+      await updateEvent(id, {
+        theme: normalizedTheme,
+        type: color.type,
+        templateId: currentTemplate?.id || fallbackTemplate?.id || ''
+      }, 'Цвет карточки выбран', 'style');
+      scrollEditorStep('templateModeStep');
+    }
+    async function setTemplateMode(id, mode) {
+      const normalizedMode = normalizeTemplateMode(mode);
+      if (!normalizedMode) return;
+      const event = findEvent(id);
+      const theme = normalizeTemplateTheme(event?.theme || 'pink');
+      const currentTemplate = CARD_TEMPLATES.find(template => template.id === event?.templateId && template.theme === theme && template.mode === normalizedMode);
+      const fallbackTemplate = templatesForValues(theme, normalizedMode)[0];
+      await updateEvent(id, {
+        templateMode: normalizedMode,
+        templateId: currentTemplate?.id || fallbackTemplate?.id || ''
+      }, normalizedMode === 'with-photo' ? 'Выбран формат с фото' : 'Выбран формат без фото', 'style');
+      scrollEditorStep('templateStyleStep');
+    }
+    async function setTemplateChoice(id, templateId, clickEvent = null) {
+      if (clickEvent && templateSwipeDidMove) {
+        clickEvent.preventDefault();
+        templateSwipeDidMove = false;
+        return;
+      }
+      if (!CARD_TEMPLATES.some(template => template.id === templateId)) return;
+      await updateEvent(id, { templateId }, '', 'style');
+    }
+    function shiftTemplateCarousel(id, direction) {
+      const event = findEvent(id);
+      const list = templatesForEvent(event);
+      if (!event || !list.length) return;
+      const active = activeTemplateForEvent(event) || list[0];
+      const activeIndex = Math.max(0, list.findIndex(template => template.id === active.id));
+      const next = list[(activeIndex + direction + list.length) % list.length];
+      setTemplateChoice(id, next.id);
+    }
+    function confirmCardTemplate(id) {
+      const event = findEvent(id);
+      if (!event) return;
+      const mode = normalizeTemplateMode(event.templateMode || '');
+      if (!mode) return toast('Сначала выберите: с фото или без фото');
+      if (!activeTemplateForEvent(event)) return toast('Сначала выберите макет');
+      toast(mode === 'with-photo' ? 'Макет выбран. Добавьте фото в круг.' : 'Макет выбран. Заполните детали праздника.');
+      renderEditor(event, 'details');
+    }
+    function scrollEditorStep(targetId) {
+      setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 90);
+    }
+    function startTemplateSwipe(event) {
+      templateSwipeStart = { x: event.clientX, y: event.clientY };
+    }
+    function finishTemplateSwipe(event, id) {
+      if (!templateSwipeStart) return;
+      const dx = event.clientX - templateSwipeStart.x;
+      const dy = event.clientY - templateSwipeStart.y;
+      templateSwipeStart = null;
+      if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy)) return;
+      templateSwipeDidMove = true;
+      setTimeout(() => { templateSwipeDidMove = false; }, 120);
+      event.preventDefault();
+      shiftTemplateCarousel(id, dx < 0 ? 1 : -1);
+    }
     function applyTextTemplate(group, index, targetId) {
       const target = document.getElementById(targetId);
       const template = TEXT_TEMPLATES[group]?.[index]?.text;
@@ -4098,11 +4723,15 @@
       reader.onload = () => {
         const image = new Image();
         image.onload = () => {
-          coverCrop = { image, baseScale: 1, scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+          const event = findEvent(currentEventId);
+          const shape = normalizeTemplateMode(event?.templateMode || '') === 'with-photo' ? 'circle' : 'rect';
+          coverCrop = { image, shape, baseScale: 1, scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
           const imgNode = document.getElementById('cropImage');
           imgNode.src = reader.result;
           document.getElementById('cropScale').value = '1';
-          document.getElementById('coverCropModal').classList.add('active');
+          const modal = document.getElementById('coverCropModal');
+          modal.classList.toggle('crop-circle-mode', shape === 'circle');
+          modal.classList.add('active');
           requestAnimationFrame(resetCoverCrop);
         };
         image.src = reader.result;
@@ -4143,7 +4772,9 @@
       coverCrop.y = Math.min(maxY + frameCenterOffsetY, Math.max(-maxY + frameCenterOffsetY, coverCrop.y));
     }
     function closeCoverCrop() {
-      document.getElementById('coverCropModal').classList.remove('active');
+      const modal = document.getElementById('coverCropModal');
+      modal.classList.remove('active');
+      modal.classList.remove('crop-circle-mode');
       const input = document.getElementById('eventCover');
       if (input) input.value = '';
       coverCrop = null;
@@ -4157,7 +4788,7 @@
       const stageRect = document.getElementById('cropStage').getBoundingClientRect();
       const frameRect = document.getElementById('cropFrame').getBoundingClientRect();
       const outputWidth = 1200;
-      const outputHeight = 700;
+      const outputHeight = coverCrop.shape === 'circle' ? 1200 : 700;
       const canvas = document.createElement('canvas');
       canvas.width = outputWidth;
       canvas.height = outputHeight;
@@ -4188,7 +4819,7 @@
       try {
         const data = await apiRequest(`/api/events/${id}`, { method: 'PATCH', body: patch });
         upsertEventCache(data.event);
-        toast(message);
+        if (message) toast(message);
         renderEditor(data.event, nextTab);
       } catch {
         toast('Не получилось сохранить изменения');

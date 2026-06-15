@@ -2303,6 +2303,8 @@ async function api(req, res, url) {
       description: String(input.description || ''),
       wishes: String(input.wishes || ''),
       coverImage: String(input.coverImage || ''),
+      templateMode: String(input.templateMode || ''),
+      templateId: String(input.templateId || ''),
       status: 'draft',
       createdAt: now(),
       updatedAt: now()
@@ -2327,7 +2329,7 @@ async function api(req, res, url) {
     }
     if (req.method !== 'PATCH') return methodNotAllowed(res);
     const input = await body(req);
-    assignAllowed(event, input, ['title', 'type', 'theme', 'date', 'time', 'placeName', 'address', 'mapUrl', 'description', 'wishes', 'coverImage']);
+    assignAllowed(event, input, ['title', 'type', 'theme', 'date', 'time', 'placeName', 'address', 'mapUrl', 'description', 'wishes', 'coverImage', 'templateMode', 'templateId']);
     if (Object.hasOwn(input, 'slug')) event.slug = uniqueSlug(input.slug || event.title, db, event.id);
     event.updatedAt = now();
     await writeDb(db);
