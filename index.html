@@ -624,6 +624,180 @@
     .guest-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .guest-side h2 { font-size: 28px; margin-bottom: 10px; }
     .guest-side p { color: var(--muted); line-height: 1.6; }
+    .invitation-card {
+      display: grid;
+      gap: 12px;
+      margin: -6px;
+      padding: 10px;
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 18% 8%, color-mix(in srgb, var(--primary-soft) 70%, transparent), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.58));
+      border: 1px solid rgba(255,255,255,.76);
+      box-shadow: 0 22px 60px rgba(70,54,42,.10);
+    }
+    .invitation-art {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      border-radius: 30px;
+      background: var(--surface-warm);
+      box-shadow: 0 16px 44px rgba(70,54,42,.10);
+    }
+    .invitation-art > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .invitation-photo {
+      position: absolute;
+      z-index: 2;
+      left: var(--photo-x, 50%);
+      top: var(--photo-y, 43%);
+      width: var(--photo-size, 49%);
+      aspect-ratio: 1;
+      overflow: hidden;
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
+      background: rgba(255,255,255,.74);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.76);
+    }
+    .invitation-photo img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .glass-block {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px;
+      padding: 16px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,.74), color-mix(in srgb, var(--primary-soft) 35%, rgba(255,255,255,.64)));
+      border: 1px solid rgba(255,255,255,.84);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 12%, transparent), 0 14px 34px rgba(70,54,42,.07);
+      backdrop-filter: blur(18px) saturate(120%);
+    }
+    .invitation-title {
+      text-align: center;
+      color: var(--coral-dark);
+    }
+    .invitation-title h2 {
+      margin: 0;
+      font-size: clamp(28px, 7vw, 43px);
+      line-height: 1.05;
+      font-weight: 720;
+      text-wrap: balance;
+    }
+    .invitation-title .decor-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .invitation-title .decor-line img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+    .invitation-meta-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(128px, .52fr);
+      gap: 10px;
+    }
+    .meta-card {
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+    .meta-card.compact {
+      grid-template-columns: 48px minmax(0, 1fr);
+    }
+    .theme-icon {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,.62);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.72);
+    }
+    .theme-icon img {
+      width: 86%;
+      height: 86%;
+      object-fit: contain;
+      display: block;
+    }
+    .meta-card b,
+    .location-card b {
+      display: block;
+      color: var(--text-dark);
+      font-size: 18px;
+      line-height: 1.16;
+    }
+    .meta-card small,
+    .location-card small,
+    .glass-block p {
+      color: var(--muted);
+      line-height: 1.48;
+    }
+    .message-card {
+      text-align: center;
+    }
+    .message-card .decor-icon {
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      margin: -4px auto 6px;
+      display: block;
+    }
+    .message-card p {
+      margin: 0;
+      font-size: 15px;
+    }
+    .location-card {
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+    .route-pill {
+      grid-column: 1 / -1;
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border-radius: 999px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--gold) 72%, var(--primary)));
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 850;
+      box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 22%, rgba(70,54,42,.10));
+    }
+    .wishlist-glass {
+      text-align: center;
+    }
+    .wishlist-glass img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+      margin-bottom: 4px;
+    }
+    .wishlist-glass h3 {
+      margin-bottom: 4px;
+      color: var(--coral-dark);
+      font-size: 24px;
+      font-weight: 730;
+    }
     .guest-gifts { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .wishlist-intro { padding: 18px; margin-bottom: 14px; }
     .wishlist-intro h3 { font-size: 22px; margin-bottom: 8px; }
@@ -687,7 +861,25 @@
       touch-action: none;
       user-select: none;
     }
-    .crop-stage img {
+    .crop-template-bg {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+      pointer-events: none;
+    }
+    .crop-photo-window {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      overflow: hidden;
+      border-radius: inherit;
+    }
+    .crop-photo-window img {
       position: absolute;
       left: 50%;
       top: 50%;
@@ -709,6 +901,7 @@
       border-radius: 24px;
       box-shadow: 0 0 0 999px rgba(0,0,0,.48), inset 0 0 0 1px rgba(255,255,255,.45);
       pointer-events: none;
+      z-index: 3;
     }
     .crop-frame::after {
       content: "";
@@ -1121,6 +1314,13 @@
       font-weight: 850;
       box-shadow: 0 16px 34px rgba(42,37,33,.14);
     }
+    .carousel-hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      opacity: .72;
+      text-align: center;
+    }
     .mode-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1307,10 +1507,92 @@
       border-radius: 999px;
       justify-self: center;
     }
+    .template-art-preview {
+      position: relative;
+      width: min(210px, 100%);
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      justify-self: center;
+      border-radius: 28px;
+      background: var(--surface-warm);
+      border: 1px solid rgba(255,255,255,.82);
+      box-shadow: 0 18px 42px rgba(70,54,42,.10);
+    }
+    .template-art-preview > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+    .template-art-photo {
+      position: absolute;
+      z-index: 2;
+      left: var(--photo-x, 50%);
+      top: var(--photo-y, 43%);
+      width: var(--photo-size, 49%);
+      aspect-ratio: 1;
+      transform: translate(-50%, -50%);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle at 30% 25%, rgba(255,255,255,.96), rgba(255,255,255,.54)),
+        var(--primary-soft);
+      color: var(--coral-dark);
+      font-size: 12px;
+      font-weight: 850;
+      text-align: center;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.76), 0 10px 26px rgba(70,54,42,.08);
+    }
+    .template-art-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
     #coverCropModal.crop-circle-mode .crop-frame {
       width: min(76%, 360px);
       aspect-ratio: 1;
       border-radius: 999px;
+    }
+    #coverCropModal.crop-template-mode .modal-card.wide {
+      width: min(520px, 100%);
+    }
+    #coverCropModal.crop-template-mode .crop-stage {
+      width: min(86vw, 390px);
+      height: auto;
+      min-height: 0;
+      aspect-ratio: 3 / 4;
+      margin-left: auto;
+      margin-right: auto;
+      border-radius: 34px;
+      background: var(--surface-warm);
+      box-shadow: 0 24px 70px rgba(50,40,35,.18);
+    }
+    #coverCropModal.crop-template-mode .crop-template-bg {
+      display: block;
+    }
+    #coverCropModal.crop-template-mode .crop-photo-window,
+    #coverCropModal.crop-template-mode .crop-frame {
+      left: var(--photo-x, 50%);
+      top: var(--photo-y, 43%);
+      width: var(--photo-size, 49%);
+      height: auto;
+      aspect-ratio: 1;
+      inset: auto;
+      transform: translate(-50%, -50%);
+      border-radius: 999px;
+    }
+    #coverCropModal.crop-template-mode .crop-photo-window {
+      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.72);
+    }
+    #coverCropModal.crop-template-mode .crop-frame {
+      border: 2px solid rgba(255,255,255,.92);
+      box-shadow: 0 0 0 999px rgba(0,0,0,.10), inset 0 0 0 1px color-mix(in srgb, var(--primary) 34%, white);
     }
     #coverCropModal.crop-circle-mode .crop-frame::before,
     #coverCropModal.crop-circle-mode .crop-frame::after {
@@ -1373,6 +1655,29 @@
       }
       .template-preview-card img {
         border-radius: 22px;
+      }
+      .invitation-card {
+        margin: -4px;
+        padding: 8px;
+        border-radius: 30px;
+      }
+      .invitation-art {
+        border-radius: 26px;
+      }
+      .invitation-meta-grid {
+        grid-template-columns: 1fr;
+      }
+      .glass-block {
+        border-radius: 22px;
+        padding: 13px;
+      }
+      .meta-card,
+      .location-card {
+        grid-template-columns: 48px minmax(0, 1fr);
+      }
+      .theme-icon {
+        width: 48px;
+        height: 48px;
       }
     }
     .form-section {
@@ -3367,7 +3672,10 @@
       <h3>Настроить фото</h3>
       <p class="muted">Подвиньте фото и выберите масштаб. Светлая рамка показывает, что попадёт в обложку карточки.</p>
       <div class="crop-stage" id="cropStage">
-        <img id="cropImage" alt="">
+        <img class="crop-template-bg" id="cropTemplateImage" alt="">
+        <div class="crop-photo-window" id="cropPhotoWindow">
+          <img id="cropImage" alt="">
+        </div>
         <div class="crop-frame" id="cropFrame"></div>
       </div>
       <div class="crop-tools">
@@ -3459,21 +3767,21 @@
         label: 'Розовый',
         tone: 'мягкий ягодный праздник',
         type: 'Розовая карточка праздника',
-        swatch: '/public/card-templates/swatches/ChatGPT Image 15 июн. 2026 г., 23_03_33.png'
+        swatch: '/public/card-templates/swatches/pink-swatch.png'
       },
       {
         id: 'blue',
         label: 'Голубой',
         tone: 'свежий воздушный праздник',
         type: 'Голубая карточка праздника',
-        swatch: '/public/card-templates/swatches/ChatGPT Image 15 июн. 2026 г., 23_04_10.png'
+        swatch: '/public/card-templates/swatches/blue-swatch.png'
       },
       {
         id: 'beige',
         label: 'Бежевый',
         tone: 'теплая спокойная классика',
         type: 'Бежевая карточка праздника',
-        swatch: '/public/card-templates/swatches/ChatGPT Image 15 июн. 2026 г., 23_03_53.png'
+        swatch: '/public/card-templates/swatches/beige-swatch.png'
       }
     ];
     const CARD_TEMPLATES = [
@@ -4504,6 +4812,43 @@
       const list = templatesForEvent(event);
       return list.find(template => template.id === event?.templateId) || list[0] || null;
     }
+    function photoSlotStyle(template) {
+      const slot = template?.photoSlot || { x: 50, y: 43, size: 49 };
+      return `--photo-x:${slot.x}%;--photo-y:${slot.y}%;--photo-size:${slot.size}%`;
+    }
+    function iconTheme(event) {
+      return normalizeTemplateTheme(event?.theme || 'pink');
+    }
+    function themeIconSrc(event, name) {
+      return `/public/card-templates/icons/${iconTheme(event)}/${name}.png`;
+    }
+    function themeIcon(event, name, label = '') {
+      return `<span class="theme-icon"><img src="${themeIconSrc(event, name)}" alt="${h(label)}"></span>`;
+    }
+    function decorativeIconName(event) {
+      return iconTheme(event) === 'pink' ? 'heart' : 'star';
+    }
+    function formatEventDate(event) {
+      if (!event?.date) return { main: 'Дата не указана', sub: 'добавьте дату' };
+      const date = new Date(`${event.date}T12:00:00`);
+      if (Number.isNaN(date.getTime())) return { main: event.date, sub: '' };
+      return {
+        main: new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(date),
+        sub: new Intl.DateTimeFormat('ru-RU', { weekday: 'long' }).format(date)
+      };
+    }
+    function templateArtMarkup(event, className = 'template-art-preview') {
+      const template = activeTemplateForEvent(event);
+      if (!template) {
+        return `<div class="${className}"><div class="template-art-photo">Фото</div></div>`;
+      }
+      const photo = normalizeTemplateMode(event.templateMode || '') === 'with-photo';
+      return `
+        <div class="${className}" style="${photoSlotStyle(template)}">
+          <img src="${h(template.image)}" alt="">
+          ${photo ? `<span class="template-art-photo">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : 'Фото в круг'}</span>` : ''}
+        </div>`;
+    }
     function renderStyleStep(event) {
       const theme = normalizeTemplateTheme(event.theme || 'pink');
       const mode = normalizeTemplateMode(event.templateMode || '');
@@ -4573,20 +4918,15 @@
           <button class="color-slide ${position}" type="button" onclick="setTemplateColor('${event.id}', '${color.id}', event)" aria-label="Выбрать ${color.label}">
             <span class="color-slide-image"><img src="${h(color.swatch)}" alt=""></span>
             <b>${color.label}</b>
-            <small>${diff === 0 ? color.tone : 'листайте'}</small>
+            <small>${diff === 0 ? color.tone : 'свайп'}</small>
           </button>`;
       }).join('');
       return `
         <div class="color-carousel-shell">
-          <div class="color-carousel" onpointerdown="startColorSwipe(event)" onpointerup="finishColorSwipe(event, '${event.id}')">
+          <div class="color-carousel" onpointerdown="startColorSwipe(event)" onpointermove="trackColorSwipe(event)" onpointerup="finishColorSwipe(event, '${event.id}')" onpointercancel="cancelColorSwipe()" onpointerleave="cancelColorSwipe()">
             ${slides}
           </div>
-          <div class="carousel-controls">
-            <button class="carousel-arrow" type="button" onclick="shiftTemplateColor('${event.id}', -1)" aria-label="Предыдущий цвет">‹</button>
-            <span class="template-count">${activeIndex + 1} / ${CARD_TEMPLATE_COLORS.length}</span>
-            <button class="carousel-arrow" type="button" onclick="shiftTemplateColor('${event.id}', 1)" aria-label="Следующий цвет">›</button>
-          </div>
-          <button class="color-select" type="button" onclick="confirmTemplateColor('${event.id}')">Выбрать цвет</button>
+          <span class="carousel-hint">свайпните, чтобы сменить цвет</span>
         </div>`;
     }
     function templateCarousel(event) {
@@ -4602,23 +4942,16 @@
         }
         const position = diff === 0 ? 'is-active' : diff === -1 ? 'is-left' : diff === 1 ? 'is-right' : 'is-hidden';
         return `
-          <button class="template-slide ${position}" type="button" onclick="setTemplateChoice('${event.id}', '${template.id}', event)" aria-label="Выбрать макет">
+          <button class="template-slide ${position}" type="button" onclick="handleTemplateSlideClick('${event.id}', '${template.id}', event)" aria-label="Выбрать макет">
             <span class="template-preview-card"><img src="${h(template.image)}" alt=""></span>
           </button>`;
       }).join('');
       return `
         <div class="template-carousel-shell">
-          <div class="template-carousel" onpointerdown="startTemplateSwipe(event)" onpointerup="finishTemplateSwipe(event, '${event.id}')">
+          <div class="template-carousel" onpointerdown="startTemplateSwipe(event)" onpointermove="trackTemplateSwipe(event)" onpointerup="finishTemplateSwipe(event, '${event.id}')" onpointercancel="cancelTemplateSwipe()" onpointerleave="cancelTemplateSwipe()">
             ${slides}
           </div>
-          <div class="carousel-controls">
-            <button class="carousel-arrow" type="button" onclick="shiftTemplateCarousel('${event.id}', -1)" aria-label="Предыдущий макет">‹</button>
-            <span class="template-count">${activeIndex + 1} / ${list.length}</span>
-            <button class="carousel-arrow" type="button" onclick="shiftTemplateCarousel('${event.id}', 1)" aria-label="Следующий макет">›</button>
-          </div>
-          <div class="template-select-row">
-            <button class="template-select" type="button" onclick="confirmCardTemplate('${event.id}')">Выбрать</button>
-          </div>
+          <span class="carousel-hint">свайпните макет, тап по центральному откроет детали</span>
         </div>`;
     }
     function coverUploadMarkup(event) {
@@ -4633,7 +4966,7 @@
       const round = mode === 'with-photo';
       return `
         <div class="cover-upload">
-          <div class="cover-preview ${round ? 'is-circle' : ''}">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : (round ? 'Фото в круг' : 'Фото')}</div>
+          ${round ? templateArtMarkup(event) : `<div class="cover-preview">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : 'Фото'}</div>`}
           <div class="cover-copy">
             <h3>${round ? 'Фото для круглого окна' : 'Фото для карточки'}</h3>
             <p>${round ? 'Загрузите фото и подвиньте его так, чтобы главный объект красиво попал в круг на шаблоне.' : 'Фото необязательно — можно оставить декоративную обложку. Если загрузите файл, откроется кадрирование.'}</p>
@@ -4746,16 +5079,64 @@
     }
     function giftsIntro(event) {
       const allReserved = event.gifts.length > 0 && event.gifts.every(gift => gift.status === 'reserved');
-      return `<div class="card wishlist-intro"><h3>Подарки</h3><p>Выберите свободный подарок и нажмите «Забронировать подарок», чтобы другие гости видели, что он уже занят.</p>${allReserved ? '<div class="all-reserved">Все подарки уже забронированы. Можно выбрать что-то на своё усмотрение или просто прийти на праздник.</div>' : ''}</div>`;
+      return `<div class="card wishlist-intro"><h3>Подарки</h3><p>Для удобства мы создали вишлист. Выберите свободный подарок и нажмите «Забронировать подарок», чтобы другие гости видели, что он уже занят.</p>${allReserved ? '<div class="all-reserved">Все подарки уже забронированы. Можно выбрать что-то на своё усмотрение или просто прийти на праздник.</div>' : ''}</div>`;
     }
     function giftsGrid(event) {
       return event.gifts.length ? event.gifts.map(giftCard).join('') : '<div class="empty-state"><h3>Подарков пока нет</h3><p class="muted">Организатор скоро добавит идеи.</p></div>';
     }
     function guestPreviewMarkup(event) {
-      return `<aside class="card guest-side" style="position:static">${eventSummary(event)}<div class="hero-actions"><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Открыть карту</a></div><p><b>Приглашение</b><br>${event.description || 'Текст приглашения появится здесь.'}</p><p><b>Пожелания</b><br>${event.wishes || 'Пожелания появятся здесь.'}</p></aside><section>${giftsIntro(event)}<div class="guest-gifts">${giftsGrid(event)}</div></section>`;
+      return `<aside class="card guest-side" style="position:static">${eventSummary(event)}</aside><section>${giftsIntro(event)}<div class="guest-gifts">${giftsGrid(event)}</div></section>`;
     }
     function eventSummary(event) {
-      return `<div class="guest-cover">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : '<div class="cover-placeholder"><span class="brand-mark">✦</span><small>Фото не загружено</small></div>'}</div><h2>${event.title || 'Название повода'}</h2><div class="event-chips"><span class="tag">${event.date || 'Дата не указана'} ${event.time || ''}</span><span class="tag">${event.placeName || 'Место не указано'}</span></div><p>${event.wishes || 'Пожелания появятся здесь.'}</p>`;
+      const template = activeTemplateForEvent(event);
+      const date = formatEventDate(event);
+      const decor = decorativeIconName(event);
+      const title = event.title || 'Название повода';
+      const place = event.placeName || 'Место не указано';
+      const address = event.address || '';
+      const description = event.description || 'Текст приглашения появится здесь.';
+      const wishes = event.wishes || 'Пожелания для гостей появятся здесь.';
+      return `
+        <article class="invitation-card">
+          ${template ? `
+            <div class="invitation-art" style="${photoSlotStyle(template)}">
+              <img src="${h(template.image)}" alt="">
+              ${normalizeTemplateMode(event.templateMode || '') === 'with-photo' && event.coverImage ? `<span class="invitation-photo"><img src="${h(event.coverImage)}" alt=""></span>` : ''}
+            </div>
+          ` : `<div class="guest-cover">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : '<div class="cover-placeholder"><span class="brand-mark">✦</span><small>Фото не загружено</small></div>'}</div>`}
+          <section class="glass-block invitation-title">
+            <div class="decor-line"><img src="${themeIconSrc(event, decor)}" alt=""><span></span><img src="${themeIconSrc(event, decor)}" alt=""></div>
+            <h2>${h(title)}</h2>
+          </section>
+          <section class="invitation-meta-grid">
+            <div class="glass-block meta-card">
+              ${themeIcon(event, 'calendar', 'Дата')}
+              <span><b>${h(date.main)}</b><small>${h(date.sub)}</small></span>
+            </div>
+            <div class="glass-block meta-card compact">
+              ${themeIcon(event, 'clock', 'Время')}
+              <span><b>${h(event.time || 'Время')}</b><small>${event.time ? 'начало' : 'добавьте время'}</small></span>
+            </div>
+          </section>
+          <section class="glass-block message-card">
+            <img class="decor-icon" src="${themeIconSrc(event, decor)}" alt="">
+            <p>${h(description)}</p>
+          </section>
+          <section class="glass-block message-card">
+            <img class="decor-icon" src="${themeIconSrc(event, iconTheme(event) === 'pink' ? 'bow' : 'star')}" alt="">
+            <p>${h(wishes)}</p>
+          </section>
+          <section class="glass-block location-card">
+            ${themeIcon(event, 'location', 'Место')}
+            <span><b>${h(place)}</b><small>${h(address || 'Адрес появится здесь')}</small></span>
+            <a class="route-pill" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Построить маршрут</a>
+          </section>
+          <section class="glass-block wishlist-glass">
+            <img src="${themeIconSrc(event, 'gift')}" alt="">
+            <h3>Вишлист</h3>
+            <p>Для удобства мы создали вишлист: выберите подарок и забронируйте его, чтобы не было дублей.</p>
+          </section>
+        </article>`;
     }
     function saveDetails(id, nextTab) {
       const patch = {
@@ -4835,6 +5216,20 @@
       if (!CARD_TEMPLATES.some(template => template.id === templateId)) return;
       await updateEvent(id, { templateId }, '', 'style');
     }
+    async function handleTemplateSlideClick(id, templateId, clickEvent = null) {
+      if (clickEvent && templateSwipeDidMove) {
+        clickEvent.preventDefault();
+        templateSwipeDidMove = false;
+        return;
+      }
+      const event = findEvent(id);
+      if (!event) return;
+      if (activeTemplateForEvent(event)?.id === templateId) {
+        confirmCardTemplate(id);
+        return;
+      }
+      await setTemplateChoice(id, templateId);
+    }
     function shiftTemplateCarousel(id, direction) {
       const event = findEvent(id);
       const list = templatesForEvent(event);
@@ -4857,32 +5252,92 @@
       setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 90);
     }
     function startColorSwipe(event) {
-      colorSwipeStart = { x: event.clientX, y: event.clientY };
+      colorSwipeStart = { x: event.clientX, y: event.clientY, root: event.currentTarget };
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+    }
+    function resetCarouselDrag(root) {
+      if (!root) return;
+      root.querySelectorAll('.color-slide, .template-slide').forEach(slide => {
+        slide.style.transform = '';
+        slide.style.opacity = '';
+        slide.style.filter = '';
+      });
+    }
+    function trackColorSwipe(event) {
+      if (!colorSwipeStart) return;
+      const dx = event.clientX - colorSwipeStart.x;
+      const progress = Math.max(-1, Math.min(1, dx / 150));
+      const amount = Math.abs(progress);
+      const root = colorSwipeStart.root;
+      const active = root.querySelector('.color-slide.is-active');
+      const incoming = root.querySelector(progress < 0 ? '.color-slide.is-right' : '.color-slide.is-left');
+      const quiet = root.querySelector(progress < 0 ? '.color-slide.is-left' : '.color-slide.is-right');
+      if (active) active.style.transform = `translateX(${dx * .48}px) scale(${1 - amount * .28}) rotate(${progress * 4}deg)`;
+      if (incoming) {
+        const side = progress < 0 ? 118 : -118;
+        incoming.style.transform = `translateX(${side * (1 - amount)}%) scale(${.72 + amount * .28}) rotate(${(progress < 0 ? 4 : -4) * (1 - amount)}deg)`;
+        incoming.style.opacity = `${.7 + amount * .3}`;
+        incoming.style.filter = `saturate(${.86 + amount * .14})`;
+      }
+      if (quiet) quiet.style.opacity = `${Math.max(.22, .7 - amount * .42)}`;
     }
     function finishColorSwipe(event, id) {
       if (!colorSwipeStart) return;
       const dx = event.clientX - colorSwipeStart.x;
       const dy = event.clientY - colorSwipeStart.y;
+      const root = colorSwipeStart.root;
       colorSwipeStart = null;
+      resetCarouselDrag(root);
       if (Math.abs(dx) < 34 || Math.abs(dx) < Math.abs(dy)) return;
       colorSwipeDidMove = true;
       setTimeout(() => { colorSwipeDidMove = false; }, 120);
       event.preventDefault();
       shiftTemplateColor(id, dx < 0 ? 1 : -1);
     }
+    function cancelColorSwipe() {
+      if (!colorSwipeStart) return;
+      resetCarouselDrag(colorSwipeStart.root);
+      colorSwipeStart = null;
+    }
     function startTemplateSwipe(event) {
-      templateSwipeStart = { x: event.clientX, y: event.clientY };
+      templateSwipeStart = { x: event.clientX, y: event.clientY, root: event.currentTarget };
+      try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+    }
+    function trackTemplateSwipe(event) {
+      if (!templateSwipeStart) return;
+      const dx = event.clientX - templateSwipeStart.x;
+      const progress = Math.max(-1, Math.min(1, dx / 170));
+      const amount = Math.abs(progress);
+      const root = templateSwipeStart.root;
+      const active = root.querySelector('.template-slide.is-active');
+      const incoming = root.querySelector(progress < 0 ? '.template-slide.is-right' : '.template-slide.is-left');
+      const quiet = root.querySelector(progress < 0 ? '.template-slide.is-left' : '.template-slide.is-right');
+      if (active) active.style.transform = `translateX(${dx * .34}px) scale(${1 - amount * .22}) rotate(${progress * 2}deg)`;
+      if (incoming) {
+        const side = progress < 0 ? 62 : -62;
+        incoming.style.transform = `translateX(${side * (1 - amount)}%) scale(${.78 + amount * .22}) rotate(${(progress < 0 ? 2 : -2) * (1 - amount)}deg)`;
+        incoming.style.opacity = `${.72 + amount * .28}`;
+        incoming.style.filter = `saturate(${.88 + amount * .12})`;
+      }
+      if (quiet) quiet.style.opacity = `${Math.max(.20, .72 - amount * .45)}`;
     }
     function finishTemplateSwipe(event, id) {
       if (!templateSwipeStart) return;
       const dx = event.clientX - templateSwipeStart.x;
       const dy = event.clientY - templateSwipeStart.y;
+      const root = templateSwipeStart.root;
       templateSwipeStart = null;
+      resetCarouselDrag(root);
       if (Math.abs(dx) < 42 || Math.abs(dx) < Math.abs(dy)) return;
       templateSwipeDidMove = true;
       setTimeout(() => { templateSwipeDidMove = false; }, 120);
       event.preventDefault();
       shiftTemplateCarousel(id, dx < 0 ? 1 : -1);
+    }
+    function cancelTemplateSwipe() {
+      if (!templateSwipeStart) return;
+      resetCarouselDrag(templateSwipeStart.root);
+      templateSwipeStart = null;
     }
     function applyTextTemplate(group, index, targetId) {
       const target = document.getElementById(targetId);
@@ -4901,12 +5356,27 @@
         image.onload = () => {
           const event = findEvent(currentEventId);
           const shape = normalizeTemplateMode(event?.templateMode || '') === 'with-photo' ? 'circle' : 'rect';
-          coverCrop = { image, shape, baseScale: 1, scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+          const template = activeTemplateForEvent(event);
+          coverCrop = { image, shape, template, baseScale: 1, scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
           const imgNode = document.getElementById('cropImage');
           imgNode.src = reader.result;
+          const templateNode = document.getElementById('cropTemplateImage');
+          templateNode.src = shape === 'circle' && template ? template.image : '';
           document.getElementById('cropScale').value = '1';
           const modal = document.getElementById('coverCropModal');
           modal.classList.toggle('crop-circle-mode', shape === 'circle');
+          modal.classList.toggle('crop-template-mode', shape === 'circle' && Boolean(template));
+          const stage = document.getElementById('cropStage');
+          if (shape === 'circle' && template) {
+            const slot = template.photoSlot || { x: 50, y: 43, size: 49 };
+            stage.style.setProperty('--photo-x', `${slot.x}%`);
+            stage.style.setProperty('--photo-y', `${slot.y}%`);
+            stage.style.setProperty('--photo-size', `${slot.size}%`);
+          } else {
+            stage.style.removeProperty('--photo-x');
+            stage.style.removeProperty('--photo-y');
+            stage.style.removeProperty('--photo-size');
+          }
           modal.classList.add('active');
           requestAnimationFrame(resetCoverCrop);
         };
@@ -4916,7 +5386,6 @@
     }
     function resetCoverCrop() {
       if (!coverCrop) return;
-      const stage = document.getElementById('cropStage').getBoundingClientRect();
       const frame = document.getElementById('cropFrame').getBoundingClientRect();
       coverCrop.baseScale = Math.max(frame.width / coverCrop.image.width, frame.height / coverCrop.image.height);
       coverCrop.scale = 1;
@@ -4935,15 +5404,15 @@
     }
     function constrainCoverCrop() {
       if (!coverCrop) return;
-      const stage = document.getElementById('cropStage').getBoundingClientRect();
+      const windowRect = document.getElementById('cropPhotoWindow').getBoundingClientRect();
       const frame = document.getElementById('cropFrame').getBoundingClientRect();
       const scale = coverCrop.baseScale * coverCrop.scale;
       const imageWidth = coverCrop.image.width * scale;
       const imageHeight = coverCrop.image.height * scale;
       const maxX = Math.max(0, (imageWidth - frame.width) / 2);
       const maxY = Math.max(0, (imageHeight - frame.height) / 2);
-      const frameCenterOffsetX = frame.left + frame.width / 2 - (stage.left + stage.width / 2);
-      const frameCenterOffsetY = frame.top + frame.height / 2 - (stage.top + stage.height / 2);
+      const frameCenterOffsetX = frame.left + frame.width / 2 - (windowRect.left + windowRect.width / 2);
+      const frameCenterOffsetY = frame.top + frame.height / 2 - (windowRect.top + windowRect.height / 2);
       coverCrop.x = Math.min(maxX + frameCenterOffsetX, Math.max(-maxX + frameCenterOffsetX, coverCrop.x));
       coverCrop.y = Math.min(maxY + frameCenterOffsetY, Math.max(-maxY + frameCenterOffsetY, coverCrop.y));
     }
@@ -4951,6 +5420,9 @@
       const modal = document.getElementById('coverCropModal');
       modal.classList.remove('active');
       modal.classList.remove('crop-circle-mode');
+      modal.classList.remove('crop-template-mode');
+      document.getElementById('cropStage').removeAttribute('style');
+      document.getElementById('cropTemplateImage').src = '';
       const input = document.getElementById('eventCover');
       if (input) input.value = '';
       coverCrop = null;
@@ -4961,7 +5433,7 @@
     }
     async function saveCroppedCover() {
       if (!coverCrop || !currentEventId) return;
-      const stageRect = document.getElementById('cropStage').getBoundingClientRect();
+      const windowRect = document.getElementById('cropPhotoWindow').getBoundingClientRect();
       const frameRect = document.getElementById('cropFrame').getBoundingClientRect();
       const outputWidth = 1200;
       const outputHeight = coverCrop.shape === 'circle' ? 1200 : 700;
@@ -4970,8 +5442,8 @@
       canvas.height = outputHeight;
       const ctx = canvas.getContext('2d');
       const scale = coverCrop.baseScale * coverCrop.scale;
-      const imageLeft = stageRect.left + stageRect.width / 2 + coverCrop.x - coverCrop.image.width * scale / 2;
-      const imageTop = stageRect.top + stageRect.height / 2 + coverCrop.y - coverCrop.image.height * scale / 2;
+      const imageLeft = windowRect.left + windowRect.width / 2 + coverCrop.x - coverCrop.image.width * scale / 2;
+      const imageTop = windowRect.top + windowRect.height / 2 + coverCrop.y - coverCrop.image.height * scale / 2;
       const sx = (frameRect.left - imageLeft) / scale;
       const sy = (frameRect.top - imageTop) / scale;
       const sw = frameRect.width / scale;
@@ -5317,9 +5789,6 @@
         <div class="guest-layout">
           <aside class="card guest-side">
             ${eventSummary(event)}
-            <div class="hero-actions"><a class="btn btn-soft" href="${yandexMapUrl(event)}" target="_blank" rel="noopener">Открыть карту</a></div>
-            <p><b>Приглашение</b><br>${event.description || 'Текст приглашения появится здесь.'}</p>
-            <p><b>Пожелания</b><br>${event.wishes || 'Пожелания появятся здесь.'}</p>
           </aside>
           <section>
             ${giftsIntro(event)}
