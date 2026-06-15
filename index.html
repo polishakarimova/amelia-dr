@@ -3970,7 +3970,7 @@
       const gift = editingGiftId ? event.gifts.find(item => item.id === editingGiftId) : null;
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Новый подарок'}</h3>
-        <label class="full">Ссылка на Wildberries<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.wildberries.ru/catalog/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries: название, цена и фото подтянутся автоматически.</span></label>
+        <label class="full">Ссылка на Wildberries или Ozon<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.ozon.ru/product/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.</span></label>
         <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" type="button" onclick="prefillGiftFromUrl(true)">Подтянуть данные по ссылке</button></div>
         <div class="gift-admin-card hidden" id="giftPreviewCard">
           <div class="gift-thumb" id="giftPreviewImage">Фото</div>
@@ -4194,7 +4194,7 @@
       const title = document.getElementById('giftPreviewTitle');
       const price = document.getElementById('giftPreviewPrice');
       const image = document.getElementById('giftPreviewImage');
-      if (title) title.textContent = preview.title || 'Подарок с Wildberries';
+      if (title) title.textContent = preview.title || 'Подарок по ссылке';
       if (price) price.textContent = Number(preview.price) > 0 ? money(Number(preview.price)) : 'Цена не указана';
       if (image) image.innerHTML = preview.image ? `<img src="${h(preview.image)}" alt="">` : 'Фото';
       card.classList.remove('hidden');
@@ -4210,22 +4210,35 @@
       if (description && preview.description && !description.value.trim()) description.value = preview.description;
       renderGiftPreviewCard(preview);
     }
+    function isSupportedGiftStoreUrl(url) {
+      const lower = String(url || '').toLowerCase();
+      return lower.includes('wildberries')
+        || lower.includes('wb.ru')
+        || lower.includes('ozon.ru')
+        || lower.includes('ozon.by')
+        || lower.includes('ozon.onelink.me');
+    }
+    function giftStoreName(url) {
+      const lower = String(url || '').toLowerCase();
+      if (lower.includes('ozon')) return 'Ozon';
+      if (lower.includes('wildberries') || lower.includes('wb.ru')) return 'Wildberries';
+      return 'магазина';
+    }
     function prefillGiftFromUrl(force = false) {
       const input = document.getElementById('giftUrl');
       const url = input?.value.trim() || '';
-      const lower = url.toLowerCase();
       clearTimeout(giftPreviewTimer);
       if (!url) {
-        giftUrlStatus('Вставьте ссылку Wildberries: название, цена и фото подтянутся автоматически.');
+        giftUrlStatus('Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.');
         return Promise.resolve(false);
       }
-      if (!lower.includes('wildberries') && !lower.includes('wb.ru')) {
-        giftUrlStatus('Автозаполнение сейчас работает для Wildberries. Эту ссылку можно сохранить вручную.');
+      if (!isSupportedGiftStoreUrl(url)) {
+        giftUrlStatus('Автозаполнение сейчас работает для Wildberries и Ozon. Эту ссылку можно сохранить вручную.');
         return Promise.resolve(false);
       }
       const run = async () => {
         const requestId = ++giftPreviewRequest;
-        giftUrlStatus('Подтягиваю данные с Wildberries...');
+        giftUrlStatus(`Подтягиваю данные с ${giftStoreName(url)}...`);
         try {
           const data = await apiRequest('/api/gift-preview', { method: 'POST', body: { url } });
           if (requestId !== giftPreviewRequest) return;
@@ -4235,8 +4248,8 @@
         } catch (error) {
           if (requestId !== giftPreviewRequest) return;
           const message = error.message === 'unsupported_store'
-            ? 'Автозаполнение сейчас работает для Wildberries. Эту ссылку можно сохранить вручную.'
-            : 'Не получилось подтянуть данные с Wildberries. Проверьте ссылку или попробуйте ещё раз.';
+            ? 'Автозаполнение сейчас работает для Wildberries и Ozon. Эту ссылку можно сохранить вручную.'
+            : `Не получилось подтянуть данные с ${giftStoreName(url)}. Проверьте ссылку или попробуйте ещё раз.`;
           giftUrlStatus(message);
           toast(message);
           return false;
@@ -4249,18 +4262,17 @@
     async function saveGift(eventId) {
       const event = findEvent(eventId);
       const url = document.getElementById('giftUrl').value.trim();
-      const lowerUrl = url.toLowerCase();
-      if (url && (lowerUrl.includes('wildberries') || lowerUrl.includes('wb.ru'))) {
+      if (url && isSupportedGiftStoreUrl(url)) {
         const hasPreview = document.getElementById('giftTitle').value.trim()
           && document.getElementById('giftImage').value.trim()
           && Number(document.getElementById('giftPrice').value || 0) > 0;
         if (!hasPreview) {
           const loaded = await prefillGiftFromUrl(true);
-          if (!loaded) return toast('Не получилось подтянуть товар с Wildberries. Проверьте ссылку и попробуйте ещё раз.');
+          if (!loaded) return toast(`Не получилось подтянуть товар с ${giftStoreName(url)}. Проверьте ссылку и попробуйте ещё раз.`);
         }
       }
       const title = document.getElementById('giftTitle').value.trim();
-      if (!url && !title) return toast('Добавьте ссылку Wildberries');
+      if (!url && !title) return toast('Добавьте ссылку Wildberries или Ozon');
       const gift = {
         id: uid(),
         title,
@@ -4288,7 +4300,7 @@
         toast('Подарок сохранён');
         renderEditor(nextEvent, 'gifts');
       } catch (error) {
-        toast(error.message === 'gift_preview_failed' ? 'Не получилось подтянуть товар с Wildberries. Проверьте ссылку и попробуйте ещё раз.' : 'Не получилось сохранить подарок');
+        toast(error.message === 'gift_preview_failed' ? 'Не получилось подтянуть товар. Проверьте ссылку Wildberries или Ozon и попробуйте ещё раз.' : 'Не получилось сохранить подарок');
       }
       return;
     }

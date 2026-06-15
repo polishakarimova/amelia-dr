@@ -568,6 +568,28 @@ function isWildberriesUrlText(rawUrl) {
   }
 }
 
+function isOzonHost(hostname) {
+  const host = String(hostname || '').toLowerCase();
+  return host === 'ozon.ru'
+    || host.endsWith('.ozon.ru')
+    || host === 'ozon.by'
+    || host.endsWith('.ozon.by')
+    || host === 'ozon.onelink.me'
+    || host.endsWith('.ozon.onelink.me');
+}
+
+function isOzonUrlText(rawUrl) {
+  try {
+    return isOzonHost(parseProductUrl(rawUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isSupportedGiftStoreUrlText(rawUrl) {
+  return isWildberriesUrlText(rawUrl) || isOzonUrlText(rawUrl);
+}
+
 function wildberriesProductIdFromUrl(rawUrl) {
   const text = String(rawUrl || '');
   return (
@@ -680,7 +702,30 @@ function isWildberriesRequest(url) {
   }
 }
 
+function isOzonRequest(url) {
+  try {
+    const host = new URL(String(url)).hostname.toLowerCase();
+    return host === 'ozon.ru'
+      || host.endsWith('.ozon.ru')
+      || host === 'ozon.by'
+      || host.endsWith('.ozon.by')
+      || host === 'ozon.onelink.me'
+      || host.endsWith('.ozon.onelink.me')
+      || host.endsWith('.ozone.ru')
+      || host.endsWith('.ozonusercontent.com');
+  } catch {
+    return false;
+  }
+}
+
+function isMarketplaceRequest(url) {
+  return isWildberriesRequest(url) || isOzonRequest(url);
+}
+
 async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
+  const referer = isOzonRequest(url)
+    ? 'https://www.ozon.ru/'
+    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : '');
   const args = [
     '-L',
     '-sS',
@@ -688,6 +733,7 @@ async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
     '-A', 'Mozilla/5.0',
     '-H', `accept: ${options.headers?.accept || 'application/json,text/html;q=0.9,*/*;q=0.8'}`
   ];
+  if (referer) args.push('-H', `referer: ${referer}`);
   if (String(options.method || 'GET').toUpperCase() === 'HEAD') args.push('-I');
   args.push('-w', '\n__POVOD_HTTP_STATUS__:%{http_code}', String(url));
   const { stdout } = await execFileAsync('curl', args, { maxBuffer: 12 * 1024 * 1024, windowsHide: true });
@@ -707,6 +753,9 @@ async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
 async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const referer = isOzonRequest(url)
+    ? 'https://www.ozon.ru/'
+    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : '');
   try {
     const response = await fetch(url, {
       ...options,
@@ -714,16 +763,16 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
       headers: {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
         accept: 'application/json,text/html;q=0.9,*/*;q=0.8',
-        referer: 'https://www.wildberries.ru/',
+        ...(referer ? { referer } : {}),
         ...(options.headers || {})
       }
     });
-    if (isWildberriesRequest(url) && [403, 429, 498].includes(response.status)) {
+    if (isMarketplaceRequest(url) && [403, 429, 498].includes(response.status)) {
       return await fetchWithCurl(url, options, timeoutMs);
     }
     return response;
   } catch (error) {
-    if (isWildberriesRequest(url)) return await fetchWithCurl(url, options, timeoutMs);
+    if (isMarketplaceRequest(url)) return await fetchWithCurl(url, options, timeoutMs);
     throw error;
   } finally {
     clearTimeout(timer);
@@ -775,25 +824,271 @@ function metaContent(html, property) {
   return decodeHtml(patterns.map(pattern => html.match(pattern)?.[1]).find(Boolean) || '');
 }
 
-async function fetchPageMetadata(productUrl) {
-  const response = await fetchWithTimeout(productUrl.href);
-  if (!response.ok) throw new Error(`product_page_${response.status}`);
-  const html = await response.text();
-  const title = metaContent(html, 'og:title') || metaContent(html, 'twitter:title') || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
-  const image = metaContent(html, 'og:image') || metaContent(html, 'twitter:image');
-  const price = Number(String(metaContent(html, 'product:price:amount') || '').replace(',', '.')) || 0;
+function parsePriceValue(value) {
+  if (value === null || value === undefined || value === '') return 0;
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? Math.round(value) : 0;
+  const text = decodeHtml(String(value)).replace(/\u00a0/g, ' ');
+  const explicit = text.match(/(\d[\d\s.,]{0,12})\s*(?:₽|руб|р\.?)/i)?.[1];
+  const plain = text.match(/^\s*(\d[\d\s.,]{0,12})\s*$/)?.[1];
+  const candidate = explicit || plain || '';
+  const normalized = candidate.replace(/\s/g, '').replace(',', '.');
+  const price = Number(normalized);
+  return Number.isFinite(price) && price > 0 ? Math.round(price) : 0;
+}
+
+function resolveUrlMaybe(value, baseUrl) {
+  const raw = decodeHtml(String(value || '')).replace(/\\\//g, '/').trim();
+  if (!raw) return '';
+  if (raw.startsWith('//')) return `https:${raw}`;
+  try {
+    return new URL(raw, baseUrl).href;
+  } catch {
+    return '';
+  }
+}
+
+function imageFromStructuredValue(value, baseUrl) {
+  if (!value) return '';
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const image = imageFromStructuredValue(item, baseUrl);
+      if (image) return image;
+    }
+    return '';
+  }
+  if (typeof value === 'object') {
+    return imageFromStructuredValue(value.url || value.contentUrl || value.src || value.image, baseUrl);
+  }
+  const url = resolveUrlMaybe(value, baseUrl);
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    const host = parsed.hostname.toLowerCase();
+    const path = parsed.pathname.toLowerCase();
+    const looksLikeImage = /\.(?:jpg|jpeg|png|webp)(?:[?#].*)?$/i.test(url)
+      || host.endsWith('.wbbasket.ru')
+      || host === 'ir.ozone.ru'
+      || host.endsWith('.ozone.ru') && path.includes('/s3/')
+      || host.includes('ozon') && /(?:image|multimedia|photo|img)/i.test(path);
+    return looksLikeImage ? url : '';
+  } catch {
+    return '';
+  }
+}
+
+function firstProductSchema(value) {
+  const stack = [value];
+  const seen = new Set();
+  while (stack.length) {
+    const item = stack.shift();
+    if (!item || typeof item !== 'object') continue;
+    if (seen.has(item)) continue;
+    seen.add(item);
+    const type = item['@type'];
+    const types = Array.isArray(type) ? type : [type];
+    if (types.some(entry => String(entry || '').toLowerCase() === 'product')) return item;
+    if (Array.isArray(item)) {
+      stack.push(...item);
+    } else {
+      stack.push(...Object.values(item));
+    }
+  }
+  return null;
+}
+
+function priceFromOffer(offer) {
+  if (!offer) return 0;
+  if (Array.isArray(offer)) {
+    for (const item of offer) {
+      const price = priceFromOffer(item);
+      if (price) return price;
+    }
+    return 0;
+  }
+  if (typeof offer !== 'object') return parsePriceValue(offer);
+  return parsePriceValue(offer.price)
+    || parsePriceValue(offer.lowPrice)
+    || parsePriceValue(offer.highPrice)
+    || parsePriceValue(offer.priceSpecification?.price)
+    || parsePriceValue(offer.priceSpecification?.minPrice);
+}
+
+function productSchemaPreview(value, baseUrl) {
+  const product = firstProductSchema(value);
+  if (!product) return {};
   return {
-    source: 'page-meta',
-    title: title.replace(/\s*\|\s*Wildberries.*$/i, ''),
-    price: Math.round(price),
-    image,
-    description: metaContent(html, 'og:description') || '',
+    title: decodeHtml(product.name || product.title || ''),
+    price: priceFromOffer(product.offers || product.price),
+    image: imageFromStructuredValue(product.image || product.images || product.photo, baseUrl),
+    description: decodeHtml(product.description || '')
+  };
+}
+
+function jsonLdPreview(html, baseUrl) {
+  const scripts = html.matchAll(/<script[^>]+type=["'][^"']*application\/ld\+json[^"']*["'][^>]*>([\s\S]*?)<\/script>/gi);
+  for (const script of scripts) {
+    const text = decodeHtml(script[1] || '').replace(/^\s*<!--|-->\s*$/g, '').trim();
+    if (!text) continue;
+    try {
+      const preview = productSchemaPreview(JSON.parse(text), baseUrl);
+      if (preview.title || preview.image || preview.price) return preview;
+    } catch {
+      continue;
+    }
+  }
+  return {};
+}
+
+function priceFromHtml(html) {
+  const candidates = [
+    html.match(/"price"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
+    html.match(/"finalPrice"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
+    html.match(/(\d[\d\s.,]{1,12})\s*₽/i)?.[1]
+  ];
+  return candidates.map(parsePriceValue).find(Boolean) || 0;
+}
+
+function cleanMarketplaceTitle(title) {
+  return decodeHtml(title)
+    .replace(/\s*\|\s*Wildberries.*$/i, '')
+    .replace(/\s*\|\s*Ozon.*$/i, '')
+    .replace(/\s*\|\s*OZON.*$/i, '')
+    .replace(/\s*[—-]\s*купить.*$/i, '')
+    .trim();
+}
+
+function parseNestedJson(value) {
+  if (typeof value !== 'string') return null;
+  const text = value.trim();
+  if (!text || !['{', '['].includes(text[0])) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+function collectOzonJsonPreview(data, baseUrl) {
+  const schema = productSchemaPreview(data, baseUrl);
+  const result = { ...schema };
+  const titles = [];
+  const prices = [];
+  const images = [];
+  const stack = [data];
+  const seen = new Set();
+  while (stack.length) {
+    const item = stack.shift();
+    if (!item) continue;
+    if (typeof item === 'string') {
+      const nested = parseNestedJson(item);
+      if (nested) stack.push(nested);
+      if (!result.image && /(?:ozone|ozon).*?\.(?:jpg|jpeg|png|webp)/i.test(item)) {
+        const image = imageFromStructuredValue(item, baseUrl);
+        if (image) images.push(image);
+      }
+      if (/[₽]|руб/i.test(item)) {
+        const price = parsePriceValue(item);
+        if (price) prices.push(price);
+      }
+      continue;
+    }
+    if (typeof item !== 'object') continue;
+    if (seen.has(item)) continue;
+    seen.add(item);
+    for (const [key, value] of Object.entries(item)) {
+      const name = key.toLowerCase();
+      if ((name === 'title' || name === 'name' || name === 'productname') && typeof value === 'string') {
+        const title = cleanMarketplaceTitle(value);
+        if (title.length >= 4 && title.length <= 180 && !/^ozon$/i.test(title)) titles.push(title);
+      }
+      if (name.includes('image') || name === 'src' || name === 'url') {
+        const image = imageFromStructuredValue(value, baseUrl);
+        if (image) images.push(image);
+      }
+      if (name.includes('price')) {
+        const price = parsePriceValue(value);
+        if (price) prices.push(price);
+      }
+      stack.push(value);
+    }
+  }
+  return {
+    title: result.title || titles.find(Boolean) || '',
+    price: result.price || prices.find(Boolean) || 0,
+    image: result.image || images.find(Boolean) || '',
+    description: result.description || ''
+  };
+}
+
+async function fetchOzonApiPreview(productUrl) {
+  const apiUrl = new URL('https://www.ozon.ru/api/entrypoint-api.bx/page/json/v2');
+  apiUrl.searchParams.set('url', `${productUrl.pathname}${productUrl.search}`);
+  const response = await fetchWithTimeout(apiUrl.href, {
+    headers: {
+      accept: 'application/json,text/plain,*/*',
+      referer: productUrl.href
+    }
+  }, 12000);
+  if (!response.ok) throw new Error(`ozon_api_${response.status}`);
+  const data = await response.json();
+  const preview = collectOzonJsonPreview(data, productUrl.href);
+  if (!preview.title && !preview.image) throw new Error('ozon_api_preview_not_found');
+  return {
+    source: 'ozon',
+    title: cleanMarketplaceTitle(preview.title) || 'Товар Ozon',
+    price: preview.price,
+    image: preview.image,
+    description: '',
     url: productUrl.href
   };
 }
 
+async function fetchPageMetadata(productUrl) {
+  const response = await fetchWithTimeout(productUrl.href);
+  if (!response.ok) throw new Error(`product_page_${response.status}`);
+  const html = await response.text();
+  const structured = jsonLdPreview(html, productUrl.href);
+  const title = structured.title
+    || metaContent(html, 'og:title')
+    || metaContent(html, 'twitter:title')
+    || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
+  const image = structured.image || metaContent(html, 'og:image') || metaContent(html, 'twitter:image');
+  const price = structured.price
+    || parsePriceValue(metaContent(html, 'product:price:amount'))
+    || parsePriceValue(metaContent(html, 'og:price:amount'))
+    || priceFromHtml(html);
+  return {
+    source: 'page-meta',
+    title: cleanMarketplaceTitle(title),
+    price: Math.round(price),
+    image,
+    description: structured.description || metaContent(html, 'og:description') || '',
+    url: productUrl.href
+  };
+}
+
+async function fetchOzonPreview(productUrl) {
+  try {
+    return await fetchOzonApiPreview(productUrl);
+  } catch (error) {
+    console.error('ozon_api_preview_failed', error.message || error);
+  }
+  const preview = await fetchPageMetadata(productUrl);
+  preview.source = 'ozon';
+  preview.description = '';
+  const title = cleanMarketplaceTitle(preview.title);
+  if (!title && !preview.image) {
+    const error = new Error('ozon_preview_not_found');
+    error.status = 404;
+    throw error;
+  }
+  preview.title = title || 'Товар Ozon';
+  return preview;
+}
+
 async function fetchGiftPreview(rawUrl) {
   const productUrl = parseProductUrl(rawUrl);
+  if (isOzonHost(productUrl.hostname)) return fetchOzonPreview(productUrl);
   if (!isWildberriesHost(productUrl.hostname)) {
     const error = new Error('unsupported_store');
     error.status = 400;
@@ -829,7 +1124,7 @@ async function giftInputWithPreview(input) {
     try {
       preview = await fetchGiftPreview(url);
     } catch (error) {
-      if (isWildberriesUrlText(url)) {
+      if (isSupportedGiftStoreUrlText(url)) {
         const previewError = new Error('gift_preview_failed');
         previewError.status = error.status === 400 ? 400 : 422;
         throw previewError;
