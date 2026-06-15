@@ -670,8 +670,9 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
       ...options,
       signal: controller.signal,
       headers: {
-        'user-agent': 'Mozilla/5.0 PovodBot/1.0 (+https://mypovod.ru)',
-        accept: 'text/html,application/json;q=0.9,*/*;q=0.8',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
+        accept: 'application/json,text/html;q=0.9,*/*;q=0.8',
+        referer: 'https://www.wildberries.ru/',
         ...(options.headers || {})
       }
     });
@@ -681,7 +682,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
 }
 
 async function fetchWildberriesApi(productId) {
-  const apiUrl = new URL('https://card.wb.ru/cards/v2/detail');
+  const apiUrl = new URL('https://card.wb.ru/cards/v4/detail');
   apiUrl.searchParams.set('appType', '1');
   apiUrl.searchParams.set('curr', 'rub');
   apiUrl.searchParams.set('dest', '-1257786');
@@ -690,7 +691,7 @@ async function fetchWildberriesApi(productId) {
   const response = await fetchWithTimeout(apiUrl);
   if (!response.ok) throw new Error(`wildberries_api_${response.status}`);
   const data = await response.json();
-  const product = data?.data?.products?.[0];
+  const product = data?.products?.[0] || data?.data?.products?.[0];
   if (!product) throw new Error('wildberries_product_not_found');
   return wildberriesProductPreview(product, productId);
 }
@@ -1263,6 +1264,7 @@ async function api(req, res, url) {
       const preview = await fetchGiftPreview(input.url);
       return send(res, 200, { preview });
     } catch (error) {
+      console.error('gift_preview_failed', error.message || error);
       return send(res, error.status || 502, { error: error.message || 'gift_preview_failed' });
     }
   }
