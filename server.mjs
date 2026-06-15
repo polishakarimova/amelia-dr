@@ -38,6 +38,8 @@ const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN || '';
 const telegramWebhookSecret = process.env.TELEGRAM_WEBHOOK_SECRET || '';
 const databaseUrl = process.env.DATABASE_URL || '';
 const adminToken = process.env.ADMIN_TOKEN || '';
+const giftPreviewProxyUrl = process.env.GIFT_PREVIEW_PROXY_URL || '';
+const ozonPreviewProxyUrl = process.env.OZON_PREVIEW_PROXY_URL || giftPreviewProxyUrl;
 let telegramBotInfo = null;
 let pgPool = null;
 let pgSchemaReady = false;
@@ -1046,6 +1048,62 @@ function isOzonChallengeTitle(title) {
   return /captcha|капч|нет соединения|подтвердите|включите javascript/i.test(String(title || ''));
 }
 
+function isOzonChallengeImage(image) {
+  return /abt-challenge|captcha|challenge|warn\.png/i.test(String(image || ''));
+}
+
+function giftPreviewProxyRequestUrl(proxyUrl, productUrl) {
+  const template = String(proxyUrl || '').trim();
+  if (!template) return '';
+  if (template.includes('{url}')) return template.replaceAll('{url}', encodeURIComponent(productUrl.href));
+  const requestUrl = new URL(template);
+  if (!requestUrl.searchParams.has('url')) requestUrl.searchParams.set('url', productUrl.href);
+  return requestUrl.href;
+}
+
+function normalizeExternalGiftPreview(data, productUrl, source) {
+  const payload = data?.preview || data?.product || data?.result || data?.data || data || {};
+  const nestedImage = payload.image?.url || payload.imageUrl || payload.picture || payload.photo || payload.thumbnail;
+  const listImage = Array.isArray(payload.images) ? payload.images.map(item => item?.url || item).find(Boolean) : '';
+  const title = cleanMarketplaceTitle(payload.title || payload.name || payload.productName || payload.heading || '');
+  const price = parsePriceValue(payload.price || payload.priceValue || payload.amount || payload.offers?.price || payload.offer?.price);
+  const image = imageFromStructuredValue(nestedImage || listImage, productUrl.href);
+  return {
+    source,
+    title,
+    price,
+    image,
+    description: decodeHtml(payload.description || payload.subtitle || ''),
+    url: productUrl.href
+  };
+}
+
+async function fetchExternalGiftPreview(proxyUrl, productUrl, source = 'external-preview') {
+  const requestUrl = giftPreviewProxyRequestUrl(proxyUrl, productUrl);
+  if (!requestUrl) throw new Error('gift_preview_proxy_not_configured');
+  const response = await fetchWithTimeout(requestUrl, {
+    headers: { accept: 'application/json,text/plain;q=0.9,*/*;q=0.8' }
+  }, 20000);
+  if (!response.ok) throw new Error(`gift_preview_proxy_${response.status}`);
+  const text = await response.text();
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = {};
+  }
+  const preview = normalizeExternalGiftPreview(data, productUrl, source);
+  if (isOzonHost(productUrl.hostname) && (isOzonChallengeTitle(preview.title) || isOzonChallengeImage(preview.image))) {
+    throw ozonPreviewBlockedError();
+  }
+  if (!preview.title && !preview.image && !preview.price) {
+    const error = new Error('gift_preview_proxy_empty');
+    error.status = 422;
+    throw error;
+  }
+  return preview;
+}
+
 async function fetchOzonApiPreview(productUrl) {
   const apiUrl = new URL('https://www.ozon.ru/api/entrypoint-api.bx/page/json/v2');
   apiUrl.searchParams.set('url', `${productUrl.pathname}${productUrl.search}`);
@@ -1095,6 +1153,13 @@ async function fetchPageMetadata(productUrl) {
 }
 
 async function fetchOzonPreview(productUrl) {
+  if (ozonPreviewProxyUrl) {
+    try {
+      return await fetchExternalGiftPreview(ozonPreviewProxyUrl, productUrl, 'ozon-preview-proxy');
+    } catch (error) {
+      console.error('ozon_proxy_preview_failed', error.message || error);
+    }
+  }
   try {
     return await fetchOzonApiPreview(productUrl);
   } catch (error) {
