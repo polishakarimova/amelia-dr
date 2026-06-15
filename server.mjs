@@ -723,20 +723,32 @@ function isMarketplaceRequest(url) {
 }
 
 async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
+  const ozonRequest = isOzonRequest(url);
   const referer = isOzonRequest(url)
     ? 'https://www.ozon.ru/'
     : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : '');
   const args = [
     '-L',
     '-sS',
+    '--max-redirs', ozonRequest ? '10' : '50',
     '--max-time', String(Math.max(2, Math.ceil(timeoutMs / 1000))),
     '-A', 'Mozilla/5.0',
     '-H', `accept: ${options.headers?.accept || 'application/json,text/html;q=0.9,*/*;q=0.8'}`
   ];
+  if (ozonRequest) {
+    const cookieJar = join(root, '.ozon-curl-cookies');
+    args.push('-c', cookieJar, '-b', cookieJar, '-H', 'accept-language: ru-RU,ru;q=0.9,en;q=0.8');
+  }
   if (referer) args.push('-H', `referer: ${referer}`);
   if (String(options.method || 'GET').toUpperCase() === 'HEAD') args.push('-I');
   args.push('-w', '\n__POVOD_HTTP_STATUS__:%{http_code}', String(url));
-  const { stdout } = await execFileAsync('curl', args, { maxBuffer: 12 * 1024 * 1024, windowsHide: true });
+  let stdout;
+  try {
+    ({ stdout } = await execFileAsync('curl', args, { maxBuffer: 12 * 1024 * 1024, windowsHide: true }));
+  } catch (error) {
+    if (ozonRequest) error.status = 422;
+    throw error;
+  }
   const marker = '\n__POVOD_HTTP_STATUS__:';
   const markerIndex = stdout.lastIndexOf(marker);
   const text = markerIndex >= 0 ? stdout.slice(0, markerIndex) : stdout;
@@ -1020,6 +1032,20 @@ function collectOzonJsonPreview(data, baseUrl) {
   };
 }
 
+function ozonPreviewBlockedError() {
+  const error = new Error('ozon_preview_blocked');
+  error.status = 422;
+  return error;
+}
+
+function isOzonChallengePayload(data) {
+  return Boolean(data?.challengeURL || data?.incidentId || data?.blockURL);
+}
+
+function isOzonChallengeTitle(title) {
+  return /captcha|капч|нет соединения|подтвердите|включите javascript/i.test(String(title || ''));
+}
+
 async function fetchOzonApiPreview(productUrl) {
   const apiUrl = new URL('https://www.ozon.ru/api/entrypoint-api.bx/page/json/v2');
   apiUrl.searchParams.set('url', `${productUrl.pathname}${productUrl.search}`);
@@ -1031,6 +1057,7 @@ async function fetchOzonApiPreview(productUrl) {
   }, 12000);
   if (!response.ok) throw new Error(`ozon_api_${response.status}`);
   const data = await response.json();
+  if (isOzonChallengePayload(data)) throw ozonPreviewBlockedError();
   const preview = collectOzonJsonPreview(data, productUrl.href);
   if (!preview.title && !preview.image) throw new Error('ozon_api_preview_not_found');
   return {
@@ -1072,14 +1099,22 @@ async function fetchOzonPreview(productUrl) {
     return await fetchOzonApiPreview(productUrl);
   } catch (error) {
     console.error('ozon_api_preview_failed', error.message || error);
+    if (error.status === 422) throw error;
   }
-  const preview = await fetchPageMetadata(productUrl);
+  let preview;
+  try {
+    preview = await fetchPageMetadata(productUrl);
+  } catch (error) {
+    if (!error.status) error.status = 422;
+    throw error;
+  }
   preview.source = 'ozon';
   preview.description = '';
   const title = cleanMarketplaceTitle(preview.title);
+  if (isOzonChallengeTitle(title)) throw ozonPreviewBlockedError();
   if (!title && !preview.image) {
     const error = new Error('ozon_preview_not_found');
-    error.status = 404;
+    error.status = 422;
     throw error;
   }
   preview.title = title || 'Товар Ozon';
@@ -1609,7 +1644,7 @@ async function api(req, res, url) {
       return send(res, 200, { preview });
     } catch (error) {
       console.error('gift_preview_failed', error.message || error);
-      return send(res, error.status || 502, { error: error.message || 'gift_preview_failed' });
+      return send(res, error.status || 422, { error: error.message || 'gift_preview_failed' });
     }
   }
 
