@@ -607,16 +607,16 @@
     .gift-card {
       overflow: hidden;
       display: grid;
-      grid-template-columns: 104px minmax(0, 1fr);
+      grid-template-columns: 118px minmax(0, 1fr);
       align-items: start;
-      gap: 2px;
+      gap: 4px;
     }
     .gift-card.reserved { opacity: .72; }
     .gift-img {
-      width: 84px;
-      height: 84px;
+      width: 96px;
+      aspect-ratio: 3 / 4;
+      height: auto;
       min-height: 0;
-      aspect-ratio: auto;
       margin: 12px 8px 12px 12px;
       border-radius: 18px;
       background: linear-gradient(135deg, var(--surface-warm), var(--primary-soft));
@@ -633,8 +633,7 @@
     }
     .gift-body { padding: 14px 14px 14px 12px; min-width: 0; }
     .gift-body h3 { font-size: 17px; margin-bottom: 7px; }
-    .gift-body p { color: var(--muted); line-height: 1.42; min-height: 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .gift-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 10px 0; }
+    .gift-meta { display: flex; justify-content: flex-start; align-items: center; gap: 10px; margin: 10px 0; }
     .price { font-weight: 850; }
     .tag { font-size: 12px; color: var(--coral-dark); background: #fff1ec; padding: 6px 9px; border-radius: 999px; font-weight: 800; }
     .gift-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -866,7 +865,7 @@
     .field-hint { color: rgba(118,109,102,.76); font-size: 13px; }
     .gift-admin-card {
       display: grid;
-      grid-template-columns: 92px minmax(0, 1fr) auto;
+      grid-template-columns: 96px minmax(0, 1fr) auto;
       gap: 12px;
       align-items: center;
       padding: 14px;
@@ -876,7 +875,8 @@
     }
     .gift-thumb {
       width: 84px;
-      height: 84px;
+      aspect-ratio: 3 / 4;
+      height: auto;
       border-radius: 18px;
       background: linear-gradient(135deg, var(--surface-warm), var(--primary-soft));
       display: grid;
@@ -933,21 +933,6 @@
       font-weight: 650;
     }
     .gift-img { display: grid; place-items: center; background: linear-gradient(135deg, var(--peach), var(--lavender)); color: var(--primary-hover); font-weight: 900; overflow: hidden; }
-    .gift-img .status {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      max-width: calc(100% - 12px);
-      padding: 4px 6px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.9);
-      box-shadow: 0 8px 20px rgba(50,40,35,.08);
-      font-size: 10px;
-      line-height: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
     .tag { background: var(--primary-soft); }
     .badge-success { background: var(--success-soft); color: var(--success); }
     .badge-muted { background: rgba(40,35,31,.08); color: var(--muted); }
@@ -1252,7 +1237,7 @@
       .event-item, .link-box { grid-template-columns: 1fr; }
       .event-preview { width: 100%; height: 140px; }
       .gift-admin-card { grid-template-columns: 84px minmax(0, 1fr); }
-      .gift-thumb { width: 76px; height: 76px; border-radius: 16px; }
+      .gift-thumb { width: 76px; aspect-ratio: 3 / 4; height: auto; border-radius: 16px; }
       .gift-actions { grid-template-columns: 1fr; }
       .product-strip { margin-top: -8px; }
       .theme-option { grid-template-columns: 1fr; }
@@ -1263,8 +1248,8 @@
       .hero::after { display: none; }
       .guest-side h2 { font-size: 28px; }
       .wishlist-intro { padding: 16px; }
-      .gift-card { grid-template-columns: 92px minmax(0, 1fr); }
-      .gift-img { width: 76px; height: 76px; min-height: 0; border-radius: 16px; }
+      .gift-card { grid-template-columns: 98px minmax(0, 1fr); }
+      .gift-img { width: 84px; aspect-ratio: 3 / 4; height: auto; min-height: 0; border-radius: 16px; }
     }
 
     /* Mobile-first polish: denser rhythm, safer text wrapping, less vertical drag. */
@@ -1745,20 +1730,15 @@
       }
       .gift-card {
         border-radius: 20px;
-        grid-template-columns: 90px minmax(0, 1fr);
+        grid-template-columns: 98px minmax(0, 1fr);
       }
       .gift-img {
-        width: 76px;
-        height: 76px;
+        width: 84px;
+        aspect-ratio: 3 / 4;
+        height: auto;
         min-height: 0;
         margin: 10px 4px 10px 10px;
         border-radius: 16px;
-      }
-      .gift-img .status {
-        top: 5px;
-        left: 5px;
-        padding: 4px 6px;
-        font-size: 10px;
       }
       .gift-body {
         padding: 12px;
@@ -1863,7 +1843,8 @@
       }
       .gift-thumb {
         width: 68px;
-        height: 68px;
+        aspect-ratio: 3 / 4;
+        height: auto;
         border-radius: 14px;
       }
     }
@@ -3998,7 +3979,6 @@
           <label>Название<input id="giftTitle" value="${gift?.title || ''}" placeholder="Подтянется автоматически"></label>
           <label>Цена<input id="giftPrice" type="number" min="0" value="${gift?.price || ''}" placeholder="Подтянется автоматически"></label>
           <label>Картинка<input id="giftImage" value="${gift?.image || ''}" placeholder="Подтянется автоматически"></label>
-          <label class="full">Описание<textarea id="giftDescription" placeholder="Можно оставить пустым">${gift?.description || ''}</textarea></label>
         </div>
         <div class="hero-actions"><button class="btn btn-primary" onclick="saveGift('${eventId}')">Сохранить подарок</button><button class="btn btn-soft" onclick="closeGiftForm('${eventId}')">Отмена</button></div>
       </div>`;
@@ -4011,7 +3991,6 @@
           <b>${gift.title}</b>
           <div class="muted">${money(gift.price)}</div>
           <div class="gift-admin-meta">
-            <span class="tag">${gift.category || 'Подарок'}</span>
             <span class="status-pill">${reserved ? 'подарок забронирован' : 'подарок свободен'}</span>
             <span class="field-hint">${gift.url ? 'Ссылка добавлена' : 'Ссылка пока не добавлена'}</span>
           </div>
@@ -4223,7 +4202,7 @@
       if (preview.title) title.value = preview.title;
       if (Number(preview.price) > 0) price.value = Math.round(Number(preview.price));
       if (preview.image) image.value = preview.image;
-      if (preview.description && !description.value.trim()) description.value = preview.description;
+      if (description && preview.description && !description.value.trim()) description.value = preview.description;
       renderGiftPreviewCard(preview);
     }
     function prefillGiftFromUrl(force = false) {
@@ -4280,7 +4259,7 @@
       const gift = {
         id: uid(),
         title,
-        description: document.getElementById('giftDescription').value.trim(),
+        description: document.getElementById('giftDescription')?.value.trim() || '',
         url,
         price: Number(document.getElementById('giftPrice').value || 0),
         image: document.getElementById('giftImage').value.trim(),
@@ -4398,7 +4377,7 @@
     }
     function giftCard(gift) {
       const reserved = gift.status === 'reserved';
-      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Занят' : 'Свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Подарок забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
+      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img">${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><div class="gift-meta"><span class="price">${money(gift.price)}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Уже забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
     }
     function openReserve(giftId) {
       pendingReserve = { event: eventByGiftId(giftId), giftId };

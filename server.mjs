@@ -655,7 +655,7 @@ function normalizeWildberriesProduct(product, productId) {
     title,
     price: wildberriesPrice(product),
     image,
-    description: product?.brand ? `Бренд: ${decodeHtml(product.brand)}` : '',
+    description: '',
     url: `https://www.wildberries.ru/catalog/${id}/detail.aspx`
   };
 }
