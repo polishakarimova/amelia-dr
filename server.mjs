@@ -1113,6 +1113,7 @@ async function fetchOzonApiPreview(productUrl) {
       referer: productUrl.href
     }
   }, 12000);
+  if ([403, 429, 498].includes(response.status)) throw ozonPreviewBlockedError();
   if (!response.ok) throw new Error(`ozon_api_${response.status}`);
   const data = await response.json();
   if (isOzonChallengePayload(data)) throw ozonPreviewBlockedError();
@@ -1170,6 +1171,7 @@ async function fetchOzonPreview(productUrl) {
   try {
     preview = await fetchPageMetadata(productUrl);
   } catch (error) {
+    if (/product_page_(403|429|498)/.test(error.message || '')) throw ozonPreviewBlockedError();
     if (!error.status) error.status = 422;
     throw error;
   }
