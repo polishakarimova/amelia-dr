@@ -607,17 +607,18 @@
     .gift-card {
       overflow: hidden;
       display: grid;
-      grid-template-columns: clamp(104px, 24%, 132px) minmax(0, 1fr);
-      align-items: stretch;
-      gap: 0;
+      grid-template-columns: 104px minmax(0, 1fr);
+      align-items: start;
+      gap: 2px;
     }
     .gift-card.reserved { opacity: .72; }
     .gift-img {
-      height: auto;
-      min-height: 132px;
-      aspect-ratio: 1;
-      margin: 12px 0 12px 12px;
-      border-radius: 22px;
+      width: 84px;
+      height: 84px;
+      min-height: 0;
+      aspect-ratio: auto;
+      margin: 12px 8px 12px 12px;
+      border-radius: 18px;
       background: linear-gradient(135deg, var(--surface-warm), var(--primary-soft));
       position: relative;
     }
@@ -627,7 +628,7 @@
       object-fit: contain;
       object-position: center;
       display: block;
-      padding: 8px;
+      padding: 6px;
       mix-blend-mode: multiply;
     }
     .gift-body { padding: 14px 14px 14px 12px; min-width: 0; }
@@ -865,16 +866,26 @@
     .field-hint { color: rgba(118,109,102,.76); font-size: 13px; }
     .gift-admin-card {
       display: grid;
-      grid-template-columns: 104px 1fr auto;
-      gap: 14px;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      gap: 12px;
       align-items: center;
       padding: 14px;
       border-radius: 24px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,.7);
     }
-    .gift-thumb { width: 104px; height: 104px; border-radius: 20px; background: linear-gradient(135deg, var(--peach), var(--lavender)); display: grid; place-items: center; color: var(--primary-hover); font-weight: 900; overflow: hidden; }
-    .gift-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .gift-thumb {
+      width: 84px;
+      height: 84px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--surface-warm), var(--primary-soft));
+      display: grid;
+      place-items: center;
+      color: var(--primary-hover);
+      font-weight: 900;
+      overflow: hidden;
+    }
+    .gift-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 6px; mix-blend-mode: multiply; }
     .gift-admin-meta, .event-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .link-box {
       display: grid;
@@ -922,7 +933,21 @@
       font-weight: 650;
     }
     .gift-img { display: grid; place-items: center; background: linear-gradient(135deg, var(--peach), var(--lavender)); color: var(--primary-hover); font-weight: 900; overflow: hidden; }
-    .gift-img .status { position: absolute; top: 12px; left: 12px; padding: 7px 10px; border-radius: 999px; background: rgba(255,255,255,.88); box-shadow: 0 8px 20px rgba(50,40,35,.08); }
+    .gift-img .status {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      max-width: calc(100% - 12px);
+      padding: 4px 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 8px 20px rgba(50,40,35,.08);
+      font-size: 10px;
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .tag { background: var(--primary-soft); }
     .badge-success { background: var(--success-soft); color: var(--success); }
     .badge-muted { background: rgba(40,35,31,.08); color: var(--muted); }
@@ -1053,9 +1078,9 @@
       border-radius: 28px;
       background: rgba(255,255,255,.72);
     }
-    .gift-admin-card {
-      grid-template-columns: 96px 1fr;
-    }
+      .gift-admin-card {
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
     .gift-admin-card .hero-actions {
       grid-column: 1 / -1;
       justify-content: flex-start;
@@ -1224,8 +1249,10 @@
       .progress-meta { display: grid; }
       .form-grid, .theme-grid, .form-section { grid-template-columns: 1fr; }
       .cover-upload { grid-template-columns: 1fr; }
-      .event-item, .gift-admin-card, .link-box { grid-template-columns: 1fr; }
-      .event-preview, .gift-thumb { width: 100%; height: 140px; }
+      .event-item, .link-box { grid-template-columns: 1fr; }
+      .event-preview { width: 100%; height: 140px; }
+      .gift-admin-card { grid-template-columns: 84px minmax(0, 1fr); }
+      .gift-thumb { width: 76px; height: 76px; border-radius: 16px; }
       .gift-actions { grid-template-columns: 1fr; }
       .product-strip { margin-top: -8px; }
       .theme-option { grid-template-columns: 1fr; }
@@ -1236,7 +1263,8 @@
       .hero::after { display: none; }
       .guest-side h2 { font-size: 28px; }
       .wishlist-intro { padding: 16px; }
-      .gift-img { min-height: 112px; }
+      .gift-card { grid-template-columns: 92px minmax(0, 1fr); }
+      .gift-img { width: 76px; height: 76px; min-height: 0; border-radius: 16px; }
     }
 
     /* Mobile-first polish: denser rhythm, safer text wrapping, less vertical drag. */
@@ -1717,18 +1745,20 @@
       }
       .gift-card {
         border-radius: 20px;
-        grid-template-columns: 104px minmax(0, 1fr);
+        grid-template-columns: 90px minmax(0, 1fr);
       }
       .gift-img {
-        min-height: 104px;
-        margin: 10px 0 10px 10px;
-        border-radius: 18px;
+        width: 76px;
+        height: 76px;
+        min-height: 0;
+        margin: 10px 4px 10px 10px;
+        border-radius: 16px;
       }
       .gift-img .status {
-        top: 8px;
-        left: 8px;
-        padding: 5px 8px;
-        font-size: 11px;
+        top: 5px;
+        left: 5px;
+        padding: 4px 6px;
+        font-size: 10px;
       }
       .gift-body {
         padding: 12px;
@@ -1814,9 +1844,11 @@
         grid-template-columns: 1fr;
       }
       .theme-option,
-      .event-item,
-      .gift-admin-card {
+      .event-item {
         grid-template-columns: 1fr;
+      }
+      .gift-admin-card {
+        grid-template-columns: 76px minmax(0, 1fr);
       }
       .admin-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1825,10 +1857,14 @@
       .admin-token-row {
         grid-template-columns: 1fr;
       }
-      .event-preview,
-      .gift-thumb {
+      .event-preview {
         width: 100%;
         height: 112px;
+      }
+      .gift-thumb {
+        width: 68px;
+        height: 68px;
+        border-radius: 14px;
       }
     }
     .topbar {
@@ -4362,7 +4398,7 @@
     }
     function giftCard(gift) {
       const reserved = gift.status === 'reserved';
-      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Подарок уже забронирован' : 'Подарок свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Подарок забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
+      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img"><span class="status ${reserved ? 'reserved' : ''}">${reserved ? 'Занят' : 'Свободен'}</span>${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><p>${gift.description || ''}</p><div class="gift-meta"><span class="price">${money(gift.price)}</span><span class="tag">${gift.category || 'Подарок'}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Подарок забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
     }
     function openReserve(giftId) {
       pendingReserve = { event: eventByGiftId(giftId), giftId };
