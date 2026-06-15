@@ -1210,10 +1210,9 @@ function normalizeExternalGiftPreview(data, productUrl, source) {
 async function fetchExternalGiftPreview(proxyUrl, productUrl, source = 'external-preview') {
   const requestUrl = giftPreviewProxyRequestUrl(proxyUrl, productUrl);
   if (!requestUrl) throw new Error('gift_preview_proxy_not_configured');
-  const timeoutMs = source === 'scrapingbee' && isOzonHost(productUrl.hostname) ? 90000 : 50000;
   const response = await fetchWithTimeout(requestUrl, {
     headers: { accept: 'application/json,text/plain;q=0.9,*/*;q=0.8' }
-  }, timeoutMs);
+  }, 50000);
   if (!response.ok) throw new Error(`gift_preview_proxy_${response.status}`);
   const text = await response.text();
   let data;
