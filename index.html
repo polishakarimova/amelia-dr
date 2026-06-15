@@ -169,6 +169,26 @@
       white-space: nowrap;
     }
     .btn:active { transform: scale(.98); }
+    .btn[disabled] {
+      cursor: wait;
+      opacity: .72;
+      transform: none;
+    }
+    .btn-spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      animation: spin .72s linear infinite;
+    }
+    .btn.is-loading .btn-spinner { display: inline-block; }
+    .btn.is-done {
+      background: #eef7e8;
+      color: #4f7a58;
+      border-color: rgba(86, 132, 82, .25);
+    }
     .btn-primary {
       background: var(--ink);
       color: #fff;
@@ -258,6 +278,9 @@
     @keyframes enter {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
     .hero {
       display: grid;
@@ -3971,7 +3994,7 @@
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Новый подарок'}</h3>
         <label class="full">Ссылка на Wildberries или Ozon<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.ozon.ru/product/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.</span></label>
-        <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" type="button" onclick="prefillGiftFromUrl(true)">Подтянуть данные по ссылке</button></div>
+        <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" id="giftPrefillButton" type="button" onclick="prefillGiftFromUrl(true)"><span class="btn-spinner" aria-hidden="true"></span><span id="giftPrefillButtonText">Подтянуть данные по ссылке</span></button></div>
         <div class="gift-admin-card hidden" id="giftPreviewCard">
           <div class="gift-thumb" id="giftPreviewImage">Фото</div>
           <div>
@@ -4183,6 +4206,18 @@
       const node = document.getElementById('giftUrlStatus');
       if (node) node.textContent = text;
     }
+    function giftPrefillButtonState(state = 'idle') {
+      const button = document.getElementById('giftPrefillButton');
+      const text = document.getElementById('giftPrefillButtonText');
+      if (!button || !text) return;
+      button.classList.toggle('is-loading', state === 'loading');
+      button.classList.toggle('is-done', state === 'done');
+      button.disabled = state === 'loading';
+      if (state === 'loading') text.textContent = 'Данные загружаются…';
+      else if (state === 'done') text.textContent = 'Готово';
+      else if (state === 'error') text.textContent = 'Попробовать ещё раз';
+      else text.textContent = 'Подтянуть данные по ссылке';
+    }
     function handleGiftUrlKey(event) {
       if (event.key !== 'Enter') return;
       event.preventDefault();
@@ -4230,23 +4265,29 @@
       clearTimeout(giftPreviewTimer);
       if (!url) {
         giftUrlStatus('Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.');
+        giftPrefillButtonState('idle');
         return Promise.resolve(false);
       }
       if (!isSupportedGiftStoreUrl(url)) {
         giftUrlStatus('Автозаполнение сейчас работает для Wildberries и Ozon. Эту ссылку можно сохранить вручную.');
+        giftPrefillButtonState('idle');
         return Promise.resolve(false);
       }
+      giftPrefillButtonState('idle');
       const run = async () => {
         const requestId = ++giftPreviewRequest;
+        giftPrefillButtonState('loading');
         giftUrlStatus(`Подтягиваю данные с ${giftStoreName(url)}...`);
         try {
           const data = await apiRequest('/api/gift-preview', { method: 'POST', body: { url } });
           if (requestId !== giftPreviewRequest) return;
           applyGiftPreview(data.preview || {});
+          giftPrefillButtonState('done');
           giftUrlStatus('Готово: название, цена и фото подтянуты. Проверьте и сохраните подарок.');
           return true;
         } catch (error) {
           if (requestId !== giftPreviewRequest) return;
+          giftPrefillButtonState('error');
           const message = error.message === 'unsupported_store'
             ? 'Автозаполнение сейчас работает для Wildberries и Ozon. Эту ссылку можно сохранить вручную.'
             : `Не получилось подтянуть данные с ${giftStoreName(url)}. Проверьте ссылку или попробуйте ещё раз.`;
