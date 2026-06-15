@@ -618,6 +618,18 @@ function isDetmirHost(hostname) {
     || host.endsWith('.detmir.by');
 }
 
+function isYandexMarketHost(hostname) {
+  const host = String(hostname || '').toLowerCase();
+  return host === 'market.yandex.ru'
+    || host.endsWith('.market.yandex.ru')
+    || host === 'market.yandex.kz'
+    || host.endsWith('.market.yandex.kz')
+    || host === 'market.yandex.by'
+    || host.endsWith('.market.yandex.by')
+    || host === 'pokupki.market.yandex.ru'
+    || host.endsWith('.pokupki.market.yandex.ru');
+}
+
 function isOzonUrlText(rawUrl) {
   try {
     return isOzonHost(parseProductUrl(rawUrl).hostname);
@@ -634,8 +646,16 @@ function isDetmirUrlText(rawUrl) {
   }
 }
 
+function isYandexMarketUrlText(rawUrl) {
+  try {
+    return isYandexMarketHost(parseProductUrl(rawUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function isSupportedGiftStoreUrlText(rawUrl) {
-  return isWildberriesUrlText(rawUrl) || isOzonUrlText(rawUrl) || isDetmirUrlText(rawUrl);
+  return isWildberriesUrlText(rawUrl) || isOzonUrlText(rawUrl) || isDetmirUrlText(rawUrl) || isYandexMarketUrlText(rawUrl);
 }
 
 function wildberriesProductIdFromUrl(rawUrl) {
@@ -667,6 +687,18 @@ function detmirProductIdFromUrl(rawUrl) {
   );
 }
 
+function yandexMarketProductIdFromUrl(rawUrl) {
+  const text = String(rawUrl || '');
+  return (
+    text.match(/\/product--[^/?#]+\/(\d+)(?:[/?#]|$)/i)?.[1] ||
+    text.match(/\/product\/(\d+)(?:[/?#]|$)/i)?.[1] ||
+    text.match(/\/card\/[^/?#]+\/(\d+)(?:[/?#]|$)/i)?.[1] ||
+    text.match(/[?&](?:sku|marketSku|wareId|modelid|modelId|productId|product_id)=([a-z0-9_-]+)/i)?.[1] ||
+    text.match(/[?&]do-waremd5=([a-z0-9_-]+)/i)?.[1] ||
+    ''
+  );
+}
+
 function normalizedProductHref(productUrl) {
   const url = new URL(productUrl.href);
   url.hash = '';
@@ -693,6 +725,10 @@ function productPreviewCacheKey(productUrl) {
     const id = detmirProductIdFromUrl(productUrl.href);
     return `detmir:${id || normalizedProductHref(productUrl)}`;
   }
+  if (isYandexMarketHost(productUrl.hostname)) {
+    const id = yandexMarketProductIdFromUrl(productUrl.href);
+    return `yandex-market:${id || normalizedProductHref(productUrl)}`;
+  }
   return `page:${normalizedProductHref(productUrl)}`;
 }
 
@@ -700,6 +736,7 @@ function isProbablyProductUrl(productUrl) {
   if (isWildberriesHost(productUrl.hostname)) return Boolean(wildberriesProductIdFromUrl(productUrl.href));
   if (isOzonHost(productUrl.hostname)) return Boolean(ozonProductIdFromUrl(productUrl.href)) || productUrl.hostname.toLowerCase().includes('onelink');
   if (isDetmirHost(productUrl.hostname)) return /\/product\//i.test(productUrl.pathname);
+  if (isYandexMarketHost(productUrl.hostname)) return /\/(?:product|product--|card|cc)\//i.test(productUrl.pathname) || Boolean(yandexMarketProductIdFromUrl(productUrl.href));
   return true;
 }
 
@@ -837,15 +874,41 @@ function isDetmirRequest(url) {
   }
 }
 
+function isYandexMarketRequest(url) {
+  try {
+    const host = new URL(String(url)).hostname.toLowerCase();
+    return host === 'market.yandex.ru'
+      || host.endsWith('.market.yandex.ru')
+      || host === 'market.yandex.kz'
+      || host.endsWith('.market.yandex.kz')
+      || host === 'market.yandex.by'
+      || host.endsWith('.market.yandex.by')
+      || host.endsWith('.market.yandex.net')
+      || host === 'avatars.mds.yandex.net'
+      || host.endsWith('.mds.yandex.net')
+      || host === 'avatars.mdst.yandex.net'
+      || host.endsWith('.mdst.yandex.net');
+  } catch {
+    return false;
+  }
+}
+
 function isMarketplaceRequest(url) {
-  return isWildberriesRequest(url) || isOzonRequest(url) || isDetmirRequest(url);
+  return isWildberriesRequest(url) || isOzonRequest(url) || isDetmirRequest(url) || isYandexMarketRequest(url);
+}
+
+function marketplaceReferer(url) {
+  if (isOzonRequest(url)) return 'https://www.ozon.ru/';
+  if (isWildberriesRequest(url)) return 'https://www.wildberries.ru/';
+  if (isDetmirRequest(url)) return 'https://www.detmir.ru/';
+  if (isYandexMarketRequest(url)) return 'https://market.yandex.ru/';
+  return '';
 }
 
 async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
   const ozonRequest = isOzonRequest(url);
-  const referer = isOzonRequest(url)
-    ? 'https://www.ozon.ru/'
-    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : (isDetmirRequest(url) ? 'https://www.detmir.ru/' : ''));
+  const yandexMarketRequest = isYandexMarketRequest(url);
+  const referer = marketplaceReferer(url);
   const args = [
     '-L',
     '-sS',
@@ -854,8 +917,8 @@ async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
     '-A', 'Mozilla/5.0',
     '-H', `accept: ${options.headers?.accept || 'application/json,text/html;q=0.9,*/*;q=0.8'}`
   ];
-  if (ozonRequest) {
-    const cookieJar = join(root, '.ozon-curl-cookies');
+  if (ozonRequest || yandexMarketRequest) {
+    const cookieJar = join(root, ozonRequest ? '.ozon-curl-cookies' : '.yandex-market-curl-cookies');
     args.push('-c', cookieJar, '-b', cookieJar, '-H', 'accept-language: ru-RU,ru;q=0.9,en;q=0.8');
   }
   if (referer) args.push('-H', `referer: ${referer}`);
@@ -865,7 +928,7 @@ async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
   try {
     ({ stdout } = await execFileAsync('curl', args, { maxBuffer: 12 * 1024 * 1024, windowsHide: true }));
   } catch (error) {
-    if (ozonRequest) error.status = 422;
+    if (ozonRequest || yandexMarketRequest) error.status = 422;
     throw error;
   }
   const marker = '\n__POVOD_HTTP_STATUS__:';
@@ -884,9 +947,7 @@ async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
 async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  const referer = isOzonRequest(url)
-    ? 'https://www.ozon.ru/'
-    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : (isDetmirRequest(url) ? 'https://www.detmir.ru/' : ''));
+  const referer = marketplaceReferer(url);
   try {
     const response = await fetch(url, {
       ...options,
@@ -1003,7 +1064,12 @@ function imageFromStructuredValue(value, baseUrl) {
       || host.includes('ozon') && /(?:image|multimedia|photo|img)/i.test(path)
       || host === 'catalog-cdn.detmir.st'
       || host === 'img.detmir.st'
-      || host.endsWith('.detmir.st') && /(?:media|images|img)/i.test(path);
+      || host.endsWith('.detmir.st') && /(?:media|images|img)/i.test(path)
+      || host === 'avatars.mds.yandex.net'
+      || host.endsWith('.mds.yandex.net')
+      || host === 'avatars.mdst.yandex.net'
+      || host.endsWith('.mdst.yandex.net')
+      || host.includes('yandex') && /(?:mpic|market|image|photo|img|pic)/i.test(path);
     return looksLikeImage ? url : '';
   } catch {
     return '';
@@ -1077,9 +1143,21 @@ function priceFromHtml(html) {
   const candidates = [
     html.match(/"price"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
     html.match(/"finalPrice"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
+    html.match(/"priceValue"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
+    html.match(/"currentPrice"\s*:\s*\{[^}]*"value"\s*:\s*"?(\d{2,8})(?:[.,]\d+)?/i)?.[1],
     html.match(/(\d[\d\s.,]{1,12})\s*₽/i)?.[1]
   ];
   return candidates.map(parsePriceValue).find(Boolean) || 0;
+}
+
+function decodeJsonString(value) {
+  const text = String(value || '');
+  if (!text) return '';
+  try {
+    return JSON.parse(`"${text.replace(/"/g, '\\"')}"`);
+  } catch {
+    return text.replace(/\\\//g, '/');
+  }
 }
 
 function cleanMarketplaceTitle(title) {
@@ -1087,6 +1165,8 @@ function cleanMarketplaceTitle(title) {
     .replace(/\s*\|\s*Wildberries.*$/i, '')
     .replace(/\s*\|\s*Ozon.*$/i, '')
     .replace(/\s*\|\s*OZON.*$/i, '')
+    .replace(/\s*\|\s*Яндекс\s*Маркет.*$/i, '')
+    .replace(/\s*[—-]\s*Яндекс\s*Маркет.*$/i, '')
     .replace(/\s*[—-]\s*купить.*$/i, '')
     .trim();
 }
@@ -1169,6 +1249,12 @@ function ozonPreviewBlockedError() {
   return error;
 }
 
+function yandexMarketPreviewBlockedError() {
+  const error = new Error('yandex_market_preview_blocked');
+  error.status = 422;
+  return error;
+}
+
 function isOzonChallengePayload(data) {
   return Boolean(data?.challengeURL || data?.incidentId || data?.blockURL);
 }
@@ -1179,6 +1265,42 @@ function isOzonChallengeTitle(title) {
 
 function isOzonChallengeImage(image) {
   return /abt-challenge|captcha|challenge|warn\.png/i.test(String(image || ''));
+}
+
+function isYandexMarketChallengeTitle(title) {
+  const text = cleanMarketplaceTitle(title).toLowerCase();
+  return /^ой!?$/.test(text)
+    || /captcha|showcaptcha|доступ ограничен|подтвердите|проверка|робот/i.test(text);
+}
+
+function yandexMarketHtmlPreview(html, productUrl, source = 'yandex-market-html') {
+  const structured = jsonLdPreview(html, productUrl.href);
+  const title = structured.title
+    || metaContent(html, 'og:title')
+    || metaContent(html, 'twitter:title')
+    || decodeJsonString(html.match(/"(?:productName|modelName|title|name)"\s*:\s*"([^"]{4,240})"/i)?.[1] || '')
+    || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
+  const imageCandidates = [
+    structured.image,
+    metaContent(html, 'og:image'),
+    metaContent(html, 'twitter:image')
+  ];
+  for (const match of html.matchAll(/https?:\\?\/\\?\/avatars\.mds\.yandex\.net[^"'\\<>\s]+/gi)) {
+    imageCandidates.push(decodeJsonString(match[0]));
+  }
+  const image = imageCandidates.map(item => imageFromStructuredValue(item, productUrl.href)).find(Boolean) || '';
+  const price = structured.price
+    || parsePriceValue(metaContent(html, 'product:price:amount'))
+    || parsePriceValue(metaContent(html, 'og:price:amount'))
+    || priceFromHtml(html);
+  return {
+    source,
+    title: cleanMarketplaceTitle(title),
+    price: Math.round(price || 0),
+    image,
+    description: structured.description || metaContent(html, 'og:description') || '',
+    url: productUrl.href
+  };
 }
 
 function giftPreviewProxyRequestUrl(proxyUrl, productUrl) {
@@ -1226,6 +1348,9 @@ async function fetchExternalGiftPreview(proxyUrl, productUrl, source = 'external
     : previewFromHtml(text, productUrl, source);
   if (isOzonHost(productUrl.hostname) && (isOzonChallengeTitle(preview.title) || isOzonChallengeImage(preview.image))) {
     throw ozonPreviewBlockedError();
+  }
+  if (isYandexMarketHost(productUrl.hostname) && isYandexMarketChallengeTitle(preview.title)) {
+    throw yandexMarketPreviewBlockedError();
   }
   if (!preview.title && !preview.image && !preview.price) {
     const error = new Error('gift_preview_proxy_empty');
@@ -1282,6 +1407,22 @@ async function fetchOzonScrapingProviderPreview(productUrl) {
   throw new Error('ozon_scraping_provider_not_configured');
 }
 
+async function fetchYandexMarketScrapingProviderPreview(productUrl) {
+  let lastError = null;
+  for (const provider of ozonScrapingProviderUrls(productUrl)) {
+    try {
+      const preview = await fetchExternalGiftPreview(provider.url, productUrl, provider.source);
+      preview.source = 'yandex-market';
+      return preview;
+    } catch (error) {
+      lastError = error;
+      console.error(`${provider.source}_yandex_market_preview_failed`, error.message || error);
+    }
+  }
+  if (lastError) throw lastError;
+  throw new Error('yandex_market_scraping_provider_not_configured');
+}
+
 function ozonHtmlPreview(html, productUrl, source = 'ozon-html') {
   const titleMatches = [...html.matchAll(/<p[^>]+class=["'][^"']*pdp_eb5[^"']*["'][^>]*>([\s\S]*?)<\/p>/gi)];
   for (const titleMatch of titleMatches) {
@@ -1321,6 +1462,11 @@ function ozonHtmlPreview(html, productUrl, source = 'ozon-html') {
 }
 
 function previewFromHtml(html, productUrl, source = 'page-meta') {
+  if (isYandexMarketHost(productUrl.hostname)) {
+    const yandexPreview = yandexMarketHtmlPreview(html, productUrl, source);
+    if (isYandexMarketChallengeTitle(yandexPreview.title)) throw yandexMarketPreviewBlockedError();
+    if (yandexPreview.title || yandexPreview.image || yandexPreview.price) return yandexPreview;
+  }
   if (isOzonHost(productUrl.hostname)) {
     const ozonPreview = ozonHtmlPreview(html, productUrl, source);
     if (ozonPreview.title || ozonPreview.image || ozonPreview.price) return ozonPreview;
@@ -1345,6 +1491,9 @@ function previewFromHtml(html, productUrl, source = 'page-meta') {
   };
   if (isOzonHost(productUrl.hostname) && (isOzonChallengeTitle(preview.title) || isOzonChallengeImage(preview.image))) {
     throw ozonPreviewBlockedError();
+  }
+  if (isYandexMarketHost(productUrl.hostname) && isYandexMarketChallengeTitle(preview.title)) {
+    throw yandexMarketPreviewBlockedError();
   }
   return preview;
 }
@@ -1439,10 +1588,46 @@ async function fetchDetmirPreview(productUrl) {
   return preview;
 }
 
+async function fetchYandexMarketPreview(productUrl) {
+  let directError = null;
+  try {
+    const preview = await fetchPageMetadata(productUrl);
+    preview.source = 'yandex-market';
+    preview.description = '';
+    if (isYandexMarketChallengeTitle(preview.title)) throw yandexMarketPreviewBlockedError();
+    if (preview.title || preview.image || preview.price) {
+      preview.title = cleanMarketplaceTitle(preview.title).trim() || 'Товар Яндекс Маркета';
+      return preview;
+    }
+  } catch (error) {
+    directError = error;
+    console.error('yandex_market_page_preview_failed', error.message || error);
+  }
+  if (scrapingBeeApiKey || zenRowsApiKey || scraperApiKey) {
+    try {
+      const preview = await fetchYandexMarketScrapingProviderPreview(productUrl);
+      preview.source = 'yandex-market';
+      preview.description = '';
+      if (isYandexMarketChallengeTitle(preview.title)) throw yandexMarketPreviewBlockedError();
+      if (preview.title || preview.image || preview.price) {
+        preview.title = cleanMarketplaceTitle(preview.title).trim() || 'Товар Яндекс Маркета';
+        return preview;
+      }
+    } catch (error) {
+      console.error('yandex_market_scraping_provider_preview_failed', error.message || error);
+      directError = error;
+    }
+  }
+  const error = new Error(directError?.message || 'yandex_market_preview_not_found');
+  error.status = directError?.status || 422;
+  throw error;
+}
+
 function productStoreFromUrl(productUrl) {
   if (isOzonHost(productUrl.hostname)) return 'ozon';
   if (isWildberriesHost(productUrl.hostname)) return 'wildberries';
   if (isDetmirHost(productUrl.hostname)) return 'detmir';
+  if (isYandexMarketHost(productUrl.hostname)) return 'yandex-market';
   return 'page';
 }
 
@@ -1513,6 +1698,7 @@ async function fetchGiftPreview(rawUrl) {
   }
   if (isOzonHost(productUrl.hostname)) return fetchOzonPreview(productUrl);
   if (isDetmirHost(productUrl.hostname)) return fetchDetmirPreview(productUrl);
+  if (isYandexMarketHost(productUrl.hostname)) return fetchYandexMarketPreview(productUrl);
   if (!isWildberriesHost(productUrl.hostname)) {
     const error = new Error('unsupported_store');
     error.status = 400;
