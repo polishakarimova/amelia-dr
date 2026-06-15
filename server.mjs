@@ -974,6 +974,15 @@ function cleanMarketplaceTitle(title) {
     .trim();
 }
 
+function textFromHtmlFragment(value) {
+  return decodeHtml(String(value || '')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim());
+}
+
 function parseNestedJson(value) {
   if (typeof value !== 'string') return null;
   const text = value.trim();
@@ -1086,7 +1095,7 @@ async function fetchExternalGiftPreview(proxyUrl, productUrl, source = 'external
   if (!requestUrl) throw new Error('gift_preview_proxy_not_configured');
   const response = await fetchWithTimeout(requestUrl, {
     headers: { accept: 'application/json,text/plain;q=0.9,*/*;q=0.8' }
-  }, 20000);
+  }, 50000);
   if (!response.ok) throw new Error(`gift_preview_proxy_${response.status}`);
   const text = await response.text();
   let data;
@@ -1115,9 +1124,10 @@ function ozonScrapingProviderUrls(productUrl) {
     const url = new URL('https://app.scrapingbee.com/api/v1/');
     url.searchParams.set('api_key', scrapingBeeApiKey);
     url.searchParams.set('url', productUrl.href);
-    url.searchParams.set('render_js', 'true');
-    url.searchParams.set('premium_proxy', 'true');
+    url.searchParams.set('render_js', 'false');
+    url.searchParams.set('stealth_proxy', 'true');
     url.searchParams.set('country_code', 'ru');
+    url.searchParams.set('block_resources', 'false');
     urls.push({ url: url.href, source: 'scrapingbee' });
   }
   if (zenRowsApiKey) {
@@ -1155,7 +1165,49 @@ async function fetchOzonScrapingProviderPreview(productUrl) {
   throw new Error('ozon_scraping_provider_not_configured');
 }
 
+function ozonHtmlPreview(html, productUrl, source = 'ozon-html') {
+  const titleMatches = [...html.matchAll(/<p[^>]+class=["'][^"']*pdp_eb5[^"']*["'][^>]*>([\s\S]*?)<\/p>/gi)];
+  for (const titleMatch of titleMatches) {
+    const title = cleanMarketplaceTitle(textFromHtmlFragment(titleMatch[1]));
+    if (!title || /^ozon$/i.test(title)) continue;
+    const start = Math.max(0, titleMatch.index - 3000);
+    const end = Math.min(html.length, titleMatch.index + 3000);
+    const block = html.slice(start, end);
+    const priceText = textFromHtmlFragment(block.match(/<span[^>]+class=["'][^"']*pdp_eb4[^"']*["'][^>]*>([\s\S]*?)<\/span>/i)?.[1] || '');
+    const price = parsePriceValue(priceText) || parsePriceValue(block.match(/\d[\d\s., ]{2,12}\s*(?:₽|руб)/i)?.[0] || '');
+    const imageCandidates = [];
+    for (const tag of block.matchAll(/<img[^>]+>/gi)) {
+      const attrs = tag[0];
+      for (const attr of attrs.matchAll(/\b(?:src|srcset)=["']([^"']+)["']/gi)) {
+        for (const part of String(attr[1] || '').split(/\s*,\s*/)) {
+          const url = part.trim().split(/\s+/)[0];
+          const image = imageFromStructuredValue(url, productUrl.href);
+          if (image && !/\/cms\/|logo|favicon|sprite/i.test(image)) imageCandidates.push(image);
+        }
+      }
+    }
+    const image = imageCandidates.find(item => /\/wc(?:400|500|1000)\//i.test(item))
+      || imageCandidates.find(Boolean)
+      || '';
+    if (title && (price || image)) {
+      return {
+        source,
+        title,
+        price: Math.round(price || 0),
+        image,
+        description: '',
+        url: productUrl.href
+      };
+    }
+  }
+  return {};
+}
+
 function previewFromHtml(html, productUrl, source = 'page-meta') {
+  if (isOzonHost(productUrl.hostname)) {
+    const ozonPreview = ozonHtmlPreview(html, productUrl, source);
+    if (ozonPreview.title || ozonPreview.image || ozonPreview.price) return ozonPreview;
+  }
   const structured = jsonLdPreview(html, productUrl.href);
   const title = structured.title
     || metaContent(html, 'og:title')
