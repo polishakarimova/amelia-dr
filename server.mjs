@@ -582,7 +582,8 @@ function wildberriesBasketHost(productId) {
     [1061, '06'], [1115, '07'], [1169, '08'], [1313, '09'], [1601, '10'],
     [1655, '11'], [1919, '12'], [2045, '13'], [2189, '14'], [2405, '15']
   ];
-  const basket = ranges.find(([max]) => vol <= max)?.[1] || '16';
+  const basket = ranges.find(([max]) => vol <= max)?.[1]
+    || String(Math.min(99, Math.max(16, Math.floor((vol - 2406) / 218) + 16))).padStart(2, '0');
   return `basket-${basket}.wbbasket.ru`;
 }
 
@@ -591,6 +592,41 @@ function wildberriesImageUrl(productId, index = 1) {
   const vol = Math.floor(id / 100000);
   const part = Math.floor(id / 1000);
   return `https://${wildberriesBasketHost(id)}/vol${vol}/part${part}/${id}/images/big/${index}.webp`;
+}
+
+function wildberriesImageUrlForBasket(productId, basket, index = 1) {
+  const id = Number(productId);
+  const vol = Math.floor(id / 100000);
+  const part = Math.floor(id / 1000);
+  return `https://basket-${basket}.wbbasket.ru/vol${vol}/part${part}/${id}/images/big/${index}.webp`;
+}
+
+function wildberriesBasketNumber(productId) {
+  return Number(wildberriesBasketHost(productId).match(/basket-(\d+)/)?.[1] || 16);
+}
+
+function wildberriesImageCandidates(productId) {
+  const base = wildberriesBasketNumber(productId);
+  return [...new Set([base, base - 1, base + 1, base - 2, base + 2]
+    .filter(value => value >= 1 && value <= 99)
+    .map(value => String(value).padStart(2, '0')))]
+    .map(basket => wildberriesImageUrlForBasket(productId, basket));
+}
+
+async function imageUrlExists(url) {
+  try {
+    const response = await fetchWithTimeout(url, { method: 'HEAD', headers: { accept: 'image/webp,image/*,*/*' } }, 2500);
+    return response.ok && String(response.headers.get('content-type') || '').startsWith('image/');
+  } catch {
+    return false;
+  }
+}
+
+async function resolveWildberriesImageUrl(productId) {
+  for (const url of wildberriesImageCandidates(productId)) {
+    if (await imageUrlExists(url)) return url;
+  }
+  return wildberriesImageUrl(productId);
 }
 
 function wildberriesPrice(product) {
@@ -618,6 +654,12 @@ function normalizeWildberriesProduct(product, productId) {
     description: product?.brand ? `Бренд: ${decodeHtml(product.brand)}` : '',
     url: `https://www.wildberries.ru/catalog/${id}/detail.aspx`
   };
+}
+
+async function wildberriesProductPreview(product, productId) {
+  const preview = normalizeWildberriesProduct(product, productId);
+  if (preview.productId) preview.image = await resolveWildberriesImageUrl(preview.productId);
+  return preview;
 }
 
 async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
@@ -650,7 +692,7 @@ async function fetchWildberriesApi(productId) {
   const data = await response.json();
   const product = data?.data?.products?.[0];
   if (!product) throw new Error('wildberries_product_not_found');
-  return normalizeWildberriesProduct(product, productId);
+  return wildberriesProductPreview(product, productId);
 }
 
 async function searchWildberriesProduct(productId) {
@@ -666,10 +708,10 @@ async function searchWildberriesProduct(productId) {
   const response = await fetchWithTimeout(apiUrl);
   if (!response.ok) throw new Error(`wildberries_search_${response.status}`);
   const data = await response.json();
-  const products = data?.data?.products || [];
+  const products = data?.data?.products || data?.products || [];
   const product = products.find(item => String(item?.id) === String(productId)) || products[0];
   if (!product) throw new Error('wildberries_search_not_found');
-  return normalizeWildberriesProduct(product, productId);
+  return wildberriesProductPreview(product, productId);
 }
 
 function metaContent(html, property) {
