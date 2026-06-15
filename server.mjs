@@ -1176,6 +1176,8 @@ function cleanMarketplaceTitle(title) {
 function isTechnicalMarketplaceTitle(title) {
   const text = String(title || '').trim();
   return /^@yandex-market\//i.test(text)
+    || /^Яндекс\s*Маркет$/i.test(text)
+    || /^Yandex\s*Market$/i.test(text)
     || /LazyLoader-market|webpack|runtime|chunk|bundle/i.test(text);
 }
 
