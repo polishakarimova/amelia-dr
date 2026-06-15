@@ -811,8 +811,8 @@
     .btn:hover { transform: translateY(-1px); }
     .btn:disabled { cursor: not-allowed; opacity: .62; }
     .btn:focus-visible, .theme-option:focus-visible, .tab:focus-visible,
-    .color-orb:focus-visible, .mode-choice:focus-visible, .template-slide:focus-visible,
-    .carousel-arrow:focus-visible, .template-select:focus-visible {
+    .color-orb:focus-visible, .color-slide:focus-visible, .mode-choice:focus-visible, .template-slide:focus-visible,
+    .carousel-arrow:focus-visible, .template-select:focus-visible, .color-select:focus-visible {
       outline: 0;
       box-shadow: 0 0 0 4px rgba(235,115,87,.16);
     }
@@ -1018,6 +1018,109 @@
       box-shadow: 0 18px 42px color-mix(in srgb, var(--primary) 20%, rgba(70,54,42,.08));
     }
     .color-orb.active small { color: var(--coral-dark); background: var(--primary-soft); }
+    .color-carousel-shell {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+    .color-carousel {
+      position: relative;
+      width: min(100%, 560px);
+      min-height: 210px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      touch-action: pan-y;
+    }
+    .color-slide {
+      position: absolute;
+      width: 154px;
+      display: grid;
+      justify-items: center;
+      gap: 9px;
+      border: 0;
+      padding: 0;
+      color: var(--ink);
+      background: transparent;
+      text-align: center;
+      opacity: .7;
+      transform: translateX(0) scale(.72);
+      transition: transform .34s cubic-bezier(.2,.8,.2,1), opacity .24s ease, filter .24s ease;
+      filter: saturate(.86);
+    }
+    .color-slide.is-active {
+      z-index: 3;
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      filter: saturate(1);
+    }
+    .color-slide.is-left {
+      z-index: 2;
+      transform: translateX(-118%) scale(.72) rotate(-4deg);
+    }
+    .color-slide.is-right {
+      z-index: 2;
+      transform: translateX(118%) scale(.72) rotate(4deg);
+    }
+    .color-slide-image {
+      width: 132px;
+      aspect-ratio: 1;
+      padding: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(76,60,47,.10);
+      background: rgba(255,255,255,.80);
+      box-shadow: 0 18px 42px rgba(70,54,42,.10);
+    }
+    .color-slide.is-active .color-slide-image {
+      width: 154px;
+      border-color: color-mix(in srgb, var(--primary) 42%, white);
+      box-shadow: 0 24px 58px color-mix(in srgb, var(--primary) 22%, rgba(70,54,42,.10));
+    }
+    .color-slide-image img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 999px;
+      object-fit: cover;
+    }
+    .color-slide b {
+      display: block;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .color-slide.is-active b {
+      font-size: 17px;
+    }
+    .color-slide small {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 22px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      background: rgba(255,255,255,.62);
+      font-size: 11px;
+      font-weight: 850;
+    }
+    .color-slide.is-active small {
+      color: var(--coral-dark);
+      background: var(--primary-soft);
+    }
+    .color-select {
+      min-width: 174px;
+      min-height: 44px;
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 20px;
+      background: var(--dark);
+      color: #fff;
+      font-weight: 850;
+      box-shadow: 0 16px 34px rgba(42,37,33,.14);
+    }
     .mode-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1223,6 +1326,24 @@
       }
       .style-step-top {
         gap: 10px;
+      }
+      .color-carousel {
+        min-height: 184px;
+      }
+      .color-slide {
+        width: 126px;
+      }
+      .color-slide-image {
+        width: 110px;
+      }
+      .color-slide.is-active .color-slide-image {
+        width: 132px;
+      }
+      .color-slide.is-left {
+        transform: translateX(-93%) scale(.66) rotate(-4deg);
+      }
+      .color-slide.is-right {
+        transform: translateX(93%) scale(.66) rotate(4deg);
       }
       .mode-grid {
         grid-template-columns: 1fr;
@@ -3284,6 +3405,8 @@
     let coverCrop = null;
     let templateSwipeStart = null;
     let templateSwipeDidMove = false;
+    let colorSwipeStart = null;
+    let colorSwipeDidMove = false;
     let giftFormOpen = false;
     let editingGiftId = null;
     let giftPreviewTimer = null;
@@ -4403,15 +4526,7 @@
               </div>
               <span class="style-step-num">1</span>
             </div>
-            <div class="color-orbs">
-              ${CARD_TEMPLATE_COLORS.map(item => `
-                <button class="color-orb ${theme === item.id ? 'active' : ''}" type="button" onclick="setTemplateColor('${event.id}', '${item.id}')">
-                  <span class="color-orb-image"><img src="${h(item.swatch)}" alt=""></span>
-                  <b>${item.label}</b>
-                  <small>${theme === item.id ? 'Цвет выбран' : 'Выбрать цвет'}</small>
-                </button>
-              `).join('')}
-            </div>
+            ${colorCarousel(event)}
           </section>
           <section class="style-step-panel" id="templateModeStep">
             <div class="style-step-top">
@@ -4444,6 +4559,34 @@
               ${templateCarousel(event)}
             </section>
           ` : ''}
+        </div>`;
+    }
+    function colorCarousel(event) {
+      const theme = normalizeTemplateTheme(event?.theme || 'pink');
+      const activeIndex = Math.max(0, CARD_TEMPLATE_COLORS.findIndex(color => color.id === theme));
+      const slides = CARD_TEMPLATE_COLORS.map((color, index) => {
+        let diff = index - activeIndex;
+        if (diff > CARD_TEMPLATE_COLORS.length / 2) diff -= CARD_TEMPLATE_COLORS.length;
+        if (diff < -CARD_TEMPLATE_COLORS.length / 2) diff += CARD_TEMPLATE_COLORS.length;
+        const position = diff === 0 ? 'is-active' : diff === -1 ? 'is-left' : 'is-right';
+        return `
+          <button class="color-slide ${position}" type="button" onclick="setTemplateColor('${event.id}', '${color.id}', event)" aria-label="Выбрать ${color.label}">
+            <span class="color-slide-image"><img src="${h(color.swatch)}" alt=""></span>
+            <b>${color.label}</b>
+            <small>${diff === 0 ? color.tone : 'листайте'}</small>
+          </button>`;
+      }).join('');
+      return `
+        <div class="color-carousel-shell">
+          <div class="color-carousel" onpointerdown="startColorSwipe(event)" onpointerup="finishColorSwipe(event, '${event.id}')">
+            ${slides}
+          </div>
+          <div class="carousel-controls">
+            <button class="carousel-arrow" type="button" onclick="shiftTemplateColor('${event.id}', -1)" aria-label="Предыдущий цвет">‹</button>
+            <span class="template-count">${activeIndex + 1} / ${CARD_TEMPLATE_COLORS.length}</span>
+            <button class="carousel-arrow" type="button" onclick="shiftTemplateColor('${event.id}', 1)" aria-label="Следующий цвет">›</button>
+          </div>
+          <button class="color-select" type="button" onclick="confirmTemplateColor('${event.id}')">Выбрать цвет</button>
         </div>`;
     }
     function templateCarousel(event) {
@@ -4636,7 +4779,12 @@
       if (!event?.type) return toast('Сначала выберите тип повода');
       renderEditor(event, 'details');
     }
-    async function setTemplateColor(id, theme) {
+    async function setTemplateColor(id, theme, clickEvent = null) {
+      if (clickEvent && colorSwipeDidMove) {
+        clickEvent.preventDefault();
+        colorSwipeDidMove = false;
+        return;
+      }
       const normalizedTheme = normalizeTemplateTheme(theme);
       const event = findEvent(id);
       const color = colorByTheme(normalizedTheme);
@@ -4648,7 +4796,21 @@
         theme: normalizedTheme,
         type: color.type,
         templateId: currentTemplate?.id || fallbackTemplate?.id || ''
-      }, 'Цвет карточки выбран', 'style');
+      }, '', 'style');
+    }
+    function shiftTemplateColor(id, direction) {
+      const event = findEvent(id);
+      if (!event) return;
+      const activeTheme = normalizeTemplateTheme(event.theme || 'pink');
+      const activeIndex = Math.max(0, CARD_TEMPLATE_COLORS.findIndex(color => color.id === activeTheme));
+      const next = CARD_TEMPLATE_COLORS[(activeIndex + direction + CARD_TEMPLATE_COLORS.length) % CARD_TEMPLATE_COLORS.length];
+      setTemplateColor(id, next.id);
+    }
+    function confirmTemplateColor(id) {
+      const event = findEvent(id);
+      if (!event) return;
+      const color = colorByTheme(event.theme || 'pink');
+      toast(`${color.label}: цвет выбран`);
       scrollEditorStep('templateModeStep');
     }
     async function setTemplateMode(id, mode) {
@@ -4693,6 +4855,20 @@
     }
     function scrollEditorStep(targetId) {
       setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 90);
+    }
+    function startColorSwipe(event) {
+      colorSwipeStart = { x: event.clientX, y: event.clientY };
+    }
+    function finishColorSwipe(event, id) {
+      if (!colorSwipeStart) return;
+      const dx = event.clientX - colorSwipeStart.x;
+      const dy = event.clientY - colorSwipeStart.y;
+      colorSwipeStart = null;
+      if (Math.abs(dx) < 34 || Math.abs(dx) < Math.abs(dy)) return;
+      colorSwipeDidMove = true;
+      setTimeout(() => { colorSwipeDidMove = false; }, 120);
+      event.preventDefault();
+      shiftTemplateColor(id, dx < 0 ? 1 : -1);
     }
     function startTemplateSwipe(event) {
       templateSwipeStart = { x: event.clientX, y: event.clientY };
