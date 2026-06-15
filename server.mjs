@@ -43,6 +43,8 @@ const ozonPreviewProxyUrl = process.env.OZON_PREVIEW_PROXY_URL || giftPreviewPro
 const scrapingBeeApiKey = process.env.SCRAPINGBEE_API_KEY || '';
 const zenRowsApiKey = process.env.ZENROWS_API_KEY || '';
 const scraperApiKey = process.env.SCRAPERAPI_KEY || '';
+const productPreviewCacheTtlMs = Math.max(1, Number(process.env.PRODUCT_PREVIEW_CACHE_TTL_HOURS || 24)) * 60 * 60 * 1000;
+const productPreviewInflight = new Map();
 let telegramBotInfo = null;
 let pgPool = null;
 let pgSchemaReady = false;
@@ -138,9 +140,16 @@ async function ensurePgSchema() {
       audience text not null default 'all',
       data jsonb not null
     );
+    create table if not exists povod_product_previews (
+      cache_key text primary key,
+      source text not null default '',
+      data jsonb not null,
+      updated_at text not null
+    );
     create index if not exists povod_events_user_id_idx on povod_events (user_id);
     create index if not exists povod_gifts_event_id_idx on povod_gifts (event_id);
     create index if not exists povod_broadcasts_status_idx on povod_broadcasts (status);
+    create index if not exists povod_product_previews_updated_at_idx on povod_product_previews (updated_at);
   `);
   pgSchemaReady = true;
   await migrateJsonDbToPostgresIfNeeded();
@@ -153,7 +162,8 @@ function normalizeDb(db) {
     loginTokens: Array.isArray(db.loginTokens) ? db.loginTokens : [],
     events: Array.isArray(db.events) ? db.events : [],
     gifts: Array.isArray(db.gifts) ? db.gifts : [],
-    broadcasts: Array.isArray(db.broadcasts) ? db.broadcasts : []
+    broadcasts: Array.isArray(db.broadcasts) ? db.broadcasts : [],
+    productPreviews: Array.isArray(db.productPreviews) ? db.productPreviews : []
   };
 }
 
@@ -187,6 +197,21 @@ async function replacePgDb(db) {
       await client.query(
         'insert into povod_broadcasts (id, status, channel, audience, data) values ($1, $2, $3, $4, $5::jsonb)',
         [broadcast.id, broadcast.status || 'draft', broadcast.channel || 'telegram', broadcast.audience || 'all', JSON.stringify(broadcast)]
+      );
+    }
+    for (const productPreview of db.productPreviews) {
+      const cacheKey = productPreview.cacheKey || productPreview.key;
+      if (!cacheKey) continue;
+      await client.query(
+        `insert into povod_product_previews (cache_key, source, data, updated_at)
+         values ($1, $2, $3::jsonb, $4)
+         on conflict (cache_key) do update set source = excluded.source, data = excluded.data, updated_at = excluded.updated_at`,
+        [
+          cacheKey,
+          productPreview.source || productPreview.preview?.source || '',
+          JSON.stringify(productPreview),
+          productPreview.updatedAt || productPreview.cachedAt || now()
+        ]
       );
     }
     await client.query('commit');
@@ -476,7 +501,7 @@ async function readDb() {
   try {
     return normalizeDb(JSON.parse(await readFile(dbFile, 'utf8')));
   } catch {
-    return { users: [], sessions: [], loginTokens: [], events: [], gifts: [], broadcasts: [] };
+    return normalizeDb({});
   }
 }
 
@@ -621,6 +646,61 @@ function wildberriesProductIdFromUrl(rawUrl) {
     text.match(/\/(\d+)\/detail\.aspx/i)?.[1] ||
     ''
   );
+}
+
+function ozonProductIdFromUrl(rawUrl) {
+  const text = String(rawUrl || '');
+  return (
+    text.match(/\/context\/detail\/id\/(\d+)/i)?.[1] ||
+    text.match(/\/product\/(?:[^/?#]*-)?(\d+)(?:[/?#]|$)/i)?.[1] ||
+    text.match(/[?&](?:product_id|productId|sku)=(\d+)/i)?.[1] ||
+    ''
+  );
+}
+
+function detmirProductIdFromUrl(rawUrl) {
+  const text = String(rawUrl || '');
+  return (
+    text.match(/\/product\/index\/id\/(\d+)/i)?.[1] ||
+    text.match(/[?&](?:id|productId|product_id)=(\d+)/i)?.[1] ||
+    ''
+  );
+}
+
+function normalizedProductHref(productUrl) {
+  const url = new URL(productUrl.href);
+  url.hash = '';
+  for (const key of [...url.searchParams.keys()]) {
+    if (/^(utm_|yclid|gclid|fbclid|from|at|ref|referer|src|spm|sh)$/i.test(key)) {
+      url.searchParams.delete(key);
+    }
+  }
+  url.hostname = url.hostname.toLowerCase();
+  url.pathname = url.pathname.replace(/\/+$/, '/') || '/';
+  return url.href;
+}
+
+function productPreviewCacheKey(productUrl) {
+  if (isWildberriesHost(productUrl.hostname)) {
+    const id = wildberriesProductIdFromUrl(productUrl.href);
+    return `wildberries:${id || normalizedProductHref(productUrl)}`;
+  }
+  if (isOzonHost(productUrl.hostname)) {
+    const id = ozonProductIdFromUrl(productUrl.href);
+    return `ozon:${id || normalizedProductHref(productUrl)}`;
+  }
+  if (isDetmirHost(productUrl.hostname)) {
+    const id = detmirProductIdFromUrl(productUrl.href);
+    return `detmir:${id || normalizedProductHref(productUrl)}`;
+  }
+  return `page:${normalizedProductHref(productUrl)}`;
+}
+
+function isProbablyProductUrl(productUrl) {
+  if (isWildberriesHost(productUrl.hostname)) return Boolean(wildberriesProductIdFromUrl(productUrl.href));
+  if (isOzonHost(productUrl.hostname)) return Boolean(ozonProductIdFromUrl(productUrl.href)) || productUrl.hostname.toLowerCase().includes('onelink');
+  if (isDetmirHost(productUrl.hostname)) return /\/product\//i.test(productUrl.pathname);
+  return true;
 }
 
 function wildberriesBasketHost(productId) {
@@ -1359,8 +1439,78 @@ async function fetchDetmirPreview(productUrl) {
   return preview;
 }
 
+function productStoreFromUrl(productUrl) {
+  if (isOzonHost(productUrl.hostname)) return 'ozon';
+  if (isWildberriesHost(productUrl.hostname)) return 'wildberries';
+  if (isDetmirHost(productUrl.hostname)) return 'detmir';
+  return 'page';
+}
+
+function cachedProductPreview(entry) {
+  const preview = entry?.preview || {};
+  if (!preview.title && !preview.image && !preview.price) return null;
+  const updatedAt = Date.parse(entry.updatedAt || entry.cachedAt || '');
+  if (!Number.isFinite(updatedAt) || Date.now() - updatedAt > productPreviewCacheTtlMs) return null;
+  return { ...preview, cached: true };
+}
+
+async function readProductPreviewCache(db, cacheKey) {
+  if (!cacheKey) return null;
+  if (pgPool) {
+    await ensurePgSchema();
+    const row = await pgPool.query('select data from povod_product_previews where cache_key = $1', [cacheKey]);
+    return cachedProductPreview(row.rows[0]?.data);
+  }
+  const list = Array.isArray(db?.productPreviews) ? db.productPreviews : [];
+  return cachedProductPreview(list.find(item => (item.cacheKey || item.key) === cacheKey));
+}
+
+async function writeProductPreviewCache(db, cacheKey, productUrl, preview) {
+  if (!cacheKey || (!preview?.title && !preview?.image && !preview?.price)) return;
+  const timestamp = now();
+  const entry = {
+    cacheKey,
+    store: productStoreFromUrl(productUrl),
+    url: normalizedProductHref(productUrl),
+    preview: {
+      source: preview.source || productStoreFromUrl(productUrl),
+      title: preview.title || '',
+      price: Number(preview.price || 0),
+      image: preview.image || '',
+      description: preview.description || '',
+      url: preview.url || productUrl.href
+    },
+    cachedAt: timestamp,
+    updatedAt: timestamp
+  };
+  if (pgPool) {
+    await ensurePgSchema();
+    await pgPool.query(
+      `insert into povod_product_previews (cache_key, source, data, updated_at)
+       values ($1, $2, $3::jsonb, $4)
+       on conflict (cache_key) do update set source = excluded.source, data = excluded.data, updated_at = excluded.updated_at`,
+      [cacheKey, entry.store, JSON.stringify(entry), timestamp]
+    );
+    return;
+  }
+  if (!db) return;
+  db.productPreviews = Array.isArray(db.productPreviews) ? db.productPreviews : [];
+  const index = db.productPreviews.findIndex(item => (item.cacheKey || item.key) === cacheKey);
+  if (index >= 0) db.productPreviews[index] = entry;
+  else db.productPreviews.unshift(entry);
+  db.productPreviews = db.productPreviews
+    .sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')))
+    .slice(0, 1000);
+  await writeDb(db);
+}
+
 async function fetchGiftPreview(rawUrl) {
   const productUrl = parseProductUrl(rawUrl);
+  if (!isProbablyProductUrl(productUrl)) {
+    const error = new Error('product_url_required');
+    error.status = 400;
+    throw error;
+  }
   if (isOzonHost(productUrl.hostname)) return fetchOzonPreview(productUrl);
   if (isDetmirHost(productUrl.hostname)) return fetchDetmirPreview(productUrl);
   if (!isWildberriesHost(productUrl.hostname)) {
@@ -1390,13 +1540,37 @@ async function fetchGiftPreview(rawUrl) {
   return preview;
 }
 
-async function giftInputWithPreview(input) {
+async function fetchGiftPreviewCached(rawUrl, db) {
+  const productUrl = parseProductUrl(rawUrl);
+  if (!isProbablyProductUrl(productUrl)) {
+    const error = new Error('product_url_required');
+    error.status = 400;
+    throw error;
+  }
+  const cacheKey = productPreviewCacheKey(productUrl);
+  const cached = await readProductPreviewCache(db, cacheKey);
+  if (cached) return cached;
+  if (productPreviewInflight.has(cacheKey)) return productPreviewInflight.get(cacheKey);
+  const promise = (async () => {
+    const preview = await fetchGiftPreview(productUrl.href);
+    await writeProductPreviewCache(db, cacheKey, productUrl, preview);
+    return preview;
+  })();
+  productPreviewInflight.set(cacheKey, promise);
+  try {
+    return await promise;
+  } finally {
+    productPreviewInflight.delete(cacheKey);
+  }
+}
+
+async function giftInputWithPreview(input, db) {
   const url = String(input.url || '').trim();
   let preview = {};
   const needsPreview = url && (input.autofill || !input.title || !input.image || !Number(input.price || 0));
   if (needsPreview) {
     try {
-      preview = await fetchGiftPreview(url);
+      preview = db ? await fetchGiftPreviewCached(url, db) : await fetchGiftPreview(url);
     } catch (error) {
       if (isSupportedGiftStoreUrlText(url)) {
         const previewError = new Error('gift_preview_failed');
@@ -1879,7 +2053,7 @@ async function api(req, res, url) {
     if (req.method !== 'POST') return methodNotAllowed(res);
     try {
       const input = await body(req);
-      const preview = await fetchGiftPreview(input.url);
+      const preview = await fetchGiftPreviewCached(input.url, db);
       return send(res, 200, { preview });
     } catch (error) {
       console.error('gift_preview_failed', error.message || error);
@@ -1963,7 +2137,7 @@ async function api(req, res, url) {
     const input = await body(req);
     let giftInput;
     try {
-      giftInput = await giftInputWithPreview(input);
+      giftInput = await giftInputWithPreview(input, db);
     } catch (error) {
       return send(res, error.status || 422, { error: error.message || 'gift_preview_failed' });
     }
@@ -2002,7 +2176,7 @@ async function api(req, res, url) {
     const input = await body(req);
     let giftInput;
     try {
-      giftInput = await giftInputWithPreview({ ...gift, ...input, autofill: Boolean(input.url && input.url !== gift.url) });
+      giftInput = await giftInputWithPreview({ ...gift, ...input, autofill: Boolean(input.url && input.url !== gift.url) }, db);
     } catch (error) {
       return send(res, error.status || 422, { error: error.message || 'gift_preview_failed' });
     }

@@ -2908,6 +2908,9 @@
     let editingGiftId = null;
     let giftPreviewTimer = null;
     let giftPreviewRequest = 0;
+    let giftPreviewInFlightUrl = '';
+    let giftPreviewInFlightPromise = null;
+    let giftPreviewLoadedUrl = '';
     let telegramAuthInProgress = false;
     let telegramAuthDone = false;
     let telegramMiniAppAuthAttempted = false;
@@ -4263,9 +4266,49 @@
       if (lower.includes('wildberries') || lower.includes('wb.ru')) return 'Wildberries';
       return 'магазина';
     }
+    function normalizedGiftPreviewUrl(url) {
+      return String(url || '').trim();
+    }
+    function hasGiftPreviewFields() {
+      return Boolean(document.getElementById('giftTitle')?.value.trim())
+        && Boolean(document.getElementById('giftImage')?.value.trim())
+        && Number(document.getElementById('giftPrice')?.value || 0) > 0;
+    }
+    function isProbablyProductGiftUrl(url) {
+      const text = normalizedGiftPreviewUrl(url).toLowerCase();
+      if (!text || !isSupportedGiftStoreUrl(text)) return false;
+      if (text.includes('ozon.onelink.me')) return true;
+      try {
+        const parsed = new URL(text);
+        const href = parsed.href;
+        if (parsed.hostname.includes('ozon.')) {
+          return /\/product\/(?:[^/?#]*-)?\d+(?:[/?#]|$)/i.test(href)
+            || /\/context\/detail\/id\/\d+/i.test(href)
+            || parsed.searchParams.has('product_id')
+            || parsed.searchParams.has('productId')
+            || parsed.searchParams.has('productid')
+            || parsed.searchParams.has('sku');
+        }
+        if (parsed.hostname.includes('wildberries') || parsed.hostname === 'wb.ru') {
+          return /\/catalog\/\d+/i.test(href)
+            || /\/\d+\/detail\.aspx/i.test(href)
+            || parsed.searchParams.has('nm')
+            || parsed.searchParams.has('card')
+            || parsed.searchParams.has('imt')
+            || parsed.searchParams.has('product');
+        }
+        if (parsed.hostname.includes('detmir.')) {
+          return /\/product\//i.test(parsed.pathname);
+        }
+      } catch {
+        return false;
+      }
+      return true;
+    }
     function prefillGiftFromUrl(force = false) {
       const input = document.getElementById('giftUrl');
       const url = input?.value.trim() || '';
+      const urlKey = normalizedGiftPreviewUrl(url);
       clearTimeout(giftPreviewTimer);
       if (!url) {
         giftUrlStatus('Вставьте ссылку Wildberries, Ozon или Детского мира: название, цена и фото подтянутся автоматически.');
@@ -4277,40 +4320,64 @@
         giftPrefillButtonState('idle');
         return Promise.resolve(false);
       }
+      if (!isProbablyProductGiftUrl(url)) {
+        giftUrlStatus(`Вставьте полную ссылку на товар ${giftStoreName(url)}. Автозаполнение не запускается, пока ссылка похожа на неполную.`);
+        giftPrefillButtonState('idle');
+        return Promise.resolve(false);
+      }
+      if (giftPreviewLoadedUrl === urlKey && hasGiftPreviewFields()) {
+        giftPrefillButtonState('done');
+        giftUrlStatus('Готово: данные по этой ссылке уже заполнены.');
+        return Promise.resolve(true);
+      }
+      if (giftPreviewInFlightUrl === urlKey && giftPreviewInFlightPromise) {
+        return giftPreviewInFlightPromise;
+      }
       giftPrefillButtonState('idle');
-      const run = async () => {
+      const run = () => {
         const requestId = ++giftPreviewRequest;
-        giftPrefillButtonState('loading');
-        giftUrlStatus(`Подтягиваю данные с ${giftStoreName(url)}...`);
-        try {
-          const data = await apiRequest('/api/gift-preview', { method: 'POST', body: { url } });
-          if (requestId !== giftPreviewRequest) return;
-          applyGiftPreview(data.preview || {});
-          giftPrefillButtonState('done');
-          giftUrlStatus('Готово: название, цена и фото подтянуты. Проверьте и сохраните подарок.');
-          return true;
-        } catch (error) {
-          if (requestId !== giftPreviewRequest) return;
-          giftPrefillButtonState('error');
-          const message = error.message === 'unsupported_store'
-            ? 'Автозаполнение сейчас работает для Wildberries, Ozon и Детского мира. Эту ссылку можно сохранить вручную.'
-            : `Не получилось подтянуть данные с ${giftStoreName(url)}. Проверьте ссылку или попробуйте ещё раз.`;
-          giftUrlStatus(message);
-          toast(message);
-          return false;
-        }
+        const promise = (async () => {
+          giftPrefillButtonState('loading');
+          giftUrlStatus(`Подтягиваю данные с ${giftStoreName(url)}...`);
+          try {
+            const data = await apiRequest('/api/gift-preview', { method: 'POST', body: { url } });
+            if (requestId !== giftPreviewRequest || normalizedGiftPreviewUrl(document.getElementById('giftUrl')?.value || '') !== urlKey) return false;
+            applyGiftPreview(data.preview || {});
+            giftPreviewLoadedUrl = urlKey;
+            giftPrefillButtonState('done');
+            giftUrlStatus(data.preview?.cached
+              ? 'Готово: взяла данные из кеша, без нового запроса к магазину.'
+              : 'Готово: название, цена и фото подтянуты. Проверьте и сохраните подарок.');
+            return true;
+          } catch (error) {
+            if (requestId !== giftPreviewRequest || normalizedGiftPreviewUrl(document.getElementById('giftUrl')?.value || '') !== urlKey) return false;
+            giftPrefillButtonState('error');
+            const message = error.message === 'unsupported_store'
+              ? 'Автозаполнение сейчас работает для Wildberries, Ozon и Детского мира. Эту ссылку можно сохранить вручную.'
+              : `Не получилось подтянуть данные с ${giftStoreName(url)}. Проверьте ссылку или попробуйте ещё раз.`;
+            giftUrlStatus(message);
+            toast(message);
+            return false;
+          } finally {
+            if (giftPreviewInFlightUrl === urlKey) {
+              giftPreviewInFlightUrl = '';
+              giftPreviewInFlightPromise = null;
+            }
+          }
+        })();
+        giftPreviewInFlightUrl = urlKey;
+        giftPreviewInFlightPromise = promise;
+        return promise;
       };
       if (force) return run();
-      giftPreviewTimer = setTimeout(run, 650);
+      giftPreviewTimer = setTimeout(run, giftStoreName(url) === 'Ozon' ? 1400 : 900);
       return Promise.resolve(false);
     }
     async function saveGift(eventId) {
       const event = findEvent(eventId);
       const url = document.getElementById('giftUrl').value.trim();
       if (url && isSupportedGiftStoreUrl(url)) {
-        const hasPreview = document.getElementById('giftTitle').value.trim()
-          && document.getElementById('giftImage').value.trim()
-          && Number(document.getElementById('giftPrice').value || 0) > 0;
+        const hasPreview = hasGiftPreviewFields();
         if (!hasPreview) {
           const loaded = await prefillGiftFromUrl(true);
           if (!loaded) return toast(`Не получилось подтянуть товар с ${giftStoreName(url)}. Проверьте ссылку и попробуйте ещё раз.`);
