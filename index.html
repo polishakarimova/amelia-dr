@@ -3981,7 +3981,7 @@
           <button class="btn btn-accent" onclick="openGiftForm('${event.id}')">+ Добавить подарок</button>
         </div>
         ${giftFormOpen ? giftForm(event.id) : ''}
-        <div class="gift-editor">${event.gifts.length ? event.gifts.map(gift => adminGiftCard(event, gift)).join('') : '<div class="empty-state"><h3>Подарков пока нет</h3><p class="muted">Нажмите “Добавить подарок”: можно вставить ссылку на Ozon/Wildberries, а затем поправить название, цену и картинку.</p></div>'}</div>
+        <div class="gift-editor">${event.gifts.length ? event.gifts.map(gift => adminGiftCard(event, gift)).join('') : '<div class="empty-state"><h3>Подарков пока нет</h3><p class="muted">Нажмите “Добавить подарок”: можно вставить ссылку на Ozon, Wildberries или Детский мир, а затем поправить название, цену и картинку.</p></div>'}</div>
         <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="renderEditor(findEvent('${event.id}'), 'publish')">Продолжить</button></div>`;
       return `
         <h3>Так карточку увидят гости</h3><p class="muted">Проверьте детали, подарки и статусы перед отправкой ссылки.</p>
@@ -3993,7 +3993,7 @@
       const gift = editingGiftId ? event.gifts.find(item => item.id === editingGiftId) : null;
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Новый подарок'}</h3>
-        <label class="full">Ссылка на Wildberries или Ozon<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.ozon.ru/product/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.</span></label>
+        <label class="full">Ссылка на Wildberries, Ozon или Детский мир<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://www.detmir.ru/product/index/id/..." oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(true), 0)" onchange="prefillGiftFromUrl(true)" onblur="prefillGiftFromUrl(true)" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Вставьте ссылку Wildberries, Ozon или Детского мира: название, цена и фото подтянутся автоматически.</span></label>
         <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" id="giftPrefillButton" type="button" onclick="prefillGiftFromUrl(true)"><span class="btn-spinner" aria-hidden="true"></span><span id="giftPrefillButtonText">Заполнить автоматически</span></button></div>
         <div class="gift-admin-card hidden" id="giftPreviewCard">
           <div class="gift-thumb" id="giftPreviewImage">Фото</div>
@@ -4251,11 +4251,15 @@
         || lower.includes('wb.ru')
         || lower.includes('ozon.ru')
         || lower.includes('ozon.by')
-        || lower.includes('ozon.onelink.me');
+        || lower.includes('ozon.onelink.me')
+        || lower.includes('detmir.ru')
+        || lower.includes('detmir.kz')
+        || lower.includes('detmir.by');
     }
     function giftStoreName(url) {
       const lower = String(url || '').toLowerCase();
       if (lower.includes('ozon')) return 'Ozon';
+      if (lower.includes('detmir')) return 'Детский мир';
       if (lower.includes('wildberries') || lower.includes('wb.ru')) return 'Wildberries';
       return 'магазина';
     }
@@ -4264,12 +4268,12 @@
       const url = input?.value.trim() || '';
       clearTimeout(giftPreviewTimer);
       if (!url) {
-        giftUrlStatus('Вставьте ссылку Wildberries или Ozon: название, цена и фото подтянутся автоматически.');
+        giftUrlStatus('Вставьте ссылку Wildberries, Ozon или Детского мира: название, цена и фото подтянутся автоматически.');
         giftPrefillButtonState('idle');
         return Promise.resolve(false);
       }
       if (!isSupportedGiftStoreUrl(url)) {
-        giftUrlStatus('Автозаполнение сейчас работает для Wildberries и Ozon. Эту ссылку можно сохранить вручную.');
+        giftUrlStatus('Автозаполнение сейчас работает для Wildberries, Ozon и Детского мира. Эту ссылку можно сохранить вручную.');
         giftPrefillButtonState('idle');
         return Promise.resolve(false);
       }
@@ -4289,7 +4293,7 @@
           if (requestId !== giftPreviewRequest) return;
           giftPrefillButtonState('error');
           const message = error.message === 'unsupported_store'
-            ? 'Автозаполнение сейчас работает для Wildberries и Ozon. Эту ссылку можно сохранить вручную.'
+            ? 'Автозаполнение сейчас работает для Wildberries, Ozon и Детского мира. Эту ссылку можно сохранить вручную.'
             : `Не получилось подтянуть данные с ${giftStoreName(url)}. Проверьте ссылку или попробуйте ещё раз.`;
           giftUrlStatus(message);
           toast(message);
@@ -4313,7 +4317,7 @@
         }
       }
       const title = document.getElementById('giftTitle').value.trim();
-      if (!url && !title) return toast('Добавьте ссылку Wildberries или Ozon');
+      if (!url && !title) return toast('Добавьте ссылку Wildberries, Ozon или Детского мира');
       const gift = {
         id: uid(),
         title,
@@ -4341,7 +4345,7 @@
         toast('Подарок сохранён');
         renderEditor(nextEvent, 'gifts');
       } catch (error) {
-        toast(error.message === 'gift_preview_failed' ? 'Не получилось подтянуть товар. Проверьте ссылку Wildberries или Ozon и попробуйте ещё раз.' : 'Не получилось сохранить подарок');
+        toast(error.message === 'gift_preview_failed' ? 'Не получилось подтянуть товар. Проверьте ссылку Wildberries, Ozon или Детского мира и попробуйте ещё раз.' : 'Не получилось сохранить подарок');
       }
       return;
     }

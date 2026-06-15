@@ -583,6 +583,16 @@ function isOzonHost(hostname) {
     || host.endsWith('.ozon.onelink.me');
 }
 
+function isDetmirHost(hostname) {
+  const host = String(hostname || '').toLowerCase();
+  return host === 'detmir.ru'
+    || host.endsWith('.detmir.ru')
+    || host === 'detmir.kz'
+    || host.endsWith('.detmir.kz')
+    || host === 'detmir.by'
+    || host.endsWith('.detmir.by');
+}
+
 function isOzonUrlText(rawUrl) {
   try {
     return isOzonHost(parseProductUrl(rawUrl).hostname);
@@ -591,8 +601,16 @@ function isOzonUrlText(rawUrl) {
   }
 }
 
+function isDetmirUrlText(rawUrl) {
+  try {
+    return isDetmirHost(parseProductUrl(rawUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function isSupportedGiftStoreUrlText(rawUrl) {
-  return isWildberriesUrlText(rawUrl) || isOzonUrlText(rawUrl);
+  return isWildberriesUrlText(rawUrl) || isOzonUrlText(rawUrl) || isDetmirUrlText(rawUrl);
 }
 
 function wildberriesProductIdFromUrl(rawUrl) {
@@ -723,15 +741,31 @@ function isOzonRequest(url) {
   }
 }
 
+function isDetmirRequest(url) {
+  try {
+    const host = new URL(String(url)).hostname.toLowerCase();
+    return host === 'detmir.ru'
+      || host.endsWith('.detmir.ru')
+      || host === 'detmir.kz'
+      || host.endsWith('.detmir.kz')
+      || host === 'detmir.by'
+      || host.endsWith('.detmir.by')
+      || host === 'catalog-cdn.detmir.st'
+      || host.endsWith('.detmir.st');
+  } catch {
+    return false;
+  }
+}
+
 function isMarketplaceRequest(url) {
-  return isWildberriesRequest(url) || isOzonRequest(url);
+  return isWildberriesRequest(url) || isOzonRequest(url) || isDetmirRequest(url);
 }
 
 async function fetchWithCurl(url, options = {}, timeoutMs = 8000) {
   const ozonRequest = isOzonRequest(url);
   const referer = isOzonRequest(url)
     ? 'https://www.ozon.ru/'
-    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : '');
+    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : (isDetmirRequest(url) ? 'https://www.detmir.ru/' : ''));
   const args = [
     '-L',
     '-sS',
@@ -772,7 +806,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   const referer = isOzonRequest(url)
     ? 'https://www.ozon.ru/'
-    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : '');
+    : (isWildberriesRequest(url) ? 'https://www.wildberries.ru/' : (isDetmirRequest(url) ? 'https://www.detmir.ru/' : ''));
   try {
     const response = await fetch(url, {
       ...options,
@@ -886,7 +920,10 @@ function imageFromStructuredValue(value, baseUrl) {
       || host.endsWith('.wbbasket.ru')
       || host === 'ir.ozone.ru'
       || host.endsWith('.ozone.ru') && path.includes('/s3/')
-      || host.includes('ozon') && /(?:image|multimedia|photo|img)/i.test(path);
+      || host.includes('ozon') && /(?:image|multimedia|photo|img)/i.test(path)
+      || host === 'catalog-cdn.detmir.st'
+      || host === 'img.detmir.st'
+      || host.endsWith('.detmir.st') && /(?:media|images|img)/i.test(path);
     return looksLikeImage ? url : '';
   } catch {
     return '';
@@ -1306,9 +1343,26 @@ async function fetchOzonPreview(productUrl) {
   return preview;
 }
 
+async function fetchDetmirPreview(productUrl) {
+  const preview = await fetchPageMetadata(productUrl);
+  preview.source = 'detmir';
+  preview.description = '';
+  if (!preview.title && !preview.image) {
+    const error = new Error('detmir_preview_not_found');
+    error.status = 422;
+    throw error;
+  }
+  preview.title = cleanMarketplaceTitle(preview.title)
+    .replace(/\s+купить\s+по\s+цене\s+.*$/i, '')
+    .replace(/\s+в\s+интернет-магазине\s+Детский\s+мир.*$/i, '')
+    .trim() || 'Товар Детский мир';
+  return preview;
+}
+
 async function fetchGiftPreview(rawUrl) {
   const productUrl = parseProductUrl(rawUrl);
   if (isOzonHost(productUrl.hostname)) return fetchOzonPreview(productUrl);
+  if (isDetmirHost(productUrl.hostname)) return fetchDetmirPreview(productUrl);
   if (!isWildberriesHost(productUrl.hostname)) {
     const error = new Error('unsupported_store');
     error.status = 400;
