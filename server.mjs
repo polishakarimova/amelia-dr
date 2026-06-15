@@ -40,6 +40,9 @@ const databaseUrl = process.env.DATABASE_URL || '';
 const adminToken = process.env.ADMIN_TOKEN || '';
 const giftPreviewProxyUrl = process.env.GIFT_PREVIEW_PROXY_URL || '';
 const ozonPreviewProxyUrl = process.env.OZON_PREVIEW_PROXY_URL || giftPreviewProxyUrl;
+const scrapingBeeApiKey = process.env.SCRAPINGBEE_API_KEY || '';
+const zenRowsApiKey = process.env.ZENROWS_API_KEY || '';
+const scraperApiKey = process.env.SCRAPERAPI_KEY || '';
 let telegramBotInfo = null;
 let pgPool = null;
 let pgSchemaReady = false;
@@ -1090,9 +1093,11 @@ async function fetchExternalGiftPreview(proxyUrl, productUrl, source = 'external
   try {
     data = JSON.parse(text);
   } catch {
-    data = {};
+    data = null;
   }
-  const preview = normalizeExternalGiftPreview(data, productUrl, source);
+  const preview = data
+    ? normalizeExternalGiftPreview(data, productUrl, source)
+    : previewFromHtml(text, productUrl, source);
   if (isOzonHost(productUrl.hostname) && (isOzonChallengeTitle(preview.title) || isOzonChallengeImage(preview.image))) {
     throw ozonPreviewBlockedError();
   }
@@ -1100,6 +1105,77 @@ async function fetchExternalGiftPreview(proxyUrl, productUrl, source = 'external
     const error = new Error('gift_preview_proxy_empty');
     error.status = 422;
     throw error;
+  }
+  return preview;
+}
+
+function ozonScrapingProviderUrls(productUrl) {
+  const urls = [];
+  if (scrapingBeeApiKey) {
+    const url = new URL('https://app.scrapingbee.com/api/v1/');
+    url.searchParams.set('api_key', scrapingBeeApiKey);
+    url.searchParams.set('url', productUrl.href);
+    url.searchParams.set('render_js', 'true');
+    url.searchParams.set('premium_proxy', 'true');
+    url.searchParams.set('country_code', 'ru');
+    urls.push({ url: url.href, source: 'scrapingbee' });
+  }
+  if (zenRowsApiKey) {
+    const url = new URL('https://api.zenrows.com/v1/');
+    url.searchParams.set('apikey', zenRowsApiKey);
+    url.searchParams.set('url', productUrl.href);
+    url.searchParams.set('js_render', 'true');
+    url.searchParams.set('premium_proxy', 'true');
+    url.searchParams.set('proxy_country', 'ru');
+    urls.push({ url: url.href, source: 'zenrows' });
+  }
+  if (scraperApiKey) {
+    const url = new URL('https://api.scraperapi.com/');
+    url.searchParams.set('api_key', scraperApiKey);
+    url.searchParams.set('url', productUrl.href);
+    url.searchParams.set('render', 'true');
+    url.searchParams.set('premium', 'true');
+    url.searchParams.set('country_code', 'ru');
+    urls.push({ url: url.href, source: 'scraperapi' });
+  }
+  return urls;
+}
+
+async function fetchOzonScrapingProviderPreview(productUrl) {
+  let lastError = null;
+  for (const provider of ozonScrapingProviderUrls(productUrl)) {
+    try {
+      return await fetchExternalGiftPreview(provider.url, productUrl, provider.source);
+    } catch (error) {
+      lastError = error;
+      console.error(`${provider.source}_ozon_preview_failed`, error.message || error);
+    }
+  }
+  if (lastError) throw lastError;
+  throw new Error('ozon_scraping_provider_not_configured');
+}
+
+function previewFromHtml(html, productUrl, source = 'page-meta') {
+  const structured = jsonLdPreview(html, productUrl.href);
+  const title = structured.title
+    || metaContent(html, 'og:title')
+    || metaContent(html, 'twitter:title')
+    || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
+  const image = structured.image || metaContent(html, 'og:image') || metaContent(html, 'twitter:image');
+  const price = structured.price
+    || parsePriceValue(metaContent(html, 'product:price:amount'))
+    || parsePriceValue(metaContent(html, 'og:price:amount'))
+    || priceFromHtml(html);
+  const preview = {
+    source,
+    title: cleanMarketplaceTitle(title),
+    price: Math.round(price),
+    image,
+    description: structured.description || metaContent(html, 'og:description') || '',
+    url: productUrl.href
+  };
+  if (isOzonHost(productUrl.hostname) && (isOzonChallengeTitle(preview.title) || isOzonChallengeImage(preview.image))) {
+    throw ozonPreviewBlockedError();
   }
   return preview;
 }
@@ -1133,24 +1209,7 @@ async function fetchPageMetadata(productUrl) {
   const response = await fetchWithTimeout(productUrl.href);
   if (!response.ok) throw new Error(`product_page_${response.status}`);
   const html = await response.text();
-  const structured = jsonLdPreview(html, productUrl.href);
-  const title = structured.title
-    || metaContent(html, 'og:title')
-    || metaContent(html, 'twitter:title')
-    || decodeHtml(html.match(/<title[^>]*>(.*?)<\/title>/is)?.[1] || '');
-  const image = structured.image || metaContent(html, 'og:image') || metaContent(html, 'twitter:image');
-  const price = structured.price
-    || parsePriceValue(metaContent(html, 'product:price:amount'))
-    || parsePriceValue(metaContent(html, 'og:price:amount'))
-    || priceFromHtml(html);
-  return {
-    source: 'page-meta',
-    title: cleanMarketplaceTitle(title),
-    price: Math.round(price),
-    image,
-    description: structured.description || metaContent(html, 'og:description') || '',
-    url: productUrl.href
-  };
+  return previewFromHtml(html, productUrl, 'page-meta');
 }
 
 async function fetchOzonPreview(productUrl) {
@@ -1159,6 +1218,13 @@ async function fetchOzonPreview(productUrl) {
       return await fetchExternalGiftPreview(ozonPreviewProxyUrl, productUrl, 'ozon-preview-proxy');
     } catch (error) {
       console.error('ozon_proxy_preview_failed', error.message || error);
+    }
+  }
+  if (scrapingBeeApiKey || zenRowsApiKey || scraperApiKey) {
+    try {
+      return await fetchOzonScrapingProviderPreview(productUrl);
+    } catch (error) {
+      console.error('ozon_scraping_provider_preview_failed', error.message || error);
     }
   }
   try {
