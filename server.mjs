@@ -568,10 +568,15 @@ function decodeHtml(value) {
     .trim();
 }
 
+function extractFirstUrl(rawUrl) {
+  const match = String(rawUrl || '').match(/https?:\/\/[^\s<>"']+/i);
+  return match ? match[0].replace(/[),.;!?]+$/g, '') : '';
+}
+
 function parseProductUrl(rawUrl) {
   let parsed;
   try {
-    parsed = new URL(String(rawUrl || '').trim());
+    parsed = new URL(extractFirstUrl(rawUrl) || String(rawUrl || '').trim());
   } catch {
     const error = new Error('invalid_product_url');
     error.status = 400;
@@ -583,6 +588,16 @@ function parseProductUrl(rawUrl) {
     throw error;
   }
   return parsed;
+}
+
+function normalizedProductInputUrl(rawUrl) {
+  const raw = String(rawUrl || '').trim();
+  if (!raw) return '';
+  try {
+    return parseProductUrl(raw).href;
+  } catch {
+    return raw;
+  }
 }
 
 function isWildberriesHost(hostname) {
@@ -1176,6 +1191,8 @@ function cleanMarketplaceTitle(title) {
 function isTechnicalMarketplaceTitle(title) {
   const text = String(title || '').trim();
   return /^@yandex-market\//i.test(text)
+    || /^Яндекс$/i.test(text)
+    || /^Yandex$/i.test(text)
     || /^Яндекс\s*Маркет$/i.test(text)
     || /^Yandex\s*Market$/i.test(text)
     || /LazyLoader-market|webpack|runtime|chunk|bundle/i.test(text);
@@ -1302,6 +1319,8 @@ function isOzonChallengeImage(image) {
 function isYandexMarketChallengeTitle(title) {
   const text = cleanMarketplaceTitle(title).toLowerCase();
   return /^ой!?$/.test(text)
+    || /^яндекс$/.test(text)
+    || /^yandex$/.test(text)
     || /captcha|showcaptcha|доступ ограничен|подтвердите|проверка|робот/i.test(text);
 }
 
@@ -1668,6 +1687,7 @@ function productStoreFromUrl(productUrl) {
 function cachedProductPreview(entry) {
   const preview = entry?.preview || {};
   if (!preview.title && !preview.image && !preview.price) return null;
+  if (preview.title && !preview.image && !preview.price) return null;
   if (isTechnicalMarketplaceTitle(preview.title)) return null;
   const updatedAt = Date.parse(entry.updatedAt || entry.cachedAt || '');
   if (!Number.isFinite(updatedAt) || Date.now() - updatedAt > productPreviewCacheTtlMs) return null;
@@ -1687,6 +1707,7 @@ async function readProductPreviewCache(db, cacheKey) {
 
 async function writeProductPreviewCache(db, cacheKey, productUrl, preview) {
   if (!cacheKey || (!preview?.title && !preview?.image && !preview?.price)) return;
+  if (preview?.title && !preview?.image && !preview?.price) return;
   const timestamp = now();
   const entry = {
     cacheKey,
@@ -1786,7 +1807,7 @@ async function fetchGiftPreviewCached(rawUrl, db) {
 }
 
 async function giftInputWithPreview(input, db) {
-  const url = String(input.url || '').trim();
+  const url = normalizedProductInputUrl(input.url);
   let preview = {};
   const needsPreview = url && (input.autofill || !input.title || !input.image || !Number(input.price || 0));
   if (needsPreview) {

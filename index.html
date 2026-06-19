@@ -5210,7 +5210,7 @@
       const gift = editingGiftId ? event.gifts.find(item => item.id === editingGiftId) : null;
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Вставьте ссылку на подарок'}</h3>
-        <label class="full">Ссылка на подарок<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://" oninput="prefillGiftFromUrl()" onpaste="setTimeout(() => prefillGiftFromUrl(), 0)" onchange="prefillGiftFromUrl()" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Если ссылка из Wildberries, Ozon, Яндекс Маркета или Детского мира, название, цена и фото подтянутся автоматически. Нажмите «Заполнить автоматически».</span></label>
+        <label class="full">Ссылка на подарок<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://" oninput="handleGiftUrlInput()" onpaste="setTimeout(() => handleGiftUrlInput(), 0)" onchange="handleGiftUrlInput()" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Если ссылка из Wildberries, Ozon, Яндекс Маркета или Детского мира, название, цена и фото подтянутся автоматически. Нажмите «Заполнить автоматически».</span></label>
         <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" id="giftPrefillButton" type="button" onclick="prefillGiftFromUrl(true)"><span class="btn-spinner" aria-hidden="true"></span><span id="giftPrefillButtonText">Заполнить автоматически</span></button></div>
         <div class="gift-admin-card hidden" id="giftPreviewCard">
           <div class="gift-thumb" id="giftPreviewImage">Фото</div>
@@ -5698,11 +5698,23 @@
     function openGiftForm(eventId, giftId = null) {
       giftFormOpen = true;
       editingGiftId = giftId;
+      clearTimeout(giftPreviewTimer);
+      giftPreviewInFlightUrl = '';
+      giftPreviewInFlightPromise = null;
+      const event = findEvent(eventId);
+      const gift = giftId ? event?.gifts.find(item => item.id === giftId) : null;
+      giftPreviewLoadedUrl = gift?.url && gift?.title && gift?.image && Number(gift?.price || 0) > 0
+        ? normalizedGiftPreviewUrl(gift.url)
+        : '';
       renderEditor(findEvent(eventId), 'gifts');
     }
     function closeGiftForm(eventId) {
       giftFormOpen = false;
       editingGiftId = null;
+      clearTimeout(giftPreviewTimer);
+      giftPreviewLoadedUrl = '';
+      giftPreviewInFlightUrl = '';
+      giftPreviewInFlightPromise = null;
       renderEditor(findEvent(eventId), 'gifts');
     }
     function giftUrlStatus(text) {
@@ -5724,7 +5736,7 @@
       button.classList.toggle('is-loading', state === 'loading');
       button.classList.toggle('is-done', state === 'done');
       button.disabled = state === 'loading';
-      if (state === 'loading') text.textContent = 'Данные загружаются…';
+      if (state === 'loading') text.textContent = 'Идёт загрузка';
       else if (state === 'done') text.textContent = 'Готово';
       else if (state === 'error') text.textContent = 'Попробовать ещё раз';
       else text.textContent = 'Заполнить автоматически';
@@ -5764,6 +5776,16 @@
       }
       if (description && preview.description && !description.value.trim()) description.value = preview.description;
       renderGiftPreviewCard(preview);
+    }
+    function giftPreviewResultMessage(preview = {}) {
+      const filled = [];
+      const missing = [];
+      if (preview.title) filled.push('название'); else missing.push('название');
+      if (Number(preview.price) > 0) filled.push('цену'); else missing.push('цену');
+      if (preview.image) filled.push('фото'); else missing.push('фото');
+      if (!missing.length) return 'Готово: название, цена и фото подтянуты. Проверьте и сохраните подарок.';
+      if (!filled.length) return 'Не получилось заполнить данные по этой ссылке. Можно внести их вручную.';
+      return `Готово: заполнила ${filled.join(', ')}. ${missing.join(', ')} можно добавить вручную.`;
     }
     async function uploadGiftImage(file) {
       if (!file) return;
@@ -5805,8 +5827,37 @@
       if (lower.includes('wildberries') || lower.includes('wb.ru')) return 'Wildberries';
       return 'магазина';
     }
+    function extractGiftUrl(text) {
+      const match = String(text || '').match(/https?:\/\/[^\s<>"']+/i);
+      return match ? match[0].replace(/[),.;!?]+$/g, '') : '';
+    }
+    function normalizeGiftUrlInput() {
+      const input = document.getElementById('giftUrl');
+      const raw = input?.value.trim() || '';
+      const url = extractGiftUrl(raw) || raw;
+      if (input && url && raw !== url) input.value = url;
+      return url;
+    }
+    function handleGiftUrlInput() {
+      clearTimeout(giftPreviewTimer);
+      const url = normalizeGiftUrlInput();
+      giftPreviewRequest += 1;
+      if (giftPreviewLoadedUrl && normalizedGiftPreviewUrl(url) !== giftPreviewLoadedUrl) {
+        giftPreviewLoadedUrl = '';
+      }
+      giftPrefillButtonState('idle');
+      if (!url) {
+        giftUrlStatus('Если ссылка из Wildberries, Ozon, Яндекс Маркета или Детского мира, название, цена и фото подтянутся автоматически. Нажмите «Заполнить автоматически».');
+      } else if (!isSupportedGiftStoreUrl(url)) {
+        giftUrlStatus('Для этой ссылки автозаполнение не сработает. Можно заполнить название, цену и картинку вручную.');
+      } else if (!isProbablyProductGiftUrl(url)) {
+        giftUrlStatus(`Вставьте полную ссылку на товар ${giftStoreName(url)}.`);
+      } else {
+        giftUrlStatus(`Ссылка ${giftStoreName(url)} готова. Нажмите «Заполнить автоматически».`);
+      }
+    }
     function normalizedGiftPreviewUrl(url) {
-      return String(url || '').trim();
+      return extractGiftUrl(url) || String(url || '').trim();
     }
     function hasGiftPreviewFields() {
       return Boolean(document.getElementById('giftTitle')?.value.trim())
@@ -5858,8 +5909,7 @@
       return true;
     }
     function prefillGiftFromUrl(force = false) {
-      const input = document.getElementById('giftUrl');
-      const url = input?.value.trim() || '';
+      const url = normalizeGiftUrlInput();
       const urlKey = normalizedGiftPreviewUrl(url);
       clearTimeout(giftPreviewTimer);
       if (!url) {
@@ -5885,6 +5935,7 @@
         return Promise.resolve(true);
       }
       if (giftPreviewInFlightUrl === urlKey && giftPreviewInFlightPromise) {
+        giftPrefillButtonState('loading');
         return giftPreviewInFlightPromise;
       }
       giftPrefillButtonState('idle');
@@ -5899,9 +5950,10 @@
             applyGiftPreview(data.preview || {});
             giftPreviewLoadedUrl = urlKey;
             giftPrefillButtonState('done');
+            const resultMessage = giftPreviewResultMessage(data.preview || {});
             giftUrlStatus(data.preview?.cached
-              ? 'Готово: взяла данные из кеша, без нового запроса к магазину.'
-              : 'Готово: название, цена и фото подтянуты. Проверьте и сохраните подарок.');
+              ? resultMessage.replace('Готово:', 'Готово: взяла данные из кеша,')
+              : resultMessage);
             return true;
           } catch (error) {
             if (requestId !== giftPreviewRequest || normalizedGiftPreviewUrl(document.getElementById('giftUrl')?.value || '') !== urlKey) return false;
@@ -5930,12 +5982,13 @@
     }
     async function saveGift(eventId) {
       const event = findEvent(eventId);
-      const url = document.getElementById('giftUrl').value.trim();
+      let url = normalizeGiftUrlInput();
       if (url && isSupportedGiftStoreUrl(url)) {
-        const hasPreview = hasGiftPreviewFields();
+        const hasPreview = giftPreviewLoadedUrl === normalizedGiftPreviewUrl(url) && hasGiftPreviewFields();
         if (!hasPreview) {
           const loaded = await prefillGiftFromUrl(true);
           if (!loaded) return toast(`Не получилось подтянуть товар с ${giftStoreName(url)}. Проверьте ссылку и попробуйте ещё раз.`);
+          url = normalizeGiftUrlInput();
         }
       }
       const title = document.getElementById('giftTitle').value.trim();
