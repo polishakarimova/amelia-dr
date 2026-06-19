@@ -572,6 +572,17 @@
     .cover-copy h3 { font-size: 20px; margin-bottom: 6px; }
     .cover-copy p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
     .cover-copy input { max-width: 100%; min-width: 0; padding: 10px; border-radius: 14px; font-size: 13px; }
+    .cover-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+    .cover-template-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+    }
     .field-hint {
       display: block;
       color: rgba(112,106,100,.68);
@@ -1563,6 +1574,52 @@
       height: 100%;
       object-fit: cover;
       display: block;
+    }
+    .template-art-photo.is-empty {
+      gap: 5px;
+      background: rgba(255,255,255,.58);
+      color: rgba(58,49,43,.46);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.76), 0 10px 26px rgba(70,54,42,.08);
+      backdrop-filter: blur(8px);
+    }
+    .template-art-photo.is-empty small {
+      font-size: 11px;
+      font-weight: 520;
+    }
+    .photo-camera-icon {
+      position: relative;
+      width: 34px;
+      height: 25px;
+      border: 2px solid currentColor;
+      border-radius: 9px;
+      opacity: .66;
+    }
+    .photo-camera-icon::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      border: 2px solid currentColor;
+      border-radius: 999px;
+      transform: translate(-50%, -50%);
+    }
+    .photo-camera-icon::after {
+      content: "+";
+      position: absolute;
+      right: -9px;
+      top: -11px;
+      width: 19px;
+      height: 19px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255,255,255,.84);
+      color: var(--coral-dark);
+      font-size: 15px;
+      line-height: 1;
+      box-shadow: 0 6px 14px rgba(70,54,42,.10);
     }
     #coverCropModal.crop-circle-mode .crop-frame {
       width: min(76%, 360px);
@@ -3891,19 +3948,19 @@
       }
     ];
     const CARD_TEMPLATES = [
-      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
-      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
-      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 42, size: 48 } },
+      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 51, y: 34, size: 53 } },
+      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 35, size: 54 } },
       { id: 'pink-no-photo-01', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/ChatGPT Image 15 июн. 2026 г., 23_20_53.png' },
       { id: 'pink-no-photo-02', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/Дизайн без названия (4).png' },
-      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
-      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
-      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (6).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 51, y: 43, size: 47 } },
+      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 51, y: 36, size: 54 } },
+      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия.png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 53 } },
       { id: 'blue-no-photo-01', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/ChatGPT Image 15 июн. 2026 г., 23_18_43.png' },
       { id: 'blue-no-photo-02', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/Дизайн без названия (11).png' },
-      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
-      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
-      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 49 } },
+      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 45 } },
+      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 51 } },
+      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 50, y: 36, size: 54 } },
       { id: 'beige-no-photo-01', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/ChatGPT Image 15 июн. 2026 г., 23_17_05.png' },
       { id: 'beige-no-photo-02', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/Дизайн без названия.png' }
     ];
@@ -4983,7 +5040,7 @@
       return `
         <div class="${className}" style="${photoSlotStyle(template)}">
           <img src="${h(template.image)}" alt="">
-          ${photo ? `<span class="template-art-photo">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : 'Фото в круг'}</span>` : ''}
+          ${photo ? `<span class="template-art-photo ${event.coverImage ? '' : 'is-empty'}">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : '<span class="photo-camera-icon" aria-hidden="true"></span><small>добавить фото</small>'}</span>` : ''}
         </div>`;
     }
     function carouselSlots(list, activeIndex) {
@@ -5088,20 +5145,16 @@
     function coverUploadMarkup(event) {
       const mode = normalizeTemplateMode(event.templateMode || '');
       if (mode === 'without-photo') {
-        return '';
+        return `<div class="cover-template-actions"><button class="btn btn-soft btn-small" type="button" onclick="changeCardTemplate('${event.id}')">Поменять макет</button></div>`;
       }
       const round = mode === 'with-photo';
       return `
         <div class="cover-upload">
           ${round ? templateArtMarkup(event) : `<div class="cover-preview">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : 'Фото'}</div>`}
-          <div class="cover-copy">
-            <h3>${round ? 'Фото для круглого окна' : 'Фото для карточки'}</h3>
-            <p>${round ? 'Загрузите фото и подвиньте его внутри выбранного макета.' : 'Фото необязательно: можно оставить декоративную обложку.'}</p>
+          <div class="cover-copy cover-actions">
             <input class="file-input" id="eventCover" type="file" accept="image/*" onchange="openCoverCrop(this.files[0])">
-            <div class="upload-actions">
-              <button class="btn btn-soft" type="button" onclick="document.getElementById('eventCover').click()">Загрузить фото</button>
-              <span class="field-hint">${event.coverImage ? 'Фото загружено и обрезано.' : 'Файл не выбран.'}</span>
-            </div>
+            <button class="btn btn-primary" type="button" onclick="document.getElementById('eventCover').click()">Загрузить фото</button>
+            <button class="btn btn-soft" type="button" onclick="changeCardTemplate('${event.id}')">Поменять макет</button>
           </div>
         </div>`;
     }
@@ -5404,6 +5457,12 @@
       if (!mode) return toast('Сначала выберите: с фото или без фото');
       if (!activeTemplateForEvent(event)) return toast('Сначала выберите макет');
       renderEditor(event, 'details');
+    }
+    function changeCardTemplate(id) {
+      const event = findEvent(id);
+      if (!event) return;
+      renderEditor(event, 'style');
+      scrollEditorStep('templateStyleStep');
     }
     function scrollEditorStep(targetId) {
       setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 90);
