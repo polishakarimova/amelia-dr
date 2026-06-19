@@ -847,9 +847,26 @@
       background: rgba(37,35,33,.36); backdrop-filter: blur(10px);
     }
     .modal.active { display: flex; }
-    .modal-card { width: min(460px, 100%); padding: 24px; background: #fff; border-radius: 28px; box-shadow: 0 30px 90px rgba(37,35,33,.25); }
+    .modal-card { position: relative; width: min(460px, 100%); padding: 24px; background: #fff; border-radius: 28px; box-shadow: 0 30px 90px rgba(37,35,33,.25); }
     .modal-card.wide { width: min(760px, 100%); }
     .modal-card h3 { font-size: 24px; margin-bottom: 10px; }
+    .modal-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(76,60,47,.10);
+      border-radius: 999px;
+      background: rgba(255,255,255,.76);
+      color: var(--muted);
+      font-size: 22px;
+      line-height: 1;
+      box-shadow: 0 10px 26px rgba(70,54,42,.08);
+    }
+    .modal-close:hover { color: var(--ink); background: #fff; }
     .crop-stage {
       position: relative;
       height: min(56vw, 430px);
@@ -1227,6 +1244,7 @@
       display: grid;
       gap: 12px;
       justify-items: center;
+      width: 100%;
     }
     .color-carousel {
       position: relative;
@@ -1263,6 +1281,7 @@
       opacity: 1;
       transform: translate3d(0, 0, 70px) scale(1);
       filter: saturate(1.05);
+      animation: carouselCenterIn .34s cubic-bezier(.2,.82,.22,1);
     }
     .color-slide.is-left {
       z-index: 2;
@@ -1318,16 +1337,14 @@
     }
     .mode-choice {
       position: relative;
-      min-height: 126px;
+      min-height: 58px;
       display: grid;
-      grid-template-columns: 76px minmax(0, 1fr);
-      gap: 12px;
-      align-items: center;
-      padding: 12px;
+      place-items: center;
+      padding: 14px 18px;
       border: 1px solid rgba(76,60,47,.10);
-      border-radius: 28px;
+      border-radius: 999px;
       background: rgba(255,255,255,.66);
-      text-align: left;
+      text-align: center;
       box-shadow: 0 12px 30px rgba(70,54,42,.05);
       transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
@@ -1337,28 +1354,13 @@
       background: linear-gradient(145deg, rgba(255,255,255,.86), color-mix(in srgb, var(--primary-soft) 58%, white));
       box-shadow: 0 16px 44px color-mix(in srgb, var(--primary) 16%, rgba(70,54,42,.06));
     }
-    .mode-visual {
-      height: 82px;
-      border-radius: 20px;
-      background:
-        radial-gradient(circle at 50% 31%, rgba(255,255,255,.95) 0 25%, transparent 26%),
-        linear-gradient(160deg, var(--primary-soft), var(--surface));
-      border: 1px solid rgba(255,255,255,.72);
-      box-shadow: inset 0 0 0 1px rgba(76,60,47,.06);
-    }
-    .mode-choice[data-mode="without-photo"] .mode-visual {
-      background:
-        radial-gradient(circle at 28% 22%, rgba(255,255,255,.82) 0 7%, transparent 8%),
-        radial-gradient(circle at 72% 28%, rgba(255,255,255,.74) 0 6%, transparent 7%),
-        linear-gradient(160deg, var(--gold-soft), var(--primary-soft));
-    }
-    .mode-choice b { display: block; font-size: 16px; margin-bottom: 3px; color: var(--ink); font-weight: 820; }
-    .mode-choice span { color: var(--muted); line-height: 1.38; font-size: 12px; }
+    .mode-choice b { display: block; font-size: 16px; color: var(--ink); font-weight: 820; }
     .template-carousel-shell {
       position: relative;
       z-index: 1;
       display: grid;
       gap: 14px;
+      width: 100%;
     }
     .template-carousel {
       position: relative;
@@ -1389,6 +1391,7 @@
       opacity: 1;
       transform: translate3d(0, 0, 80px) scale(1);
       filter: saturate(1);
+      animation: carouselCenterIn .34s cubic-bezier(.2,.82,.22,1);
     }
     .template-slide.is-left {
       z-index: 2;
@@ -1423,6 +1426,16 @@
     .template-slide.is-active .template-preview-card {
       box-shadow: 0 28px 82px color-mix(in srgb, var(--primary) 18%, rgba(70,54,42,.14));
     }
+    @keyframes carouselCenterIn {
+      from {
+        opacity: .74;
+        filter: saturate(.88);
+        transform: translate3d(0, 8px, -90px) scale(.86);
+      }
+      to {
+        opacity: 1;
+      }
+    }
     .carousel-controls {
       display: flex;
       justify-content: center;
@@ -1430,16 +1443,33 @@
       gap: 10px;
     }
     .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      z-index: 6;
       width: 42px;
       height: 42px;
       border: 1px solid rgba(76,60,47,.10);
       border-radius: 999px;
-      background: rgba(255,255,255,.72);
+      background: rgba(255,255,255,.58);
       color: var(--ink);
       font-size: 22px;
       line-height: 1;
       box-shadow: 0 12px 30px rgba(70,54,42,.06);
+      backdrop-filter: blur(12px);
+      transform: translateY(-50%);
+      opacity: .76;
+      transition: opacity .2s ease, transform .2s ease, background .2s ease, box-shadow .2s ease;
     }
+    .carousel-arrow:hover {
+      opacity: 1;
+      background: rgba(255,255,255,.86);
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: 0 16px 38px rgba(70,54,42,.10);
+    }
+    .carousel-arrow-left { left: clamp(0px, 4vw, 34px); }
+    .carousel-arrow-right { right: clamp(0px, 4vw, 34px); }
+    .template-carousel-shell .carousel-arrow-left { left: clamp(0px, 2vw, 18px); }
+    .template-carousel-shell .carousel-arrow-right { right: clamp(0px, 2vw, 18px); }
     .template-count {
       min-width: 92px;
       text-align: center;
@@ -1540,15 +1570,29 @@
       border-radius: 999px;
     }
     #coverCropModal.crop-template-mode .modal-card.wide {
-      width: min(520px, 100%);
+      width: min(440px, 100%);
+      max-height: calc(100vh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+      overflow-y: auto;
+      padding: 18px;
+      border-radius: 26px;
+    }
+    #coverCropModal.crop-template-mode .modal-card h3 {
+      padding-right: 40px;
+      margin-bottom: 4px;
+      font-size: 20px;
+    }
+    #coverCropModal.crop-template-mode .modal-card > p {
+      margin: 0;
+      max-width: 330px;
+      font-size: 13px;
+      line-height: 1.4;
     }
     #coverCropModal.crop-template-mode .crop-stage {
-      width: min(86vw, 390px);
+      width: min(78vw, 320px);
       height: auto;
       min-height: 0;
       aspect-ratio: 3 / 4;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 12px auto 10px;
       border-radius: 34px;
       background: var(--surface-warm);
       box-shadow: 0 24px 70px rgba(50,40,35,.18);
@@ -1574,6 +1618,13 @@
     #coverCropModal.crop-template-mode .crop-frame {
       border: 2px solid rgba(255,255,255,.92);
       box-shadow: 0 0 0 999px rgba(0,0,0,.10), inset 0 0 0 1px color-mix(in srgb, var(--primary) 34%, white);
+    }
+    #coverCropModal.crop-template-mode .crop-tools {
+      grid-template-columns: 1fr;
+      gap: 9px;
+    }
+    #coverCropModal.crop-template-mode .hero-actions {
+      margin-top: 10px !important;
     }
     #coverCropModal.crop-circle-mode .crop-frame::before,
     #coverCropModal.crop-circle-mode .crop-frame::after {
@@ -1609,15 +1660,10 @@
         transform: translate3d(104%, 0, -110px) rotateY(-16deg) rotate(3deg) scale(.64);
       }
       .mode-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .mode-choice {
-        min-height: 136px;
-        grid-template-columns: 92px minmax(0, 1fr);
-      }
-      .mode-visual {
-        height: 104px;
-        border-radius: 22px;
+        min-height: 54px;
       }
       .template-carousel {
         min-height: 410px;
@@ -3726,7 +3772,8 @@
     </div>
   </div>
   <div class="modal" id="coverCropModal" onclick="if(event.target===this)closeCoverCrop()">
-    <div class="modal-card wide">
+    <div class="modal-card wide crop-modal-card">
+      <button class="modal-close" type="button" onclick="closeCoverCrop()" aria-label="Закрыть">×</button>
       <h3>Настроить фото</h3>
       <p class="muted">Подвиньте фото и выберите масштаб. Светлая рамка показывает, что попадёт в обложку карточки.</p>
       <div class="crop-stage" id="cropStage">
@@ -4974,12 +5021,10 @@
             </div>
             <div class="mode-grid">
               <button class="mode-choice ${mode === 'with-photo' ? 'active' : ''}" data-mode="with-photo" type="button" onclick="setTemplateMode('${event.id}', 'with-photo')">
-                <span class="mode-visual"></span>
-                <span><b>Да, с фото</b><span>Фото появится в круглом окне выбранного макета.</span></span>
+                <b>С фото</b>
               </button>
               <button class="mode-choice ${mode === 'without-photo' ? 'active' : ''}" data-mode="without-photo" type="button" onclick="setTemplateMode('${event.id}', 'without-photo')">
-                <span class="mode-visual"></span>
-                <span><b>Нет</b><span>Оставить готовый декоративный дизайн.</span></span>
+                <b>Без фото</b>
               </button>
             </div>
             <div class="style-step-actions">
@@ -5016,6 +5061,8 @@
           <div class="color-carousel" onpointerdown="startColorSwipe(event)" onpointermove="trackColorSwipe(event)" onpointerup="finishColorSwipe(event, '${event.id}')" onpointercancel="cancelColorSwipe()" onpointerleave="cancelColorSwipe()">
             ${slides}
           </div>
+          <button class="carousel-arrow carousel-arrow-left" type="button" onclick="shiftTemplateColor('${event.id}', -1)" aria-label="Предыдущий цвет">‹</button>
+          <button class="carousel-arrow carousel-arrow-right" type="button" onclick="shiftTemplateColor('${event.id}', 1)" aria-label="Следующий цвет">›</button>
         </div>`;
     }
     function templateCarousel(event) {
@@ -5034,6 +5081,8 @@
           <div class="template-carousel" onpointerdown="startTemplateSwipe(event)" onpointermove="trackTemplateSwipe(event)" onpointerup="finishTemplateSwipe(event, '${event.id}')" onpointercancel="cancelTemplateSwipe()" onpointerleave="cancelTemplateSwipe()">
             ${slides}
           </div>
+          <button class="carousel-arrow carousel-arrow-left" type="button" onclick="shiftTemplateCarousel('${event.id}', -1)" aria-label="Предыдущий макет">‹</button>
+          <button class="carousel-arrow carousel-arrow-right" type="button" onclick="shiftTemplateCarousel('${event.id}', 1)" aria-label="Следующий макет">›</button>
         </div>`;
     }
     function coverUploadMarkup(event) {
@@ -5512,9 +5561,9 @@
       constrainCoverCrop();
       const imgNode = document.getElementById('cropImage');
       const scale = coverCrop.baseScale * coverCrop.scale;
-      imgNode.style.width = `${coverCrop.image.width}px`;
-      imgNode.style.height = `${coverCrop.image.height}px`;
-      imgNode.style.transform = `translate(calc(-50% + ${coverCrop.x}px), calc(-50% + ${coverCrop.y}px)) scale(${scale})`;
+      imgNode.style.width = `${coverCrop.image.width * scale}px`;
+      imgNode.style.height = `${coverCrop.image.height * scale}px`;
+      imgNode.style.transform = `translate(calc(-50% + ${coverCrop.x}px), calc(-50% + ${coverCrop.y}px))`;
     }
     function constrainCoverCrop() {
       if (!coverCrop) return;
