@@ -1627,10 +1627,10 @@
       border-radius: 999px;
     }
     #coverCropModal.crop-template-mode .modal-card.wide {
-      width: min(440px, 100%);
+      width: min(420px, 100%);
       max-height: calc(100vh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
       overflow-y: auto;
-      padding: 18px;
+      padding: 16px;
       border-radius: 26px;
     }
     #coverCropModal.crop-template-mode .modal-card h3 {
@@ -1639,13 +1639,10 @@
       font-size: 20px;
     }
     #coverCropModal.crop-template-mode .modal-card > p {
-      margin: 0;
-      max-width: 330px;
-      font-size: 13px;
-      line-height: 1.4;
+      display: none;
     }
     #coverCropModal.crop-template-mode .crop-stage {
-      width: min(78vw, 320px);
+      width: min(72vw, 286px);
       height: auto;
       min-height: 0;
       aspect-ratio: 3 / 4;
@@ -1659,12 +1656,14 @@
     }
     #coverCropModal.crop-template-mode .crop-photo-window,
     #coverCropModal.crop-template-mode .crop-frame {
+      inset: auto;
       left: var(--photo-x, 50%);
       top: var(--photo-y, 43%);
+      right: auto;
+      bottom: auto;
       width: var(--photo-size, 49%);
       height: auto;
       aspect-ratio: 1;
-      inset: auto;
       transform: translate(-50%, -50%);
       border-radius: 999px;
     }
@@ -3948,19 +3947,19 @@
       }
     ];
     const CARD_TEMPLATES = [
-      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 42, size: 48 } },
-      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 51, y: 34, size: 53 } },
-      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 35, size: 54 } },
+      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 42, size: 44 } },
+      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 51, y: 34, size: 49 } },
+      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 35, size: 50 } },
       { id: 'pink-no-photo-01', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/ChatGPT Image 15 июн. 2026 г., 23_20_53.png' },
       { id: 'pink-no-photo-02', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/Дизайн без названия (4).png' },
-      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 51, y: 43, size: 47 } },
-      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 51, y: 36, size: 54 } },
-      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия.png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 53 } },
+      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 51, y: 43, size: 43 } },
+      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 51, y: 36, size: 50 } },
+      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия.png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 49 } },
       { id: 'blue-no-photo-01', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/ChatGPT Image 15 июн. 2026 г., 23_18_43.png' },
       { id: 'blue-no-photo-02', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/Дизайн без названия (11).png' },
-      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 45 } },
-      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 51 } },
-      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 50, y: 36, size: 54 } },
+      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 41 } },
+      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 47 } },
+      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 50, y: 36, size: 50 } },
       { id: 'beige-no-photo-01', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/ChatGPT Image 15 июн. 2026 г., 23_17_05.png' },
       { id: 'beige-no-photo-02', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/Дизайн без названия.png' }
     ];
