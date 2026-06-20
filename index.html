@@ -4993,7 +4993,11 @@
       return;
     }
     async function logout() {
-      try { await apiRequest('/api/auth/logout', { method: 'POST', body: {} }); } catch {}
+      try {
+        await apiRequest('/api/auth/logout', { method: 'POST', body: {} });
+      } catch {
+        // Clear the local session even if the server-side logout request is unavailable.
+      }
       currentUser = null;
       eventsCache = [];
       telegramAuthDone = false;
@@ -5578,9 +5582,16 @@
     function scrollEditorStep(targetId) {
       setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 90);
     }
+    function safelyCapturePointer(target, pointerId) {
+      try {
+        target.setPointerCapture(pointerId);
+      } catch {
+        // Some WebViews can cancel pointer capture during fast swipes; drag state still works.
+      }
+    }
     function startColorSwipe(event) {
       colorSwipeStart = { x: event.clientX, y: event.clientY, root: event.currentTarget };
-      try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+      safelyCapturePointer(event.currentTarget, event.pointerId);
     }
     function resetCarouselDrag(root) {
       if (!root) return;
@@ -5631,7 +5642,7 @@
     }
     function startTemplateSwipe(event) {
       templateSwipeStart = { x: event.clientX, y: event.clientY, root: event.currentTarget };
-      try { event.currentTarget.setPointerCapture(event.pointerId); } catch {}
+      safelyCapturePointer(event.currentTarget, event.pointerId);
     }
     function trackTemplateSwipe(event) {
       if (!templateSwipeStart) return;
