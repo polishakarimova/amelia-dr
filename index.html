@@ -1172,39 +1172,39 @@
     .style-step-actions.is-stacked {
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-    }
-    .style-choice-button {
-      min-width: 156px;
+      gap: 6px;
     }
     .style-next-button {
       display: inline-flex;
+      flex-direction: column-reverse;
       align-items: center;
-      gap: 7px;
+      gap: 2px;
       border: 0;
-      padding: 6px 10px;
+      padding: 8px 18px 5px;
       border-radius: 999px;
       background: transparent;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 820;
-      transition: color .18s ease, transform .18s ease, background .18s ease;
+      color: rgba(122,112,104,.66);
+      font-size: 12px;
+      font-weight: 760;
+      letter-spacing: .01em;
+      transition: color .18s ease, transform .18s ease, opacity .18s ease;
     }
     .style-next-button:hover {
-      color: var(--coral-dark);
-      background: rgba(255,255,255,.58);
-      transform: translateY(2px);
+      color: rgba(65,55,48,.78);
+      opacity: .92;
+      transform: translateY(1px);
     }
     .style-next-arrow {
-      width: 24px;
-      height: 24px;
+      width: 34px;
+      height: 22px;
       display: inline-grid;
       place-items: center;
-      border-radius: 999px;
-      background: rgba(255,255,255,.78);
-      box-shadow: inset 0 0 0 1px rgba(76,60,47,.08), 0 8px 18px rgba(70,54,42,.06);
-      color: var(--coral-dark);
+      color: rgba(91,83,76,.42);
+      font-size: 24px;
+      font-weight: 260;
       line-height: 1;
+      transform: scaleX(1.36);
+      animation: softContinuePulse 1.9s ease-in-out infinite;
     }
     .style-step-top {
       position: relative;
@@ -1541,6 +1541,16 @@
       }
       to {
         opacity: 1;
+      }
+    }
+    @keyframes softContinuePulse {
+      0%, 100% {
+        opacity: .42;
+        transform: translateY(0) scaleX(1.36);
+      }
+      50% {
+        opacity: .78;
+        transform: translateY(3px) scaleX(1.36);
       }
     }
     .carousel-controls {
@@ -5161,9 +5171,8 @@
           <section class="style-step-panel" id="templateColorStep">
             ${colorCarousel(event)}
             <div class="style-step-actions is-stacked">
-              <button class="btn btn-primary style-choice-button" type="button" onclick="confirmTemplateColor('${event.id}')">Выбрать</button>
               <button class="style-next-button" type="button" onclick="confirmTemplateColor('${event.id}')">
-                <span class="style-next-arrow" aria-hidden="true">↓</span>
+                <span class="style-next-arrow" aria-hidden="true">⌄</span>
                 <span>Продолжить</span>
               </button>
             </div>
@@ -5187,7 +5196,7 @@
             </div>
             <div class="style-step-actions is-stacked">
               <button class="style-next-button" type="button" onclick="continueTemplateMode('${event.id}')">
-                <span class="style-next-arrow" aria-hidden="true">↓</span>
+                <span class="style-next-arrow" aria-hidden="true">⌄</span>
                 <span>Продолжить</span>
               </button>
             </div>
@@ -5486,7 +5495,6 @@
       const event = findEvent(id);
       if (!event) return;
       if (normalizeTemplateTheme(event.theme || 'pink') === normalizeTemplateTheme(theme)) {
-        confirmTemplateColor(id);
         return;
       }
       setTemplateColor(id, theme);
