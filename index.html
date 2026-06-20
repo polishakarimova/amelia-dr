@@ -1169,6 +1169,43 @@
       justify-content: center;
       margin-top: 14px;
     }
+    .style-step-actions.is-stacked {
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .style-choice-button {
+      min-width: 156px;
+    }
+    .style-next-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 820;
+      transition: color .18s ease, transform .18s ease, background .18s ease;
+    }
+    .style-next-button:hover {
+      color: var(--coral-dark);
+      background: rgba(255,255,255,.58);
+      transform: translateY(2px);
+    }
+    .style-next-arrow {
+      width: 24px;
+      height: 24px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255,255,255,.78);
+      box-shadow: inset 0 0 0 1px rgba(76,60,47,.08), 0 8px 18px rgba(70,54,42,.06);
+      color: var(--coral-dark);
+      line-height: 1;
+    }
     .style-step-top {
       position: relative;
       z-index: 1;
@@ -1360,10 +1397,32 @@
       transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
     }
     .mode-choice:hover { transform: translateY(-2px); box-shadow: var(--shadow-card); }
+    .mode-check {
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 950;
+      box-shadow: 0 10px 24px color-mix(in srgb, var(--primary) 28%, rgba(70,54,42,.10));
+      opacity: 0;
+      transform: translate(4px, -50%) scale(.76);
+      transition: opacity .18s ease, transform .18s ease;
+    }
     .mode-choice.active {
       border-color: color-mix(in srgb, var(--primary) 40%, rgba(76,60,47,.10));
       background: linear-gradient(145deg, rgba(255,255,255,.86), color-mix(in srgb, var(--primary-soft) 58%, white));
       box-shadow: 0 16px 44px color-mix(in srgb, var(--primary) 16%, rgba(70,54,42,.06));
+    }
+    .mode-choice.active .mode-check {
+      opacity: 1;
+      transform: translate(0, -50%) scale(1);
     }
     .mode-choice b { display: block; font-size: 16px; color: var(--ink); font-weight: 820; }
     .template-carousel-shell {
@@ -5064,8 +5123,12 @@
           </div>
           <section class="style-step-panel" id="templateColorStep">
             ${colorCarousel(event)}
-            <div class="style-step-actions">
-              <button class="btn btn-primary" type="button" onclick="confirmTemplateColor('${event.id}')">Продолжить</button>
+            <div class="style-step-actions is-stacked">
+              <button class="btn btn-primary style-choice-button" type="button" onclick="confirmTemplateColor('${event.id}')">Выбрать</button>
+              <button class="style-next-button" type="button" onclick="confirmTemplateColor('${event.id}')">
+                <span class="style-next-arrow" aria-hidden="true">↓</span>
+                <span>Продолжить</span>
+              </button>
             </div>
           </section>
           <section class="style-step-panel" id="templateModeStep">
@@ -5077,14 +5140,19 @@
             </div>
             <div class="mode-grid">
               <button class="mode-choice ${mode === 'with-photo' ? 'active' : ''}" data-mode="with-photo" type="button" onclick="setTemplateMode('${event.id}', 'with-photo')">
+                <span class="mode-check" aria-hidden="true">✓</span>
                 <b>С фото</b>
               </button>
               <button class="mode-choice ${mode === 'without-photo' ? 'active' : ''}" data-mode="without-photo" type="button" onclick="setTemplateMode('${event.id}', 'without-photo')">
+                <span class="mode-check" aria-hidden="true">✓</span>
                 <b>Без фото</b>
               </button>
             </div>
-            <div class="style-step-actions">
-              <button class="btn btn-primary" type="button" onclick="continueTemplateMode('${event.id}')">Продолжить</button>
+            <div class="style-step-actions is-stacked">
+              <button class="style-next-button" type="button" onclick="continueTemplateMode('${event.id}')">
+                <span class="style-next-arrow" aria-hidden="true">↓</span>
+                <span>Продолжить</span>
+              </button>
             </div>
           </section>
           ${mode ? `
@@ -5410,7 +5478,6 @@
         templateMode: normalizedMode,
         templateId: currentTemplate?.id || fallbackTemplate?.id || ''
       }, 'style');
-      scrollEditorStep('templateStyleStep');
     }
     function continueTemplateMode(id) {
       const event = findEvent(id);
