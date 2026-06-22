@@ -395,6 +395,12 @@
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     label { display: grid; gap: 7px; color: var(--muted); font-size: 13px; font-weight: 750; }
     label.full { grid-column: 1 / -1; }
+    .date-time-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, .72fr);
+      gap: 10px;
+    }
+    .date-time-row.full { grid-column: 1 / -1; }
     input, textarea, select {
       width: 100%;
       border: 1px solid var(--line);
@@ -1678,6 +1684,13 @@
       text-align: center;
       box-shadow: inset 0 0 0 2px rgba(255,255,255,.76), 0 10px 26px rgba(70,54,42,.08);
     }
+    button.template-art-photo {
+      border: 0;
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+      appearance: none;
+    }
     .template-art-photo img {
       width: 100%;
       height: 100%;
@@ -1685,32 +1698,38 @@
       display: block;
     }
     .template-art-photo.is-empty {
-      gap: 5px;
+      gap: 3px;
       background: rgba(255,255,255,.58);
       color: rgba(58,49,43,.46);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.76), 0 10px 26px rgba(70,54,42,.08);
       backdrop-filter: blur(8px);
     }
     .template-art-photo.is-empty small {
-      font-size: 11px;
-      font-weight: 520;
+      max-width: 82%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: clamp(8px, 2.4vw, 10px);
+      font-weight: 480;
+      line-height: 1.05;
+      letter-spacing: 0;
     }
     .photo-camera-icon {
       position: relative;
-      width: 34px;
-      height: 25px;
-      border: 2px solid currentColor;
-      border-radius: 9px;
-      opacity: .66;
+      width: clamp(20px, 6vw, 30px);
+      height: clamp(15px, 4.5vw, 22px);
+      border: 1.6px solid currentColor;
+      border-radius: 8px;
+      opacity: .52;
     }
     .photo-camera-icon::before {
       content: "";
       position: absolute;
       left: 50%;
       top: 50%;
-      width: 10px;
-      height: 10px;
-      border: 2px solid currentColor;
+      width: 8px;
+      height: 8px;
+      border: 1.6px solid currentColor;
       border-radius: 999px;
       transform: translate(-50%, -50%);
     }
@@ -2604,6 +2623,10 @@
         padding: 10px 12px;
         border-radius: 14px;
         font-size: 14px;
+      }
+      .date-time-row {
+        grid-template-columns: minmax(0, 1fr) minmax(104px, .72fr);
+        gap: 7px;
       }
       textarea {
         min-height: 96px;
@@ -4479,19 +4502,19 @@
       }
     ];
     const CARD_TEMPLATES = [
-      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 42, size: 44 } },
-      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 51, y: 34, size: 49 } },
-      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 35, size: 50 } },
+      { id: 'pink-photo-01', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/ChatGPT Image 15 июн. 2026 г., 22_55_28.png', photoSlot: { shape: 'circle', x: 50, y: 41, size: 47 } },
+      { id: 'pink-photo-02', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (10).png', photoSlot: { shape: 'circle', x: 51, y: 35, size: 53 } },
+      { id: 'pink-photo-03', theme: 'pink', mode: 'with-photo', image: '/public/card-templates/pink/with-photo/Дизайн без названия (8).png', photoSlot: { shape: 'circle', x: 50, y: 35, size: 52 } },
       { id: 'pink-no-photo-01', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/ChatGPT Image 15 июн. 2026 г., 23_20_53.png' },
       { id: 'pink-no-photo-02', theme: 'pink', mode: 'without-photo', image: '/public/card-templates/pink/without-photo/Дизайн без названия (4).png' },
-      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 51, y: 43, size: 43 } },
-      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 51, y: 36, size: 50 } },
-      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия.png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 49 } },
+      { id: 'blue-photo-01', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/ChatGPT Image 15 июн. 2026 г., 21_51_09.png', photoSlot: { shape: 'circle', x: 51, y: 43, size: 47 } },
+      { id: 'blue-photo-02', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия (5).png', photoSlot: { shape: 'circle', x: 51, y: 36, size: 54 } },
+      { id: 'blue-photo-03', theme: 'blue', mode: 'with-photo', image: '/public/card-templates/blue/with-photo/Дизайн без названия.png', photoSlot: { shape: 'circle', x: 50, y: 35, size: 53 } },
       { id: 'blue-no-photo-01', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/ChatGPT Image 15 июн. 2026 г., 23_18_43.png' },
       { id: 'blue-no-photo-02', theme: 'blue', mode: 'without-photo', image: '/public/card-templates/blue/without-photo/Дизайн без названия (11).png' },
-      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 43, size: 41 } },
-      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 34, size: 47 } },
-      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 50, y: 36, size: 50 } },
+      { id: 'beige-photo-01', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/ChatGPT Image 15 июн. 2026 г., 21_48_00.png', photoSlot: { shape: 'circle', x: 50, y: 40, size: 47 } },
+      { id: 'beige-photo-02', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (7).png', photoSlot: { shape: 'circle', x: 50, y: 36, size: 54 } },
+      { id: 'beige-photo-03', theme: 'beige', mode: 'with-photo', image: '/public/card-templates/beige/with-photo/Дизайн без названия (9).png', photoSlot: { shape: 'circle', x: 51, y: 36, size: 55 } },
       { id: 'beige-no-photo-01', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/ChatGPT Image 15 июн. 2026 г., 23_17_05.png' },
       { id: 'beige-no-photo-02', theme: 'beige', mode: 'without-photo', image: '/public/card-templates/beige/without-photo/Дизайн без названия.png' }
     ];
@@ -5632,7 +5655,7 @@
       return `
         <div class="${className}" style="${photoSlotStyle(template)}">
           <img src="${h(template.image)}" alt="">
-          ${photo ? `<span class="template-art-photo ${event.coverImage ? '' : 'is-empty'}">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : '<span class="photo-camera-icon" aria-hidden="true"></span><small>добавить фото</small>'}</span>` : ''}
+          ${photo ? `<button class="template-art-photo ${event.coverImage ? '' : 'is-empty'}" type="button" onclick="document.getElementById('eventCover')?.click()" aria-label="Добавить фото">${event.coverImage ? `<img src="${h(event.coverImage)}" alt="">` : '<span class="photo-camera-icon" aria-hidden="true"></span><small>добавить фото</small>'}</button>` : ''}
         </div>`;
     }
     function carouselSlots(list, activeIndex) {
@@ -5763,8 +5786,10 @@
             <h3>Детали</h3>
             ${coverUploadMarkup(event)}
             <label class="full">Название события<input id="eventTitle" value="${event.title || ''}" placeholder="Например, День рождения Тимофея"></label>
-            <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
-            <label>Время<input id="eventTime" type="time" step="300" value="${event.time || ''}"></label>
+            <div class="date-time-row full">
+              <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
+              <label>Время<input id="eventTime" type="time" step="300" value="${event.time || ''}"></label>
+            </div>
           </section>
           <section class="form-section">
             <h3>Место проведения</h3>
@@ -6053,6 +6078,7 @@
       if (!mode) return toast('Сначала выберите: с фото или без фото');
       if (!activeTemplateForEvent(event)) return toast('Сначала выберите макет');
       renderEditor(event, 'details');
+      scrollEditorTop();
     }
     function changeCardTemplate(id) {
       const event = findEvent(id);
@@ -6062,6 +6088,13 @@
     }
     function scrollEditorStep(targetId) {
       setTimeout(() => document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 90);
+    }
+    function scrollEditorTop() {
+      setTimeout(() => {
+        const target = document.querySelector('#editorView .editor-app-shell') || document.getElementById('editorView');
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 80);
     }
     function safelyCapturePointer(target, pointerId) {
       try {
