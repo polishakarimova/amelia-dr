@@ -2946,6 +2946,433 @@
         border-radius: 14px;
       }
     }
+
+    .editor-app-shell {
+      width: min(100%, 500px);
+      margin: 0 auto;
+      padding: 4px 0 calc(104px + env(safe-area-inset-bottom));
+    }
+    body.editor-mini-mode .topbar {
+      display: none;
+    }
+    body.editor-mini-mode .shell {
+      padding-top: calc(8px + env(safe-area-inset-top));
+    }
+    .editor-mini-head {
+      position: sticky;
+      top: calc(8px + env(safe-area-inset-top));
+      z-index: 40;
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) 48px;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px;
+    }
+    .mini-nav-button {
+      width: 48px;
+      height: 42px;
+      border: 1px solid rgba(76,60,47,.10);
+      border-radius: 999px;
+      background: rgba(255,255,255,.66);
+      color: rgba(58,49,43,.72);
+      font-size: 24px;
+      font-weight: 760;
+      line-height: 1;
+      box-shadow: 0 10px 26px rgba(70,54,42,.06);
+      backdrop-filter: blur(18px) saturate(140%);
+    }
+    .editor-title-pill {
+      min-width: 0;
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      padding: 9px 14px 10px;
+      border-radius: 999px;
+      color: var(--text-strong);
+      background: linear-gradient(135deg, var(--gold), var(--primary));
+      box-shadow: 0 16px 36px color-mix(in srgb, var(--primary) 28%, rgba(70,54,42,.10));
+    }
+    .editor-title-pill span {
+      font-size: 11px;
+      font-weight: 850;
+      opacity: .72;
+      line-height: 1;
+    }
+    .editor-title-pill b {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 17px;
+      line-height: 1.08;
+      font-weight: 860;
+    }
+    #editorView .compact-editor-card {
+      width: 100%;
+      max-width: none;
+      padding: 14px;
+      padding-top: 20px;
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 16% 0%, color-mix(in srgb, var(--primary-soft) 70%, transparent), transparent 32%),
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,250,246,.72));
+      box-shadow: 0 18px 52px rgba(50,40,35,.10);
+    }
+    #editorView .compact-editor-card::before {
+      display: none;
+    }
+    .mini-step-progress {
+      gap: 8px;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.62);
+      border-color: rgba(76,60,47,.08);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.44);
+    }
+    .mini-step-progress .progress-meta {
+      align-items: center;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .mini-step-progress .progress-meta b {
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .compact-step-dots {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+      overflow: visible;
+      padding: 0;
+    }
+    .editor-step-pill {
+      min-width: 0;
+      min-height: 52px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 4px;
+      border: 1px solid rgba(76,60,47,.09);
+      border-radius: 17px;
+      background: rgba(255,255,255,.72);
+      color: rgba(58,49,43,.72);
+      box-shadow: 0 8px 18px rgba(70,54,42,.04);
+    }
+    .editor-step-pill b {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 850;
+    }
+    .editor-step-pill small {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1;
+      font-weight: 720;
+    }
+    .editor-step-pill.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--gold));
+      border-color: transparent;
+      box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 24%, rgba(70,54,42,.10));
+    }
+    .editor-step-pill.active small { color: rgba(255,255,255,.82); }
+    .editor-step-pill.done {
+      color: var(--coral-dark);
+      background: var(--primary-soft);
+      border-color: color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+    #editorView .style-flow {
+      gap: 12px;
+    }
+    #editorView .style-flow-head h3 {
+      font-size: clamp(22px, 6vw, 28px);
+      line-height: 1.06;
+    }
+    #editorView .style-step-panel {
+      padding: 14px;
+      border-radius: 24px;
+      box-shadow: 0 12px 34px rgba(70,54,42,.06);
+    }
+    #editorView .style-step-top {
+      margin-bottom: 10px;
+    }
+    #editorView .style-step-top h4 {
+      font-size: 17px;
+    }
+    #editorView .style-step-num {
+      width: 30px;
+      height: 30px;
+      font-size: 12px;
+    }
+    #editorView .mode-grid {
+      gap: 8px;
+    }
+    #editorView .mode-choice {
+      min-height: 58px;
+      padding: 12px;
+      border-radius: 18px;
+    }
+    #editorView .form-grid,
+    #editorView .form-section {
+      gap: 10px;
+    }
+    #editorView .form-section {
+      padding: 13px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.66);
+      border-color: rgba(76,60,47,.08);
+      box-shadow: 0 10px 28px rgba(70,54,42,.045);
+    }
+    #editorView .form-section h3 {
+      font-size: 17px;
+      line-height: 1.1;
+    }
+    #editorView label {
+      font-size: 12px;
+      gap: 5px;
+    }
+    #editorView input,
+    #editorView textarea,
+    #editorView select {
+      min-height: 44px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+    #editorView textarea {
+      min-height: 88px;
+    }
+    #editorView .template-box {
+      gap: 8px;
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.56);
+    }
+    #editorView .template-options {
+      gap: 6px;
+    }
+    #editorView .template-options .btn {
+      min-height: 32px;
+      padding: 7px 10px;
+      font-size: 12px;
+    }
+    #editorView .cover-upload {
+      gap: 10px;
+      padding: 10px;
+      border-radius: 20px;
+    }
+    #editorView #editorBody > .hero-actions,
+    #editorView #editorBody > .gifts-bottom-actions,
+    #editorView .gift-form > .hero-actions:last-child,
+    #editorView .gifts-step-head > .btn {
+      display: none;
+    }
+    .gifts-step-head {
+      align-items: center;
+      padding: 12px 13px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.62);
+      border: 1px solid rgba(76,60,47,.08);
+    }
+    .gifts-step-head p {
+      font-size: 13px;
+      line-height: 1.38;
+    }
+    #editorView .gift-form {
+      padding: 13px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.72);
+      box-shadow: 0 12px 34px rgba(70,54,42,.055);
+    }
+    #editorView .gift-form h3 {
+      font-size: 18px;
+      line-height: 1.12;
+    }
+    #editorView .gift-admin-card {
+      grid-template-columns: 76px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.76);
+    }
+    #editorView .gift-admin-card .hero-actions {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .editor-sticky-bar {
+      position: fixed;
+      left: 50%;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 60;
+      width: min(500px, calc(100vw - 22px));
+      display: grid;
+      grid-template-columns: minmax(108px, .78fr) minmax(0, 1.22fr);
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid rgba(76,60,47,.10);
+      border-radius: 999px;
+      background: rgba(255,252,248,.82);
+      box-shadow: 0 20px 54px rgba(70,54,42,.14);
+      backdrop-filter: blur(22px) saturate(140%);
+      transform: translateX(-50%);
+    }
+    .editor-sticky-bar .btn {
+      min-height: 48px;
+      padding: 10px 14px;
+      font-size: 15px;
+      box-shadow: none;
+    }
+    .editor-back-button {
+      justify-content: center;
+      gap: 8px;
+    }
+    .editor-back-button span {
+      font-size: 24px;
+      line-height: 0;
+    }
+    .editor-next-button {
+      justify-content: center;
+      box-shadow: 0 14px 30px color-mix(in srgb, var(--primary) 26%, rgba(70,54,42,.10));
+    }
+    #dashboardView .page-head {
+      width: min(100%, 500px);
+      padding: 14px 0 10px;
+      text-align: left;
+      display: grid;
+      justify-items: stretch;
+      gap: 10px;
+    }
+    #dashboardView .page-head h2 {
+      font-size: clamp(27px, 7vw, 34px);
+      margin-bottom: 4px;
+    }
+    #dashboardView .page-head p {
+      font-size: 13px;
+      line-height: 1.38;
+    }
+    #dashboardView .dashboard-grid {
+      width: min(100%, 500px);
+      margin: 0 auto;
+      gap: 10px;
+    }
+    #dashboardView .event-item {
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 10px;
+      padding: 11px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.76);
+    }
+    #dashboardView .event-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      font-size: 12px;
+    }
+    #dashboardView .event-item h3 {
+      font-size: 16px;
+      line-height: 1.14;
+      margin-bottom: 3px;
+    }
+    #dashboardView .event-item p {
+      font-size: 12px;
+      line-height: 1.32;
+    }
+    #dashboardView .event-actions {
+      display: none;
+    }
+    #dashboardView .event-menu {
+      top: 9px;
+      right: 9px;
+    }
+    #dashboardView .event-menu summary {
+      width: 30px;
+      height: 30px;
+    }
+    #publicView .preview-actions {
+      position: sticky;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 50;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin: 12px auto 0;
+      background: rgba(255,252,248,.84);
+      backdrop-filter: blur(20px) saturate(140%);
+    }
+    #publicView .preview-actions .btn {
+      min-height: 40px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+    #publicView .page-head {
+      width: min(100%, 500px);
+      padding: 10px 0 8px;
+    }
+    #publicView .page-head h2 {
+      font-size: clamp(25px, 7vw, 34px);
+    }
+    #publicView .page-head p {
+      font-size: 13px;
+      line-height: 1.38;
+    }
+    @media (max-width: 430px) {
+      .editor-app-shell {
+        padding-bottom: calc(96px + env(safe-area-inset-bottom));
+      }
+      .editor-mini-head {
+        grid-template-columns: 42px minmax(0, 1fr) 42px;
+        gap: 6px;
+      }
+      .mini-nav-button {
+        width: 42px;
+        height: 38px;
+        font-size: 21px;
+      }
+      .editor-title-pill {
+        padding: 8px 12px 9px;
+      }
+      .editor-title-pill b {
+        font-size: 15px;
+      }
+      #editorView .compact-editor-card {
+        padding: 11px;
+        border-radius: 24px;
+      }
+      .compact-step-dots {
+        gap: 5px;
+      }
+      .editor-step-pill {
+        min-height: 48px;
+        border-radius: 15px;
+      }
+      .editor-step-pill b {
+        font-size: 11px;
+      }
+      .editor-step-pill small {
+        font-size: 9px;
+      }
+      .editor-sticky-bar {
+        width: calc(100vw - 16px);
+        grid-template-columns: minmax(94px, .72fr) minmax(0, 1.28fr);
+        padding: 7px;
+      }
+      .editor-sticky-bar .btn {
+        min-height: 46px;
+        font-size: 14px;
+      }
+    }
     .topbar {
       min-height: 70px;
       background: rgba(255, 250, 245, .78);
@@ -4279,6 +4706,7 @@
       route = appPath();
       applyPageTheme();
       document.body.classList.toggle('design-preview-mode', route === '/design-preview/povod-home');
+      document.body.classList.toggle('editor-mini-mode', route === '/dashboard/events/new' || /^\/dashboard\/events\/[^/]+\/(edit|gifts)$/.test(route));
       document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
       await loadServerSession();
       renderTopbar();
@@ -5060,32 +5488,87 @@
       applyPageTheme(event);
       currentEventId = event.id;
       editorTab = tab;
+      const stepIndex = Math.max(0, BUILDER_STEPS.findIndex(step => step.id === editorTab));
+      const step = BUILDER_STEPS[stepIndex] || BUILDER_STEPS[0];
       const view = document.getElementById('editorView');
       view.classList.add('active');
       view.innerHTML = `
-        <div class="page-head">
-          <div><h2>${event.title ? 'Редактировать карточку' : 'Создать карточку праздника'}</h2><p>Заполните детали события, добавьте подарки и получите ссылку для гостей.</p></div>
-          <button class="btn btn-soft" data-route="/dashboard">В кабинет</button>
-        </div>
-        <div class="editor-layout">
-          <section class="card editor-card">
+        <div class="editor-app-shell">
+          <div class="editor-mini-head">
+            <button class="mini-nav-button" type="button" onclick="${editorBackAction(event)}" aria-label="Назад">‹</button>
+            <div class="editor-title-pill">
+              <span>${step.label}</span>
+              <b>${h(event.title || 'Новая карточка праздника')}</b>
+            </div>
+            <button class="mini-nav-button" type="button" onclick="copyText('${publicUrl(event)}')" aria-label="Скопировать ссылку">•••</button>
+          </div>
+          <section class="card editor-card compact-editor-card">
             ${renderStepProgress(event)}
             <div id="editorBody">${editorBody(event)}</div>
           </section>
+          ${editorActionBar(event)}
         </div>
       `;
+    }
+    function editorStepStatus(event, stepId) {
+      if (stepId === 'style') return event.templateId ? 'Готово' : normalizeTemplateMode(event.templateMode || '') ? 'Макет' : 'Цвет';
+      if (stepId === 'details') {
+        const filled = [event.title, event.date, event.time, event.placeName].filter(Boolean).length;
+        return filled >= 4 ? 'Готово' : `${filled}/4`;
+      }
+      if (stepId === 'gifts') return event.gifts.length ? `${event.gifts.length} шт.` : 'Пусто';
+      if (stepId === 'publish') return event.status === 'published' ? 'В эфире' : 'Черновик';
+      return '';
+    }
+    function editorBackAction(event) {
+      const current = Math.max(0, BUILDER_STEPS.findIndex(step => step.id === editorTab));
+      if (current <= 0) return "navigate('/dashboard')";
+      return `renderEditor(findEvent('${event.id}'), '${BUILDER_STEPS[current - 1].id}')`;
+    }
+    function editorPrimaryAction(event) {
+      if (editorTab === 'style') {
+        const mode = normalizeTemplateMode(event.templateMode || '');
+        if (!mode) return `confirmTemplateColor('${event.id}')`;
+        if (!event.templateId) return `continueTemplateMode('${event.id}')`;
+        return `confirmCardTemplate('${event.id}')`;
+      }
+      if (editorTab === 'details') return `saveDetails('${event.id}', 'gifts')`;
+      if (editorTab === 'gifts') {
+        if (giftFormOpen) return `saveGift('${event.id}')`;
+        if (!event.gifts.length) return `openGiftForm('${event.id}')`;
+        return `renderEditor(findEvent('${event.id}'), 'publish')`;
+      }
+      return event.status === 'published' ? `copyText('${publicUrl(event)}')` : `publishEvent('${event.id}')`;
+    }
+    function editorPrimaryLabel(event) {
+      if (editorTab === 'style') return 'Продолжить';
+      if (editorTab === 'details') return 'Сохранить и дальше';
+      if (editorTab === 'gifts') return giftFormOpen ? 'Сохранить подарок' : event.gifts.length ? 'Продолжить' : 'Добавить подарок';
+      return event.status === 'published' ? 'Скопировать ссылку' : 'Опубликовать';
+    }
+    function editorSecondaryAction(event) {
+      if (editorTab === 'gifts' && giftFormOpen) return `closeGiftForm('${event.id}')`;
+      return editorBackAction(event);
+    }
+    function editorSecondaryLabel() {
+      return editorTab === 'gifts' && giftFormOpen ? 'Отмена' : 'Назад';
+    }
+    function editorActionBar(event) {
+      return `
+        <div class="editor-sticky-bar">
+          <button class="btn btn-soft editor-back-button" type="button" onclick="${editorSecondaryAction(event)}"><span aria-hidden="true">‹</span>${editorSecondaryLabel()}</button>
+          <button class="btn btn-accent editor-next-button" type="button" onclick="${editorPrimaryAction(event)}">${editorPrimaryLabel(event)}</button>
+        </div>`;
     }
     function renderStepProgress(event) {
       const index = BUILDER_STEPS.findIndex(step => step.id === editorTab);
       const current = Math.max(index, 0);
-      const left = BUILDER_STEPS.length - current - 1;
-      const note = left === 0 ? 'Финишный шаг: осталось опубликовать и скопировать ссылку.' : left === 1 ? 'Остался один шаг до ссылки для гостей.' : `Ещё ${left} шага — и карточка будет готова.`;
       return `
-        <div class="step-progress">
-          <div class="progress-meta"><span>Шаг ${current + 1} из ${BUILDER_STEPS.length}: ${BUILDER_STEPS[current].label}</span><span>${note}</span></div>
+        <div class="step-progress mini-step-progress">
+          <div class="progress-meta"><span>Карточка праздника</span><b>${current + 1} из ${BUILDER_STEPS.length}</b></div>
           <div class="progress-track"><div class="progress-fill" style="width:${((current + 1) / BUILDER_STEPS.length) * 100}%"></div></div>
-          <div class="step-dots">
-            ${BUILDER_STEPS.map((step, stepIndex) => `<button class="btn btn-soft tab ${editorTab === step.id ? 'active' : stepIndex < current ? 'done' : ''}" onclick="renderEditor(findEvent('${event.id}'),'${step.id}')">${stepIndex < current ? '✓ ' : ''}${step.label}</button>`).join('')}
+          <div class="step-dots compact-step-dots">
+            ${BUILDER_STEPS.map((step, stepIndex) => `<button class="editor-step-pill tab ${editorTab === step.id ? 'active' : stepIndex < current ? 'done' : ''}" onclick="renderEditor(findEvent('${event.id}'),'${step.id}')"><b>${stepIndex < current ? '✓ ' : ''}${step.label}</b><small>${editorStepStatus(event, step.id)}</small></button>`).join('')}
           </div>
         </div>`;
     }
