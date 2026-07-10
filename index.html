@@ -397,7 +397,7 @@
     label.full { grid-column: 1 / -1; }
     .date-time-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, .72fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
     .date-time-row.full { grid-column: 1 / -1; }
@@ -724,17 +724,27 @@
     }
     .invitation-meta-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(128px, .52fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(118px, .8fr);
       gap: 10px;
+      align-items: stretch;
     }
     .meta-card {
       display: grid;
       grid-template-columns: 54px minmax(0, 1fr);
       gap: 12px;
       align-items: center;
+      min-height: 86px;
     }
     .meta-card.compact {
-      grid-template-columns: 48px minmax(0, 1fr);
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 7px;
+    }
+    .meta-card.compact .theme-icon {
+      width: 38px;
+      height: 38px;
+    }
+    .meta-card.compact b {
+      white-space: nowrap;
     }
     .theme-icon {
       width: 54px;
@@ -843,6 +853,12 @@
       object-fit: cover;
       object-position: center;
       display: block;
+    }
+    .gift-placeholder-icon {
+      width: 46px !important;
+      height: 46px !important;
+      object-fit: contain !important;
+      opacity: .76;
     }
     .gift-body { padding: 13px 14px 12px 8px; min-width: 0; }
     .gift-body h3 {
@@ -1189,7 +1205,7 @@
       padding: 8px 18px 5px;
       border-radius: 999px;
       background: transparent;
-      color: rgba(122,112,104,.66);
+      color: rgba(91,83,76,.78);
       font-size: 12px;
       font-weight: 760;
       letter-spacing: .01em;
@@ -1205,7 +1221,7 @@
       height: 22px;
       display: inline-grid;
       place-items: center;
-      color: rgba(91,83,76,.42);
+      color: rgba(91,83,76,.58);
       font-size: 24px;
       font-weight: 260;
       line-height: 1;
@@ -1874,7 +1890,7 @@
         border-radius: 26px;
       }
       .invitation-meta-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1.2fr) minmax(106px, .8fr);
       }
       .glass-block {
         border-radius: 22px;
@@ -1883,6 +1899,20 @@
       .meta-card,
       .location-card {
         grid-template-columns: 48px minmax(0, 1fr);
+      }
+      .meta-card.compact {
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 6px;
+      }
+      .meta-card.compact .theme-icon {
+        width: 34px;
+        height: 34px;
+      }
+      .meta-card.compact b {
+        font-size: 16px;
+      }
+      .meta-card.compact small {
+        display: none;
       }
       .theme-icon {
         width: 48px;
@@ -1991,7 +2021,6 @@
       object-fit: cover;
       display: block;
     }
-    .gifts-bottom-actions { margin-top: 14px; }
     .gift-thumb {
       width: 96px;
       aspect-ratio: 3 / 4;
@@ -2625,7 +2654,7 @@
         font-size: 14px;
       }
       .date-time-row {
-        grid-template-columns: minmax(0, 1fr) minmax(104px, .72fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
       }
       textarea {
@@ -3192,12 +3221,6 @@
       gap: 10px;
       padding: 10px;
       border-radius: 20px;
-    }
-    #editorView #editorBody > .hero-actions,
-    #editorView #editorBody > .gifts-bottom-actions,
-    #editorView .gift-form > .hero-actions:last-child,
-    #editorView .gifts-step-head > .btn {
-      display: none;
     }
     .gifts-step-head {
       align-items: center;
@@ -4450,10 +4473,29 @@
     const BASE_PATH = location.pathname.startsWith('/amelia-dr') ? '/amelia-dr' : '';
 
     const sampleGifts = [
-      { id: uid(), title: 'Самокат', description: 'Лёгкий самокат для прогулок во дворе.', url: '#', price: 4200, image: 'https://images.unsplash.com/photo-1567599843819-1b6a9a05b6da?w=600&h=420&fit=crop', category: 'Активное', status: 'available' },
-      { id: uid(), title: 'LEGO', description: 'Набор для спокойной игры и сборки.', url: '#', price: 3100, image: 'https://images.unsplash.com/photo-1587654780291-39c9404d746b?w=600&h=420&fit=crop', category: 'Игрушки', status: 'reserved', reservedByName: 'Анна', reservedComment: 'Уже заказала' },
-      { id: uid(), title: 'Сертификат на фотосессию', description: 'Тёплая семейная съёмка после праздника.', url: '#', price: 5000, image: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=600&h=420&fit=crop', category: 'Впечатления', status: 'available' }
+      { id: 'demo-scooter', title: 'Самокат', url: 'https://www.wildberries.ru/', price: 4200, image: '', status: 'available' },
+      { id: 'demo-constructor', title: 'Конструктор', url: 'https://www.ozon.ru/', price: 3100, image: '', status: 'reserved' },
+      { id: 'demo-certificate', title: 'Семейная фотосессия', url: 'https://market.yandex.ru/', price: 5000, image: '', status: 'available' }
     ];
+    const DEMO_EVENT = {
+      id: 'demo-event',
+      slug: 'meli-birthday',
+      title: 'День рождения Алисы',
+      type: 'Розовая карточка праздника',
+      theme: 'pink',
+      templateMode: 'without-photo',
+      templateId: 'pink-no-photo-01',
+      date: '2026-07-12',
+      time: '16:00',
+      placeName: 'Лофт у сада',
+      address: 'Москва, ул. Цветочная, 12',
+      mapUrl: '',
+      description: 'Приглашаем вас отпраздновать день рождения Алисы вместе с нами!',
+      wishes: 'Будем рады, если вы придёте в удобной одежде и хорошем настроении.',
+      status: 'published',
+      isDemo: true,
+      gifts: sampleGifts
+    };
     const TEXT_TEMPLATES = {
       description: [
         { label: 'Тёплое приглашение', text: 'Будем очень рады разделить с вами наш праздник. Приходите провести этот день рядом с нами — будет тепло, весело и по-семейному.' },
@@ -4472,11 +4514,6 @@
       { id: 'details', label: 'Детали' },
       { id: 'gifts', label: 'Подарки' },
       { id: 'publish', label: 'Финиш' }
-    ];
-    const OCCASION_TYPES = [
-      { type: 'День рождения девочки', theme: 'pink', label: 'День рождения девочки', hint: 'Мягкая светлая тема для детского дня рождения.', colors: ['#FFE3D3', '#E8DDFF', '#FFE1D6'] },
-      { type: 'День рождения мальчика', theme: 'blue', label: 'День рождения мальчика', hint: 'Голубая тема с более свежим и активным настроением.', colors: ['#D9ECFF', '#E6F0FF', '#E1F0FF'] },
-      { type: 'Взрослый день рождения', theme: 'neutral', label: 'Взрослый день рождения', hint: 'Спокойная взрослая карточка без детского визуала.', colors: ['#EFE8DE', '#E7E1D9', '#F0EBE5'] }
     ];
     const CARD_TEMPLATE_COLORS = [
       {
@@ -4566,6 +4603,15 @@
         "'": '&#039;'
       }[char]));
     }
+    function safeExternalUrl(value) {
+      if (!value) return '';
+      try {
+        const url = new URL(String(value), location.origin);
+        return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '';
+      } catch {
+        return '';
+      }
+    }
     function adminTokenValue() {
       const params = new URLSearchParams(location.search);
       const queryToken = params.get('adminToken') || params.get('token');
@@ -4629,7 +4675,11 @@
         publicEventCache[slug] = data.event;
         return data.event;
       } catch {
-        return publicEventCache[slug] || getJSON(STORAGE.events, []).find(event => event.slug === slug);
+        const fallback = publicEventCache[slug]
+          || getJSON(STORAGE.events, []).find(event => event.slug === slug)
+          || (slug === DEMO_EVENT.slug ? structuredClone(DEMO_EVENT) : null);
+        if (fallback) publicEventCache[slug] = fallback;
+        return fallback;
       }
     }
     function eventByGiftId(giftId) {
@@ -4638,12 +4688,7 @@
     }
     function users() { return getJSON(STORAGE.users, []); }
     function events() { return currentUser ? eventsCache : []; }
-    function sessionEmail() { return localStorage.getItem(STORAGE.session); }
     function setSession(email) { email ? localStorage.setItem(STORAGE.session, email) : localStorage.removeItem(STORAGE.session); }
-    function me() {
-      const email = sessionEmail();
-      return users().find(user => user.email === email) || null;
-    }
     function displayUserName(user) {
       return user?.name || user?.telegramUsername || user?.email || 'Организатор';
     }
@@ -4719,12 +4764,8 @@
       localStorage.removeItem(STORAGE.telegramConsent);
       localStorage.setItem(STORAGE.clientReset, '1');
     }
-    function seed() {
-    }
-
     async function render() {
       resetLegacyLocalState();
-      seed();
       route = appPath();
       applyPageTheme();
       document.body.classList.toggle('design-preview-mode', route === '/design-preview/povod-home');
@@ -4816,6 +4857,7 @@
       const event = data.event;
       upsertEventCache(event);
       history.replaceState({}, '', `${BASE_PATH}/dashboard/events/${event.id}/edit`);
+      route = appPath();
       return event;
     }
     function renderTopbar() {
@@ -5414,34 +5456,6 @@
       }
       return null;
     }
-    async function register() {
-      const name = document.getElementById('authName').value.trim();
-      const email = document.getElementById('authEmail').value.trim().toLowerCase();
-      const password = document.getElementById('authPassword').value;
-      if (!email || password.length < 4) { toast('Введите email и пароль от 4 символов'); return; }
-      try {
-        const data = await apiRequest('/api/auth/register', { method: 'POST', body: { name, email, password } });
-        syncServerUser(data.user);
-        await loadServerEvents();
-        navigate('/');
-      } catch (error) {
-        toast(error.status === 409 ? 'Такой email уже существует' : 'Не получилось создать аккаунт');
-      }
-      return;
-    }
-    async function login() {
-      const email = document.getElementById('authEmail').value.trim().toLowerCase();
-      const password = document.getElementById('authPassword').value;
-      try {
-        const data = await apiRequest('/api/auth/login', { method: 'POST', body: { email, password } });
-        syncServerUser(data.user);
-        await loadServerEvents();
-        navigate('/');
-      } catch {
-        toast('Не нашли аккаунт с таким email и паролем');
-      }
-      return;
-    }
     async function logout() {
       try {
         await apiRequest('/api/auth/logout', { method: 'POST', body: {} });
@@ -5464,16 +5478,18 @@
       view.classList.add('active');
       view.innerHTML = `
         <div class="page-head">
-          <div><h2>Мои поводы</h2><p>${displayUserName(currentUser)}, здесь хранятся черновики, опубликованные карточки и быстрые действия организатора.</p></div>
+          <div><h2>Мои поводы</h2><p>${h(displayUserName(currentUser))}, здесь хранятся черновики, опубликованные карточки и быстрые действия организатора.</p></div>
           <div class="hero-actions" style="margin:0">
             ${own.length ? '<button class="btn btn-accent" data-route="/dashboard/events/new">Создать новый повод</button>' : ''}
-            <button class="btn btn-soft" onclick="logout()">Выйти</button>
           </div>
         </div>
         ${own.length ? `<div class="dashboard-grid">
           ${own.map(event => {
             const reservedCount = event.gifts.filter(g => g.status === 'reserved').length;
             const isPublished = event.status === 'published';
+            const previewLabel = event.type ? event.type.split(' ')[0] : 'Повод';
+            const previewImage = event.coverImage || activeTemplateForEvent(event)?.image || '';
+            const eventDate = formatEventDate(event).main;
             return `<article class="card event-item" role="button" tabindex="0" onclick="navigate('/dashboard/events/${event.id}/preview')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigate('/dashboard/events/${event.id}/preview')}">
               <details class="event-menu" onclick="event.stopPropagation()">
                 <summary aria-label="Действия с поводом">•••</summary>
@@ -5485,11 +5501,11 @@
                   <button class="btn btn-soft btn-small danger" type="button" onclick="deleteEvent('${event.id}')">Удалить</button>
                 </div>
               </details>
-              <div class="event-preview">${event.coverImage ? `<img src="${event.coverImage}" alt="">` : (event.type ? event.type.split(' ')[0] : 'Повод')}</div>
+              <div class="event-preview">${previewImage ? `<img src="${h(previewImage)}" alt="">` : h(previewLabel)}</div>
               <div>
                 <div class="event-topline"><span class="status-pill ${isPublished ? 'published' : 'draft'}">${isPublished ? 'опубликована' : 'черновик'}</span></div>
-                <h3>${event.title || 'Без названия'}</h3>
-                <p class="muted">${event.date || 'Дата не указана'} · ${event.type || 'Тип повода не выбран'}</p>
+                <h3>${h(event.title || 'Без названия')}</h3>
+                <p class="muted">${h(eventDate)} · ${h(event.type || 'Стиль пока не выбран')}</p>
                 <div class="event-chips">
                   <span class="tag">${event.gifts.length} подарков</span>
                   <span class="tag">Бронь подарков: ${reservedCount}</span>
@@ -5646,6 +5662,20 @@
         sub: new Intl.DateTimeFormat('ru-RU', { weekday: 'long' }).format(date)
       };
     }
+    function normalizeTimeToFiveMinutes(value) {
+      const match = String(value || '').match(/^(\d{2}):(\d{2})$/);
+      if (!match) return value || '';
+      let hours = Number(match[1]);
+      let minutes = Math.round(Number(match[2]) / 5) * 5;
+      if (minutes === 60) {
+        hours = (hours + 1) % 24;
+        minutes = 0;
+      }
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    }
+    function snapTimeToFiveMinutes(input) {
+      input.value = normalizeTimeToFiveMinutes(input.value);
+    }
     function templateArtMarkup(event, className = 'template-art-preview') {
       const template = activeTemplateForEvent(event);
       if (!template) {
@@ -5785,39 +5815,33 @@
           <section class="form-section">
             <h3>Детали</h3>
             ${coverUploadMarkup(event)}
-            <label class="full">Название события<input id="eventTitle" value="${event.title || ''}" placeholder="Например, День рождения Тимофея"></label>
+            <label class="full">Название события<input id="eventTitle" value="${h(event.title || '')}" placeholder="Например, День рождения Тимофея"></label>
             <div class="date-time-row full">
-              <label>Дата<input id="eventDate" type="date" value="${event.date || ''}"></label>
-              <label>Время<input id="eventTime" type="time" step="300" value="${event.time || ''}"></label>
+              <label>Дата<input id="eventDate" type="date" value="${h(event.date || '')}"></label>
+              <label>Время<input id="eventTime" type="time" step="300" value="${h(event.time || '')}" onchange="snapTimeToFiveMinutes(this)" onblur="snapTimeToFiveMinutes(this)"></label>
             </div>
           </section>
           <section class="form-section">
             <h3>Место проведения</h3>
-            <label>Место проведения<input id="eventPlace" value="${event.placeName || ''}"></label>
-            <label>Адрес<input id="eventAddress" value="${event.address || ''}" placeholder="Необязательно, можно оставить только ссылку на карту"></label>
-            <label class="full">Ссылка на карту<input id="eventMap" value="${event.mapUrl || ''}" placeholder="Ссылка на Яндекс.Карты или 2ГИС"></label>
+            <label>Место проведения<input id="eventPlace" value="${h(event.placeName || '')}"></label>
+            <label>Адрес<input id="eventAddress" value="${h(event.address || '')}" placeholder="Необязательно, можно оставить только ссылку на карту"></label>
+            <label class="full">Ссылка на карту<input id="eventMap" value="${h(event.mapUrl || '')}" placeholder="Ссылка на Яндекс.Карты или 2ГИС"></label>
           </section>
           <section class="form-section">
             <h3>Текст для гостей</h3>
-            <label class="full">Текст для гостей<textarea id="eventDescription" placeholder="Напишите короткое приглашение для гостей">${event.description || ''}</textarea></label>
+            <label class="full">Текст для гостей<textarea id="eventDescription" placeholder="Напишите короткое приглашение для гостей">${h(event.description || '')}</textarea></label>
             ${templateButtons('description', 'eventDescription', 'Подсказки для приглашения')}
-            <label class="full">Уточнения к празднику<textarea id="eventWishes" placeholder="Дресс-код, что взять с собой, нюансы площадки или другие рекомендации">${event.wishes || ''}</textarea></label>
+            <label class="full">Уточнения к празднику<textarea id="eventWishes" placeholder="Дресс-код, что взять с собой, нюансы площадки или другие рекомендации">${h(event.wishes || '')}</textarea></label>
             ${templateButtons('wishes', 'eventWishes', 'Подсказки для уточнений')}
           </section>
-        </div>
-        <div class="hero-actions" style="margin-top:16px"><button class="btn btn-primary" onclick="saveDetails('${event.id}', 'gifts')">Сохранить и продолжить</button><button class="btn btn-soft" onclick="saveDetails('${event.id}')">Сохранить</button></div>`;
+        </div>`;
       if (editorTab === 'gifts') return `
         <div class="gifts-step-head">
           <p>Для удобства можно составить вишлист: гости быстрее выберут подарок, а дубли не появятся.</p>
-          ${!giftFormOpen && !event.gifts.length ? `<button class="btn btn-accent" onclick="openGiftForm('${event.id}')">Добавить подарок</button>` : ''}
         </div>
         ${giftFormOpen ? giftForm(event.id) : ''}
         ${!giftFormOpen && event.gifts.length ? `
           <div class="gift-editor">${event.gifts.map(gift => adminGiftCard(event, gift)).join('')}</div>
-          <div class="hero-actions gifts-bottom-actions">
-            <button class="btn btn-soft" onclick="openGiftForm('${event.id}')">Добавить ещё подарок</button>
-            <button class="btn btn-primary" onclick="renderEditor(findEvent('${event.id}'), 'publish')">Продолжить</button>
-          </div>
         ` : ''}`;
       return `
         <h3>Готовая карточка</h3><p class="muted">Так карточку увидят гости. Проверьте детали и подарки перед публикацией.</p>
@@ -5833,7 +5857,7 @@
       const gift = editingGiftId ? event.gifts.find(item => item.id === editingGiftId) : null;
       return `<div class="gift-form">
         <h3>${gift ? 'Редактировать подарок' : 'Вставьте ссылку на подарок'}</h3>
-        <label class="full">Ссылка на подарок<input id="giftUrl" value="${gift?.url || ''}" placeholder="https://" oninput="handleGiftUrlInput()" onpaste="setTimeout(() => handleGiftUrlInput(), 0)" onchange="handleGiftUrlInput()" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Если ссылка из Wildberries, Ozon, Яндекс Маркета или Детского мира, название, цена и фото подтянутся автоматически. Нажмите «Заполнить автоматически».</span></label>
+        <label class="full">Ссылка на подарок<input id="giftUrl" value="${h(gift?.url || '')}" placeholder="https://" oninput="handleGiftUrlInput()" onpaste="setTimeout(() => handleGiftUrlInput(), 0)" onchange="handleGiftUrlInput()" onkeydown="handleGiftUrlKey(event)"><span class="field-hint" id="giftUrlStatus">Если ссылка из Wildberries, Ozon, Яндекс Маркета или Детского мира, название, цена и фото подтянутся автоматически. Нажмите «Заполнить автоматически».</span></label>
         <div class="hero-actions" style="margin:0"><button class="btn btn-soft btn-small" id="giftPrefillButton" type="button" onclick="prefillGiftFromUrl(true)"><span class="btn-spinner" aria-hidden="true"></span><span id="giftPrefillButtonText">Заполнить автоматически</span></button></div>
         <div class="gift-admin-card hidden" id="giftPreviewCard">
           <div class="gift-thumb" id="giftPreviewImage">Фото</div>
@@ -5843,10 +5867,10 @@
           </div>
         </div>
         <div class="form-grid">
-          <label>Название<input id="giftTitle" value="${gift?.title || ''}" placeholder="Название подарка"></label>
-          <label>Цена<input id="giftPrice" type="number" min="0" value="${gift?.price || ''}" placeholder="Цена"></label>
+          <label>Название<input id="giftTitle" value="${h(gift?.title || '')}" placeholder="Название подарка"></label>
+          <label>Цена<input id="giftPrice" type="number" min="0" value="${h(gift?.price || '')}" placeholder="Цена"></label>
           <div class="gift-image-field full">
-            <input id="giftImage" type="hidden" value="${gift?.image || ''}">
+            <input id="giftImage" type="hidden" value="${h(gift?.image || '')}">
             <input class="file-input" id="giftImageFile" type="file" accept="image/*" onchange="uploadGiftImage(this.files[0])">
             <div class="gift-image-preview" id="giftImagePreview">${gift?.image ? `<img src="${h(gift.image)}" alt="">` : 'Фото подарка'}</div>
             <div>
@@ -5856,15 +5880,14 @@
             </div>
           </div>
         </div>
-        <div class="hero-actions"><button class="btn btn-primary" onclick="saveGift('${eventId}')">Сохранить подарок</button><button class="btn btn-soft" onclick="closeGiftForm('${eventId}')">Отмена</button></div>
       </div>`;
     }
     function adminGiftCard(event, gift) {
       const reserved = gift.status === 'reserved';
       return `<article class="gift-admin-card">
-        <div class="gift-thumb">${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div>
+        <div class="gift-thumb">${gift.image ? `<img src="${h(gift.image)}" alt="">` : 'Фото'}</div>
         <div>
-          <b>${gift.title}</b>
+          <b>${h(gift.title || 'Подарок')}</b>
           <div class="muted">${money(gift.price)}</div>
           <div class="gift-admin-meta">
             <span class="status-pill">${reserved ? 'подарок забронирован' : 'подарок свободен'}</span>
@@ -5879,18 +5902,15 @@
     }
     function sharePanel(event) {
       const url = publicUrl(event);
+      const isPublished = event.status === 'published';
       return `<section class="share-panel">
         <div>
           <h3>Ссылка для гостей</h3>
-          <p class="muted">Публичная карточка открывается без авторизации.</p>
+          <p class="muted">${isPublished ? 'Публичная карточка открывается без авторизации.' : 'После публикации здесь появится рабочая ссылка для гостей.'}</p>
         </div>
-        ${event.status !== 'published' ? '<div class="warning-note">Карточка пока не опубликована. Опубликуйте её, чтобы гости смогли открыть ссылку.</div>' : ''}
-        <div class="link-box"><code>${url}</code><button class="btn btn-primary" onclick="copyText('${url}')">Скопировать</button></div>
-        <div class="share-actions">
-          <button class="btn btn-accent" onclick="publishEvent('${event.id}')">Опубликовать карточку</button>
-          <button class="btn btn-soft" data-route="/p/${event.slug}">Открыть публично</button>
-          <button class="btn btn-soft" onclick="unpublishEvent('${event.id}')">Снять с публикации</button>
-        </div>
+        ${!isPublished ? '<div class="warning-note">Карточка пока не опубликована. Проверьте её и нажмите «Опубликовать» внизу.</div>' : ''}
+        <div class="link-box"><code>${isPublished ? h(url) : 'Ссылка будет доступна после публикации'}</code><button class="btn btn-primary" ${isPublished ? `onclick="copyText('${url}')"` : 'disabled'}>Скопировать</button></div>
+        ${isPublished ? `<div class="share-actions"><button class="btn btn-soft" data-route="/p/${h(event.slug)}">Открыть карточку</button><button class="btn btn-soft" onclick="unpublishEvent('${event.id}')">Снять с публикации</button></div>` : ''}
       </section>`;
     }
     function giftsIntro(event) {
@@ -5959,7 +5979,7 @@
         title: document.getElementById('eventTitle').value,
         slug: slugify(document.getElementById('eventTitle').value),
         date: document.getElementById('eventDate').value,
-        time: document.getElementById('eventTime').value,
+        time: normalizeTimeToFiveMinutes(document.getElementById('eventTime').value),
         placeName: document.getElementById('eventPlace').value,
         address: document.getElementById('eventAddress').value,
         mapUrl: document.getElementById('eventMap').value,
@@ -5967,14 +5987,6 @@
         wishes: document.getElementById('eventWishes').value
       };
       updateEvent(id, patch, nextTab ? 'Детали сохранены, идём дальше' : 'Детали сохранены', nextTab);
-    }
-    function setOccasion(id, type, theme) {
-      updateEvent(id, { type, theme }, 'Тип повода выбран', 'style');
-    }
-    function continueFromOccasion(id) {
-      const event = findEvent(id);
-      if (!event?.type) return toast('Сначала выберите тип повода');
-      renderEditor(event, 'details');
     }
     function setTemplateColor(id, theme, clickEvent = null) {
       if (clickEvent && colorSwipeDidMove) {
@@ -6629,7 +6641,7 @@
         }
       }
       const title = document.getElementById('giftTitle').value.trim();
-      if (!url && !title) return toast('Добавьте ссылку или название подарка');
+      if (!title) return toast('Добавьте название подарка');
       const gift = {
         id: uid(),
         title,
@@ -6695,7 +6707,8 @@
         const data = await apiRequest(`/api/events/${id}/publish`, { method: 'POST', body: {} });
         upsertEventCache(data.event);
         toast('Карточка опубликована');
-        render();
+        if (currentEventId === id && /^\/dashboard\/events\/[^/]+\/(edit|gifts)$/.test(route)) renderEditor(data.event, editorTab);
+        else render();
       } catch {
         toast('Не получилось опубликовать карточку');
       }
@@ -6706,7 +6719,8 @@
         const data = await apiRequest(`/api/events/${id}/unpublish`, { method: 'POST', body: {} });
         upsertEventCache(data.event);
         toast('Карточка снята с публикации');
-        render();
+        if (currentEventId === id && /^\/dashboard\/events\/[^/]+\/(edit|gifts)$/.test(route)) renderEditor(data.event, editorTab);
+        else render();
       } catch {
         toast('Не получилось снять карточку с публикации');
       }
@@ -6733,7 +6747,7 @@
         </div>` : '';
       view.innerHTML = `
         ${unpublishedNotice}
-        <div class="page-head"><div><h2>${preview ? 'Предпросмотр карточки' : event.title}</h2><p>${preview ? 'Так карточку увидит гость. Предпросмотр доступен даже для черновика.' : 'Откройте детали праздника и список подарков.'}</p></div>${preview ? '<button class="btn btn-soft" data-route="/dashboard">В кабинет</button>' : '<button class="btn btn-accent" data-route="/">Создать свою карточку</button>'}</div>
+        ${preview ? '<div class="page-head"><div><h2>Предпросмотр карточки</h2><p>Так карточку увидит гость. Предпросмотр доступен даже для черновика.</p></div><button class="btn btn-soft" data-route="/dashboard">В кабинет</button></div>' : ''}
         <div class="guest-layout">
           <aside class="card guest-side">
             ${eventSummary(event)}
@@ -6748,7 +6762,11 @@
     }
     function giftCard(gift) {
       const reserved = gift.status === 'reserved';
-      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img">${gift.image ? `<img src="${gift.image}" alt="">` : 'Фото'}</div><div class="gift-body"><h3>${gift.title}</h3><div class="gift-meta"><span class="price">${money(gift.price)}</span></div><div class="gift-actions">${gift.url ? `<a class="btn btn-soft" href="${gift.url}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Уже забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
+      const storeUrl = safeExternalUrl(gift.url);
+      const imageMarkup = gift.image
+        ? `<img src="${h(gift.image)}" alt="">`
+        : '<img class="gift-placeholder-icon" src="/public/card-templates/icons/pink/gift.png" alt="">';
+      return `<article class="card gift-card ${reserved ? 'reserved' : ''}"><div class="gift-img">${imageMarkup}</div><div class="gift-body"><h3>${h(gift.title || 'Подарок')}</h3><div class="gift-meta"><span class="price">${money(gift.price)}</span></div><div class="gift-actions">${storeUrl ? `<a class="btn btn-soft" href="${h(storeUrl)}" target="_blank" rel="noopener">Открыть магазин</a>` : '<button class="btn btn-soft" disabled>Ссылки нет</button>'}<button class="btn ${reserved ? 'btn-ghost' : 'btn-primary'}" ${reserved ? 'disabled' : ''} onclick="openReserve('${gift.id}')">${reserved ? 'Уже забронирован' : 'Забронировать подарок'}</button></div></div></article>`;
     }
     function openReserve(giftId) {
       pendingReserve = { event: eventByGiftId(giftId), giftId };
@@ -6766,6 +6784,18 @@
       const contact = anonymous ? '' : document.getElementById('reserveContact').value.trim();
       const comment = anonymous ? '' : document.getElementById('reserveComment').value.trim();
       try {
+        if (pendingReserve.event.isDemo) {
+          const nextEvent = {
+            ...pendingReserve.event,
+            gifts: pendingReserve.event.gifts.map(gift => gift.id === pendingReserve.giftId ? { ...gift, status: 'reserved' } : gift)
+          };
+          publicEventCache[nextEvent.slug] = nextEvent;
+          closeModal('reserveModal');
+          toast('В примере подарок отмечен как забронированный');
+          renderPublic(nextEvent);
+          pendingReserve = null;
+          return;
+        }
         const data = await apiRequest(`/api/public/gifts/${pendingReserve.giftId}/reserve`, {
           method: 'POST',
           body: { name, contact, comment }
